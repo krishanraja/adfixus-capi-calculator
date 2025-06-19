@@ -1,73 +1,110 @@
-# Welcome to your Lovable project
 
-## Project info
+# AdFixus CAPI ROI Calculator
 
-**URL**: https://lovable.dev/projects/83c3b653-e0df-4420-8454-c3419490282c
+An interactive single-page ROI calculator that demonstrates the revenue upside of implementing AdFixus Stream's deterministic Conversions API.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Interactive Input Form**: Collect key business metrics with helpful tooltips
+- **Real-time Calculations**: Instant ROI analysis with comprehensive metrics
+- **Visual Analytics**: Before/after revenue comparison chart
+- **PDF Export**: Professional business case document generation
+- **Responsive Design**: Works perfectly on desktop and mobile devices
+- **Professional Branding**: AdFixus color scheme and styling
 
-**Use Lovable**
+## Key Metrics Calculated
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/83c3b653-e0df-4420-8454-c3419490282c) and start prompting.
+- Incremental monthly revenue ($ and %)
+- 12-month incremental revenue projection
+- Payback period in weeks
+- ROI percentage at 12 months
+- Visual before/after comparison
 
-Changes made via Lovable will be committed automatically to this repo.
+## Math Logic
 
-**Use your preferred IDE**
+The calculator uses the following formulas:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```javascript
+baselineRevenue = (impressions / 1000) × cpm
+upliftedImpressions = impressions × (1 + inventoryGain%)
+upliftedCPM = cpm × (1 + cpmLift%)
+upliftRevenue = (upliftedImpressions / 1000) × upliftedCPM
+incrementalRevenue = upliftRevenue – baselineRevenue
+paybackWeeks = (implementationCost / incrementalRevenue) × 4.345
+ROI12m = ((incrementalRevenue × 12) – implementationCost) / implementationCost
 ```
 
-**Edit a file directly in GitHub**
+## Test Data
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Use these values for testing:
+- Monthly Impressions: 25,000,000
+- Average CPM: $3.20
+- CPM Lift: 15%
+- Inventory Gain: 40%
+- Implementation Cost: $25,000
 
-**Use GitHub Codespaces**
+Expected Results:
+- Incremental Monthly Revenue: ~$48,000
+- Payback Period: ~5.4 weeks
+- ROI at 12 months: ~1,610%
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Tech Stack
 
-## What technologies are used for this project?
+- **React 18** with TypeScript
+- **Tailwind CSS** for styling
+- **Shadcn/UI** component library
+- **Recharts** for data visualization
+- **jsPDF** for PDF generation
+- **Vite** for build tooling
 
-This project is built with:
+## Brand Colors
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- Deep Teal `#006073` (primary)
+- Aqua `#00C7B1` (accent)
+- Coral `#FF615A` (alert/CTA)
+- Off-white `#F7F9FA` (background)
 
-## How can I deploy this project?
+## Usage for Sales Teams
 
-Simply open [Lovable](https://lovable.dev/projects/83c3b653-e0df-4420-8454-c3419490282c) and click on Share -> Publish.
+1. Share the calculator URL with prospects
+2. Prospects input their current metrics (3-4 fields)
+3. Click "Calculate" for instant ROI analysis
+4. Download professional PDF business case
+5. Use results for internal stakeholder discussions
 
-## Can I connect a custom domain to my Lovable project?
+## Development
 
-Yes, you can!
+```bash
+# Install dependencies
+npm install
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Start development server
+npm run dev
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+# Build for production
+npm run build
+```
+
+## Accessibility
+
+- WCAG AA color contrast compliance
+- Keyboard navigation support
+- Responsive design for all screen sizes
+- Semantic HTML structure
+
+## Customization
+
+The calculator is designed for easy customization:
+- Update brand colors in the component styles
+- Modify default values based on industry benchmarks
+- Adjust calculation formulas as needed
+- Customize PDF template and branding
+
+## Hand-off Notes for Engineers
+
+- All calculations are in the main `ROICalculator.tsx` component
+- PDF generation uses jsPDF with custom template
+- Chart visualization uses Recharts BarChart
+- Form validation includes real-time error handling
+- Responsive design uses Tailwind's grid system
+- Brand colors are applied inline for easy identification
