@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,6 +37,7 @@ const ROICalculator = () => {
   const [displayShare, setDisplayShare] = useState<number[]>([60]);
   const [videoShare, setVideoShare] = useState<number[]>([25]);
   const [retargetingShare, setRetargetingShare] = useState<number[]>([15]);
+  const [performanceCampaignPercentage, setPerformanceCampaignPercentage] = useState<number[]>([70]);
   const [results, setResults] = useState<CalculationResults | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
@@ -72,6 +72,7 @@ const ROICalculator = () => {
     const displayPercent = displayShare[0] / 100;
     const videoPercent = videoShare[0] / 100;
     const retargetingPercent = retargetingShare[0] / 100;
+    const performancePercent = performanceCampaignPercentage[0] / 100;
     
     // Current revenue breakdown
     const currentDisplayRevenue = revenue * displayPercent;
@@ -79,9 +80,9 @@ const ROICalculator = () => {
     const currentRetargetingRevenue = revenue * retargetingPercent;
     
     // Calculate non-Chrome affected revenue (where CAPI provides benefit)
-    const affectedDisplayRevenue = currentDisplayRevenue * nonChromePercent;
-    const affectedVideoRevenue = currentVideoRevenue * nonChromePercent;
-    const affectedRetargetingRevenue = currentRetargetingRevenue * nonChromePercent;
+    const affectedDisplayRevenue = currentDisplayRevenue * nonChromePercent * performancePercent;
+    const affectedVideoRevenue = currentVideoRevenue * nonChromePercent * performancePercent;
+    const affectedRetargetingRevenue = currentRetargetingRevenue * nonChromePercent * performancePercent;
     
     // Calculate improvements with CAPI
     // For display and video: 3x conversion rate improvement
@@ -162,27 +163,28 @@ const ROICalculator = () => {
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Annual Revenue: ${formatCurrency(Number(annualRevenue))}`, 20, 80);
     pdf.text(`Non-Chrome Inventory: ${nonChromePercentage[0]}%`, 20, 95);
-    pdf.text(`Display Share: ${displayShare[0]}% | Video Share: ${videoShare[0]}% | Retargeting: ${retargetingShare[0]}%`, 20, 110);
+    pdf.text(`Performance Campaigns: ${performanceCampaignPercentage[0]}%`, 20, 110);
+    pdf.text(`Display Share: ${displayShare[0]}% | Video Share: ${videoShare[0]}% | Retargeting: ${retargetingShare[0]}%`, 20, 125);
     
     // Results
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('CAPI Impact Results:', 20, 135);
+    pdf.text('CAPI Impact Results:', 20, 150);
     
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Incremental Annual Revenue: ${formatCurrency(results.incrementalRevenue)} (+${formatNumber(results.incrementalPercentage)}%)`, 20, 150);
-    pdf.text(`Projected Total Revenue: ${formatCurrency(results.projectedRevenue)}`, 20, 165);
+    pdf.text(`Incremental Annual Revenue: ${formatCurrency(results.incrementalRevenue)} (+${formatNumber(results.incrementalPercentage)}%)`, 20, 165);
+    pdf.text(`Projected Total Revenue: ${formatCurrency(results.projectedRevenue)}`, 20, 180);
     
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Revenue Improvements by Channel:', 20, 190);
+    pdf.text('Revenue Improvements by Channel:', 20, 205);
     
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Display: ${formatCurrency(results.conversionImprovements.displayImprovement)}`, 20, 205);
-    pdf.text(`Video: ${formatCurrency(results.conversionImprovements.videoImprovement)}`, 20, 220);
-    pdf.text(`Retargeting: ${formatCurrency(results.conversionImprovements.retargetingImprovement)}`, 20, 235);
+    pdf.text(`Display: ${formatCurrency(results.conversionImprovements.displayImprovement)}`, 20, 220);
+    pdf.text(`Video: ${formatCurrency(results.conversionImprovements.videoImprovement)}`, 20, 235);
+    pdf.text(`Retargeting: ${formatCurrency(results.conversionImprovements.retargetingImprovement)}`, 20, 250);
     
     pdf.save(`AdFixus_CAPI_Analysis_${date}.pdf`);
     
@@ -303,6 +305,35 @@ const ROICalculator = () => {
                         <span>20%</span>
                         <span className="font-semibold" style={{ color: '#006073' }}>{nonChromePercentage[0]}%</span>
                         <span>80%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Label>% of campaigns that brief for a performance outcome</Label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Percentage of campaigns focused on performance metrics where CAPI benefits apply</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <div className="px-3">
+                      <Slider
+                        value={performanceCampaignPercentage}
+                        onValueChange={setPerformanceCampaignPercentage}
+                        max={100}
+                        min={30}
+                        step={5}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-sm text-gray-500 mt-1">
+                        <span>30%</span>
+                        <span className="font-semibold" style={{ color: '#006073' }}>{performanceCampaignPercentage[0]}%</span>
+                        <span>100%</span>
                       </div>
                     </div>
                   </div>
@@ -437,11 +468,11 @@ const ROICalculator = () => {
                       </div>
                       
                       <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                        <p className="text-sm text-gray-600">Non-Chrome Inventory</p>
+                        <p className="text-sm text-gray-600">Performance Campaigns</p>
                         <p className="text-2xl font-bold" style={{ color: '#006073' }}>
-                          {nonChromePercentage[0]}%
+                          {performanceCampaignPercentage[0]}%
                         </p>
-                        <p className="text-sm text-gray-500">affected by CAPI</p>
+                        <p className="text-sm text-gray-500">eligible for CAPI</p>
                       </div>
                       
                       <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
