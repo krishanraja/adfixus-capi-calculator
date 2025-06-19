@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -178,6 +177,14 @@ const ROICalculator = () => {
         {/* Hero Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
+            {/* Large Logo */}
+            <div className="mb-8">
+              <img 
+                src="/lovable-uploads/e05fe6e9-96d1-4dcc-9caa-0d7f03e785ed.png" 
+                alt="AdFixus" 
+                className="h-16 mx-auto"
+              />
+            </div>
             <h1 className="text-4xl font-bold mb-4" style={{ color: '#006073' }}>
               The industry's only deterministic open-web Conversion API
             </h1>
@@ -187,230 +194,234 @@ const ROICalculator = () => {
           </div>
 
           {/* Calculator Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Input Card */}
-            <Card className="shadow-lg border-0">
-              <CardHeader>
-                <CardTitle className="text-2xl" style={{ color: '#006073' }}>
-                  Your Current Setup
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Label htmlFor="impressions">Monthly Addressable Impressions</Label>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-gray-400" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Total monthly ad impressions your property can serve</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <Input
-                    id="impressions"
-                    type="text"
-                    value={impressions}
-                    onChange={(e) => setImpressions(e.target.value)}
-                    placeholder="25,000,000"
-                    className={errors.impressions ? 'border-red-500' : ''}
-                  />
-                  {errors.impressions && (
-                    <p className="text-sm text-red-500 mt-1">{errors.impressions}</p>
-                  )}
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Label htmlFor="cpm">Average Open-Web CPM ($)</Label>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-gray-400" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Current cost per thousand impressions you're achieving</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <Input
-                    id="cpm"
-                    type="text"
-                    value={cpm}
-                    onChange={(e) => setCpm(e.target.value)}
-                    placeholder="3.20"
-                    className={errors.cpm ? 'border-red-500' : ''}
-                  />
-                  {errors.cpm && (
-                    <p className="text-sm text-red-500 mt-1">{errors.cpm}</p>
-                  )}
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Label>Expected CPM Lift (%)</Label>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-gray-400" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>CPM improvement from better signal quality (typical: 10-25%)</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <div className="px-3">
-                    <Slider
-                      value={cpmLift}
-                      onValueChange={setCpmLift}
-                      max={50}
-                      min={5}
-                      step={1}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-sm text-gray-500 mt-1">
-                      <span>5%</span>
-                      <span className="font-semibold" style={{ color: '#006073' }}>{cpmLift[0]}%</span>
-                      <span>50%</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Label>Expected Inventory Gain (%)</Label>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-gray-400" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Additional monetizable inventory from improved matching (typical: 30-50%)</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <div className="px-3">
-                    <Slider
-                      value={inventoryGain}
-                      onValueChange={setInventoryGain}
-                      max={80}
-                      min={10}
-                      step={5}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-sm text-gray-500 mt-1">
-                      <span>10%</span>
-                      <span className="font-semibold" style={{ color: '#006073' }}>{inventoryGain[0]}%</span>
-                      <span>80%</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Label htmlFor="cost">Implementation Cost ($)</Label>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-gray-400" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>One-time setup and integration costs</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <Input
-                    id="cost"
-                    type="text"
-                    value={implementationCost}
-                    onChange={(e) => setImplementationCost(e.target.value)}
-                    placeholder="25,000"
-                    className={errors.implementationCost ? 'border-red-500' : ''}
-                  />
-                  {errors.implementationCost && (
-                    <p className="text-sm text-red-500 mt-1">{errors.implementationCost}</p>
-                  )}
-                </div>
-
-                <Button 
-                  onClick={calculateROI}
-                  className="w-full text-white font-semibold py-3"
-                  style={{ backgroundColor: '#00C7B1' }}
-                >
-                  Calculate ROI
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Results Card */}
-            {results && (
+          <div className="space-y-8">
+            {/* Input Card - Centered */}
+            <div className="max-w-2xl mx-auto">
               <Card className="shadow-lg border-0">
                 <CardHeader>
                   <CardTitle className="text-2xl" style={{ color: '#006073' }}>
-                    Your AdFixus Upside
+                    Your Current Setup
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                      <p className="text-sm text-gray-600">Incremental Monthly Revenue</p>
-                      <p className="text-2xl font-bold" style={{ color: '#006073' }}>
-                        {formatCurrency(results.incrementalRevenue)}
-                      </p>
-                      <p className="text-sm font-medium" style={{ color: '#00C7B1' }}>
-                        +{formatNumber(results.incrementalPercentage)}%
-                      </p>
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Label htmlFor="impressions">Monthly Addressable Impressions</Label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Total monthly ad impressions your property can serve</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
-                    
-                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                      <p className="text-sm text-gray-600">12-Month Revenue Gain</p>
-                      <p className="text-2xl font-bold" style={{ color: '#006073' }}>
-                        {formatCurrency(results.incrementalRevenue12m)}
-                      </p>
+                    <Input
+                      id="impressions"
+                      type="text"
+                      value={impressions}
+                      onChange={(e) => setImpressions(e.target.value)}
+                      placeholder="25,000,000"
+                      className={errors.impressions ? 'border-red-500' : ''}
+                    />
+                    {errors.impressions && (
+                      <p className="text-sm text-red-500 mt-1">{errors.impressions}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Label htmlFor="cpm">Average Open-Web CPM ($)</Label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Current cost per thousand impressions you're achieving</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
-                    
-                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#FFF5F5' }}>
-                      <p className="text-sm text-gray-600">Payback Period</p>
-                      <p className="text-2xl font-bold" style={{ color: '#FF615A' }}>
-                        {formatNumber(results.paybackWeeks)}
-                      </p>
-                      <p className="text-sm text-gray-500">weeks</p>
+                    <Input
+                      id="cpm"
+                      type="text"
+                      value={cpm}
+                      onChange={(e) => setCpm(e.target.value)}
+                      placeholder="3.20"
+                      className={errors.cpm ? 'border-red-500' : ''}
+                    />
+                    {errors.cpm && (
+                      <p className="text-sm text-red-500 mt-1">{errors.cpm}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Label>Expected CPM Lift (%)</Label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>CPM improvement from better signal quality (typical: 10-25%)</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
-                    
-                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                      <p className="text-sm text-gray-600">ROI at 12 Months</p>
-                      <p className="text-2xl font-bold" style={{ color: '#006073' }}>
-                        {formatNumber(results.roi12m)}%
-                      </p>
+                    <div className="px-3">
+                      <Slider
+                        value={cpmLift}
+                        onValueChange={setCpmLift}
+                        max={50}
+                        min={5}
+                        step={1}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-sm text-gray-500 mt-1">
+                        <span>5%</span>
+                        <span className="font-semibold" style={{ color: '#006073' }}>{cpmLift[0]}%</span>
+                        <span>50%</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Chart */}
-                  <div className="h-64">
-                    <h3 className="text-lg font-semibold mb-4" style={{ color: '#006073' }}>
-                      Before vs After AdFixus
-                    </h3>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                        <Bar 
-                          dataKey="value" 
-                          fill="#006073"
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Label>Expected Inventory Gain (%)</Label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Additional monetizable inventory from improved matching (typical: 30-50%)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <div className="px-3">
+                      <Slider
+                        value={inventoryGain}
+                        onValueChange={setInventoryGain}
+                        max={80}
+                        min={10}
+                        step={5}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-sm text-gray-500 mt-1">
+                        <span>10%</span>
+                        <span className="font-semibold" style={{ color: '#006073' }}>{inventoryGain[0]}%</span>
+                        <span>80%</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <Button
-                    onClick={generatePDF}
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Label htmlFor="cost">Implementation Cost ($)</Label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>One-time setup and integration costs</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <Input
+                      id="cost"
+                      type="text"
+                      value={implementationCost}
+                      onChange={(e) => setImplementationCost(e.target.value)}
+                      placeholder="25,000"
+                      className={errors.implementationCost ? 'border-red-500' : ''}
+                    />
+                    {errors.implementationCost && (
+                      <p className="text-sm text-red-500 mt-1">{errors.implementationCost}</p>
+                    )}
+                  </div>
+
+                  <Button 
+                    onClick={calculateROI}
                     className="w-full text-white font-semibold py-3"
-                    style={{ backgroundColor: '#FF615A' }}
+                    style={{ backgroundColor: '#00C7B1' }}
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download PDF Business Case
+                    Calculate ROI
                   </Button>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* Results Card */}
+            {results && (
+              <div className="max-w-2xl mx-auto">
+                <Card className="shadow-lg border-0">
+                  <CardHeader>
+                    <CardTitle className="text-2xl" style={{ color: '#006073' }}>
+                      Your AdFixus Upside
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
+                        <p className="text-sm text-gray-600">Incremental Monthly Revenue</p>
+                        <p className="text-2xl font-bold" style={{ color: '#006073' }}>
+                          {formatCurrency(results.incrementalRevenue)}
+                        </p>
+                        <p className="text-sm font-medium" style={{ color: '#00C7B1' }}>
+                          +{formatNumber(results.incrementalPercentage)}%
+                        </p>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
+                        <p className="text-sm text-gray-600">12-Month Revenue Gain</p>
+                        <p className="text-2xl font-bold" style={{ color: '#006073' }}>
+                          {formatCurrency(results.incrementalRevenue12m)}
+                        </p>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#FFF5F5' }}>
+                        <p className="text-sm text-gray-600">Payback Period</p>
+                        <p className="text-2xl font-bold" style={{ color: '#FF615A' }}>
+                          {formatNumber(results.paybackWeeks)}
+                        </p>
+                        <p className="text-sm text-gray-500">weeks</p>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
+                        <p className="text-sm text-gray-600">ROI at 12 Months</p>
+                        <p className="text-2xl font-bold" style={{ color: '#006073' }}>
+                          {formatNumber(results.roi12m)}%
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Chart */}
+                    <div className="h-64">
+                      <h3 className="text-lg font-semibold mb-4" style={{ color: '#006073' }}>
+                        Before vs After AdFixus
+                      </h3>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                          <Bar 
+                            dataKey="value" 
+                            fill="#006073"
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <Button
+                      onClick={generatePDF}
+                      className="w-full text-white font-semibold py-3"
+                      style={{ backgroundColor: '#FF615A' }}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download PDF Business Case
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             )}
           </div>
 
