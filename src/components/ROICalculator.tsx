@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -186,7 +187,8 @@ const ROICalculator = () => {
               />
             </div>
             <h1 className="text-4xl font-bold mb-4" style={{ color: '#006073' }}>
-              The industry's only deterministic open-web Conversion API
+              The industry's only deterministic<br />
+              Open Web Conversion API
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Plug and play, yours to own and with 100% addressability and cross-domain stitching. See how much revenue you can claim back below.
