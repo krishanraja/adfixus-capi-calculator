@@ -1,48 +1,69 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
-import { HelpCircle, Download, Calendar } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { HelpCircle, Download, Calendar, TrendingUp, Target, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 
 interface CalculationResults {
-  baselineRevenue: number;
-  upliftRevenue: number;
+  currentRevenue: number;
+  currentDisplayRevenue: number;
+  currentVideoRevenue: number;
+  currentRetargetingRevenue: number;
+  
+  projectedRevenue: number;
+  projectedDisplayRevenue: number;
+  projectedVideoRevenue: number;
+  projectedRetargetingRevenue: number;
+  
   incrementalRevenue: number;
   incrementalPercentage: number;
-  incrementalRevenue12m: number;
-  paybackWeeks: number;
   roi12m: number;
+  
+  conversionImprovements: {
+    displayImprovement: number;
+    videoImprovement: number;
+    retargetingImprovement: number;
+  };
 }
 
 const ROICalculator = () => {
-  const [impressions, setImpressions] = useState<string>('25000000');
-  const [cpm, setCpm] = useState<string>('3.20');
-  const [cpmLift, setCpmLift] = useState<number[]>([15]);
-  const [inventoryGain, setInventoryGain] = useState<number[]>([40]);
-  const [implementationCost, setImplementationCost] = useState<string>('25000');
+  const [annualRevenue, setAnnualRevenue] = useState<string>('5000000');
+  const [nonChromePercentage, setNonChromePercentage] = useState<number[]>([45]);
+  const [displayShare, setDisplayShare] = useState<number[]>([60]);
+  const [videoShare, setVideoShare] = useState<number[]>([25]);
+  const [retargetingShare, setRetargetingShare] = useState<number[]>([15]);
+  const [implementationCost, setImplementationCost] = useState<string>('50000');
   const [results, setResults] = useState<CalculationResults | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
+  // Constants
+  const BASELINE_DISPLAY_CR = 2.58; // 2.58%
+  const BASELINE_VIDEO_CR = 4.17; // 4.17%
+  const CAPI_CR_MULTIPLIER = 3; // CAPI triples conversion rates
+  const CAPI_CTR_MULTIPLIER = 2; // CAPI doubles CTR for retargeting
+  const CPM_INCREASE = 0.35; // 35% CPM increase
+
   const validateInputs = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!impressions || isNaN(Number(impressions)) || Number(impressions) <= 0) {
-      newErrors.impressions = 'Please enter a valid number of impressions';
-    }
-    
-    if (!cpm || isNaN(Number(cpm)) || Number(cpm) <= 0) {
-      newErrors.cpm = 'Please enter a valid CPM amount';
+    if (!annualRevenue || isNaN(Number(annualRevenue)) || Number(annualRevenue) <= 0) {
+      newErrors.annualRevenue = 'Please enter a valid annual revenue amount';
     }
     
     if (!implementationCost || isNaN(Number(implementationCost)) || Number(implementationCost) < 0) {
       newErrors.implementationCost = 'Please enter a valid implementation cost';
+    }
+    
+    if (displayShare[0] + videoShare[0] + retargetingShare[0] !== 100) {
+      newErrors.shares = 'Revenue shares must add up to 100%';
     }
     
     setErrors(newErrors);
@@ -52,30 +73,64 @@ const ROICalculator = () => {
   const calculateROI = () => {
     if (!validateInputs()) return;
     
-    const impressionsNum = Number(impressions);
-    const cpmNum = Number(cpm);
-    const cpmLiftPercent = cpmLift[0] / 100;
-    const inventoryGainPercent = inventoryGain[0] / 100;
-    const implementationCostNum = Number(implementationCost);
+    const revenue = Number(annualRevenue);
+    const nonChromePercent = nonChromePercentage[0] / 100;
+    const displayPercent = displayShare[0] / 100;
+    const videoPercent = videoShare[0] / 100;
+    const retargetingPercent = retargetingShare[0] / 100;
+    const implCost = Number(implementationCost);
     
-    const baselineRevenue = (impressionsNum / 1000) * cpmNum;
-    const upliftedImpressions = impressionsNum * (1 + inventoryGainPercent);
-    const upliftedCPM = cpmNum * (1 + cpmLiftPercent);
-    const upliftRevenue = (upliftedImpressions / 1000) * upliftedCPM;
-    const incrementalRevenue = upliftRevenue - baselineRevenue;
-    const incrementalPercentage = (incrementalRevenue / baselineRevenue) * 100;
-    const incrementalRevenue12m = incrementalRevenue * 12;
-    const paybackWeeks = (implementationCostNum / incrementalRevenue) * 4.345;
-    const roi12m = ((incrementalRevenue12m - implementationCostNum) / implementationCostNum) * 100;
+    // Current revenue breakdown
+    const currentDisplayRevenue = revenue * displayPercent;
+    const currentVideoRevenue = revenue * videoPercent;
+    const currentRetargetingRevenue = revenue * retargetingPercent;
+    
+    // Calculate non-Chrome affected revenue (where CAPI provides benefit)
+    const affectedDisplayRevenue = currentDisplayRevenue * nonChromePercent;
+    const affectedVideoRevenue = currentVideoRevenue * nonChromePercent;
+    const affectedRetargetingRevenue = currentRetargetingRevenue * nonChromePercent;
+    
+    // Calculate improvements with CAPI
+    // For display and video: 3x conversion rate improvement
+    const displayImprovement = affectedDisplayRevenue * (CAPI_CR_MULTIPLIER - 1);
+    const videoImprovement = affectedVideoRevenue * (CAPI_CR_MULTIPLIER - 1);
+    
+    // For retargeting: 2x CTR improvement
+    const retargetingImprovement = affectedRetargetingRevenue * (CAPI_CTR_MULTIPLIER - 1);
+    
+    // Apply CPM increase penalty (35% increase reduces net benefit)
+    const cpmPenaltyFactor = 1 - (CPM_INCREASE * 0.7); // Reduce impact by 70% of CPM increase
+    const netDisplayImprovement = displayImprovement * cpmPenaltyFactor;
+    const netVideoImprovement = videoImprovement * cpmPenaltyFactor;
+    const netRetargetingImprovement = retargetingImprovement * cpmPenaltyFactor;
+    
+    // Calculate projections
+    const projectedDisplayRevenue = currentDisplayRevenue + netDisplayImprovement;
+    const projectedVideoRevenue = currentVideoRevenue + netVideoImprovement;
+    const projectedRetargetingRevenue = currentRetargetingRevenue + netRetargetingImprovement;
+    
+    const projectedRevenue = projectedDisplayRevenue + projectedVideoRevenue + projectedRetargetingRevenue;
+    const incrementalRevenue = projectedRevenue - revenue;
+    const incrementalPercentage = (incrementalRevenue / revenue) * 100;
+    const roi12m = ((incrementalRevenue - implCost) / implCost) * 100;
     
     setResults({
-      baselineRevenue,
-      upliftRevenue,
+      currentRevenue: revenue,
+      currentDisplayRevenue,
+      currentVideoRevenue,
+      currentRetargetingRevenue,
+      projectedRevenue,
+      projectedDisplayRevenue,
+      projectedVideoRevenue,
+      projectedRetargetingRevenue,
       incrementalRevenue,
       incrementalPercentage,
-      incrementalRevenue12m,
-      paybackWeeks,
-      roi12m
+      roi12m,
+      conversionImprovements: {
+        displayImprovement: netDisplayImprovement,
+        videoImprovement: netVideoImprovement,
+        retargetingImprovement: netRetargetingImprovement,
+      }
     });
   };
 
@@ -101,7 +156,7 @@ const ROICalculator = () => {
     // Header
     pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('AdFixus CAPI ROI Analysis', 20, 30);
+    pdf.text('AdFixus CAPI Revenue Impact Analysis', 20, 30);
     
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
@@ -110,50 +165,53 @@ const ROICalculator = () => {
     // Inputs
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Input Parameters:', 20, 65);
+    pdf.text('Current Setup:', 20, 65);
     
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Monthly Addressable Impressions: ${Number(impressions).toLocaleString()}`, 20, 80);
-    pdf.text(`Average Open-Web CPM: ${formatCurrency(Number(cpm))}`, 20, 95);
-    pdf.text(`Expected CPM Lift: ${cpmLift[0]}%`, 20, 110);
-    pdf.text(`Expected Inventory Gain: ${inventoryGain[0]}%`, 20, 125);
-    pdf.text(`Implementation Cost: ${formatCurrency(Number(implementationCost))}`, 20, 140);
+    pdf.text(`Annual Revenue: ${formatCurrency(Number(annualRevenue))}`, 20, 80);
+    pdf.text(`Non-Chrome Inventory: ${nonChromePercentage[0]}%`, 20, 95);
+    pdf.text(`Display Share: ${displayShare[0]}% | Video Share: ${videoShare[0]}% | Retargeting: ${retargetingShare[0]}%`, 20, 110);
+    pdf.text(`Implementation Cost: ${formatCurrency(Number(implementationCost))}`, 20, 125);
     
     // Results
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('ROI Analysis Results:', 20, 165);
+    pdf.text('CAPI Impact Results:', 20, 150);
     
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Incremental Monthly Revenue: ${formatCurrency(results.incrementalRevenue)} (+${formatNumber(results.incrementalPercentage)}%)`, 20, 180);
-    pdf.text(`12-Month Incremental Revenue: ${formatCurrency(results.incrementalRevenue12m)}`, 20, 195);
-    pdf.text(`Payback Period: ${formatNumber(results.paybackWeeks)} weeks`, 20, 210);
-    pdf.text(`ROI at 12 Months: ${formatNumber(results.roi12m)}%`, 20, 225);
+    pdf.text(`Incremental Annual Revenue: ${formatCurrency(results.incrementalRevenue)} (+${formatNumber(results.incrementalPercentage)}%)`, 20, 165);
+    pdf.text(`Projected Total Revenue: ${formatCurrency(results.projectedRevenue)}`, 20, 180);
+    pdf.text(`ROI at 12 Months: ${formatNumber(results.roi12m)}%`, 20, 195);
     
-    // Footer
-    pdf.setFontSize(10);
-    pdf.text('This analysis is based on your specific inputs and AdFixus CAPI performance benchmarks.', 20, 270);
-    pdf.text('Contact AdFixus for a detailed implementation discussion.', 20, 280);
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Revenue Improvements by Channel:', 20, 220);
     
-    pdf.save(`AdFixus_CAPI_ROI_${date}.pdf`);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Display: ${formatCurrency(results.conversionImprovements.displayImprovement)}`, 20, 235);
+    pdf.text(`Video: ${formatCurrency(results.conversionImprovements.videoImprovement)}`, 20, 250);
+    pdf.text(`Retargeting: ${formatCurrency(results.conversionImprovements.retargetingImprovement)}`, 20, 265);
+    
+    pdf.save(`AdFixus_CAPI_Analysis_${date}.pdf`);
     
     toast({
       title: "PDF Generated!",
-      description: "Your ROI analysis has been downloaded.",
+      description: "Your CAPI impact analysis has been downloaded.",
     });
   };
 
-  const chartData = results ? [
-    {
-      name: 'Current Revenue',
-      value: results.baselineRevenue,
-    },
-    {
-      name: 'With AdFixus',
-      value: results.upliftRevenue,
-    },
+  const revenueChartData = results ? [
+    { name: 'Current', value: results.currentRevenue, fill: '#94A3B8' },
+    { name: 'With CAPI', value: results.projectedRevenue, fill: '#006073' },
+  ] : [];
+
+  const improvementData = results ? [
+    { name: 'Display', value: results.conversionImprovements.displayImprovement, fill: '#00C7B1' },
+    { name: 'Video', value: results.conversionImprovements.videoImprovement, fill: '#FF615A' },
+    { name: 'Retargeting', value: results.conversionImprovements.retargetingImprovement, fill: '#8B5CF6' },
   ] : [];
 
   return (
@@ -190,7 +248,7 @@ const ROICalculator = () => {
               Open Web Conversion API
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Plug and play, yours to own and with 100% addressability and cross-domain stitching. See how much revenue you can claim back below.
+              See how CAPI can transform your non-Chrome inventory performance with improved conversion rates and better targeting.
             </p>
           </div>
 
@@ -200,118 +258,153 @@ const ROICalculator = () => {
             <div className="max-w-2xl mx-auto">
               <Card className="shadow-lg border-0">
                 <CardHeader>
-                  <CardTitle className="text-2xl" style={{ color: '#006073' }}>
-                    Your Current Setup
+                  <CardTitle className="text-2xl flex items-center gap-2" style={{ color: '#006073' }}>
+                    <Target className="h-6 w-6" />
+                    Your Revenue Profile
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <Label htmlFor="impressions">Monthly Addressable Impressions</Label>
+                      <Label htmlFor="revenue">Annual Revenue (excluding app inventory) ($)</Label>
                       <Tooltip>
                         <TooltipTrigger>
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Total monthly ad impressions your property can serve</p>
+                          <p>Your total annual web-based advertising revenue</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
                     <Input
-                      id="impressions"
+                      id="revenue"
                       type="text"
-                      value={impressions}
-                      onChange={(e) => setImpressions(e.target.value)}
-                      placeholder="25,000,000"
-                      className={errors.impressions ? 'border-red-500' : ''}
+                      value={annualRevenue}
+                      onChange={(e) => setAnnualRevenue(e.target.value)}
+                      placeholder="5,000,000"
+                      className={errors.annualRevenue ? 'border-red-500' : ''}
                     />
-                    {errors.impressions && (
-                      <p className="text-sm text-red-500 mt-1">{errors.impressions}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Label htmlFor="cpm">Average Open-Web CPM ($)</Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Current cost per thousand impressions you're achieving</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <Input
-                      id="cpm"
-                      type="text"
-                      value={cpm}
-                      onChange={(e) => setCpm(e.target.value)}
-                      placeholder="3.20"
-                      className={errors.cpm ? 'border-red-500' : ''}
-                    />
-                    {errors.cpm && (
-                      <p className="text-sm text-red-500 mt-1">{errors.cpm}</p>
+                    {errors.annualRevenue && (
+                      <p className="text-sm text-red-500 mt-1">{errors.annualRevenue}</p>
                     )}
                   </div>
 
                   <div>
                     <div className="flex items-center gap-2 mb-4">
-                      <Label>Expected CPM Lift (%)</Label>
+                      <Label>Non-Chrome Inventory (%)</Label>
                       <Tooltip>
                         <TooltipTrigger>
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>CPM improvement from better signal quality (typical: 10-25%)</p>
+                          <p>Percentage of your inventory from Safari, Firefox, and other non-Chrome browsers</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
                     <div className="px-3">
                       <Slider
-                        value={cpmLift}
-                        onValueChange={setCpmLift}
-                        max={50}
-                        min={5}
-                        step={1}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-sm text-gray-500 mt-1">
-                        <span>5%</span>
-                        <span className="font-semibold" style={{ color: '#006073' }}>{cpmLift[0]}%</span>
-                        <span>50%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Label>Expected Inventory Gain (%)</Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Additional monetizable inventory from improved matching (typical: 30-50%)</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div className="px-3">
-                      <Slider
-                        value={inventoryGain}
-                        onValueChange={setInventoryGain}
+                        value={nonChromePercentage}
+                        onValueChange={setNonChromePercentage}
                         max={80}
-                        min={10}
+                        min={20}
                         step={5}
                         className="w-full"
                       />
                       <div className="flex justify-between text-sm text-gray-500 mt-1">
-                        <span>10%</span>
-                        <span className="font-semibold" style={{ color: '#006073' }}>{inventoryGain[0]}%</span>
+                        <span>20%</span>
+                        <span className="font-semibold" style={{ color: '#006073' }}>{nonChromePercentage[0]}%</span>
                         <span>80%</span>
                       </div>
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <Label>Display (%)</Label>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <HelpCircle className="h-4 w-4 text-gray-400" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Share of revenue from display advertising</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <div className="px-3">
+                        <Slider
+                          value={displayShare}
+                          onValueChange={(value) => {
+                            setDisplayShare(value);
+                            // Auto-adjust other shares to maintain 100%
+                            const remaining = 100 - value[0];
+                            const videoRatio = videoShare[0] / (videoShare[0] + retargetingShare[0]);
+                            const newVideoShare = Math.round(remaining * videoRatio);
+                            const newRetargetingShare = remaining - newVideoShare;
+                            setVideoShare([newVideoShare]);
+                            setRetargetingShare([newRetargetingShare]);
+                          }}
+                          max={80}
+                          min={20}
+                          step={5}
+                          className="w-full"
+                        />
+                        <div className="text-center text-sm font-semibold mt-1" style={{ color: '#006073' }}>
+                          {displayShare[0]}%
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <Label>Video (%)</Label>
+                      </div>
+                      <div className="px-3">
+                        <Slider
+                          value={videoShare}
+                          onValueChange={(value) => {
+                            setVideoShare(value);
+                            const remaining = 100 - displayShare[0] - value[0];
+                            setRetargetingShare([remaining]);
+                          }}
+                          max={60}
+                          min={10}
+                          step={5}
+                          className="w-full"
+                        />
+                        <div className="text-center text-sm font-semibold mt-1" style={{ color: '#006073' }}>
+                          {videoShare[0]}%
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <Label>Retargeting (%)</Label>
+                      </div>
+                      <div className="px-3">
+                        <Slider
+                          value={retargetingShare}
+                          onValueChange={(value) => {
+                            setRetargetingShare(value);
+                            const remaining = 100 - displayShare[0] - value[0];
+                            setVideoShare([remaining]);
+                          }}
+                          max={40}
+                          min={5}
+                          step={5}
+                          className="w-full"
+                        />
+                        <div className="text-center text-sm font-semibold mt-1" style={{ color: '#006073' }}>
+                          {retargetingShare[0]}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {errors.shares && (
+                    <p className="text-sm text-red-500 text-center">{errors.shares}</p>
+                  )}
 
                   <div>
                     <div className="flex items-center gap-2 mb-2">
@@ -321,7 +414,7 @@ const ROICalculator = () => {
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>One-time setup and integration costs</p>
+                          <p>One-time setup and integration costs for CAPI implementation</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -330,7 +423,7 @@ const ROICalculator = () => {
                       type="text"
                       value={implementationCost}
                       onChange={(e) => setImplementationCost(e.target.value)}
-                      placeholder="25,000"
+                      placeholder="50,000"
                       className={errors.implementationCost ? 'border-red-500' : ''}
                     />
                     {errors.implementationCost && (
@@ -343,7 +436,8 @@ const ROICalculator = () => {
                     className="w-full text-white font-semibold py-3"
                     style={{ backgroundColor: '#00C7B1' }}
                   >
-                    Calculate ROI
+                    <Zap className="w-4 h-4 mr-2" />
+                    Calculate CAPI Impact
                   </Button>
                 </CardContent>
               </Card>
@@ -354,14 +448,15 @@ const ROICalculator = () => {
               <div className="max-w-2xl mx-auto">
                 <Card className="shadow-lg border-0">
                   <CardHeader>
-                    <CardTitle className="text-2xl" style={{ color: '#006073' }}>
-                      Your AdFixus Upside
+                    <CardTitle className="text-2xl flex items-center gap-2" style={{ color: '#006073' }}>
+                      <TrendingUp className="h-6 w-6" />
+                      Your CAPI Revenue Impact
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                        <p className="text-sm text-gray-600">Incremental Monthly Revenue</p>
+                        <p className="text-sm text-gray-600">Incremental Annual Revenue</p>
                         <p className="text-2xl font-bold" style={{ color: '#006073' }}>
                           {formatCurrency(results.incrementalRevenue)}
                         </p>
@@ -371,45 +466,74 @@ const ROICalculator = () => {
                       </div>
                       
                       <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                        <p className="text-sm text-gray-600">12-Month Revenue Gain</p>
+                        <p className="text-sm text-gray-600">Projected Total Revenue</p>
                         <p className="text-2xl font-bold" style={{ color: '#006073' }}>
-                          {formatCurrency(results.incrementalRevenue12m)}
+                          {formatCurrency(results.projectedRevenue)}
                         </p>
                       </div>
                       
                       <div className="p-4 rounded-lg" style={{ backgroundColor: '#FFF5F5' }}>
-                        <p className="text-sm text-gray-600">Payback Period</p>
-                        <p className="text-2xl font-bold" style={{ color: '#FF615A' }}>
-                          {formatNumber(results.paybackWeeks)}
-                        </p>
-                        <p className="text-sm text-gray-500">weeks</p>
-                      </div>
-                      
-                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
                         <p className="text-sm text-gray-600">ROI at 12 Months</p>
-                        <p className="text-2xl font-bold" style={{ color: '#006073' }}>
+                        <p className="text-2xl font-bold" style={{ color: results.roi12m > 0 ? '#00C7B1' : '#FF615A' }}>
                           {formatNumber(results.roi12m)}%
                         </p>
                       </div>
+                      
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
+                        <p className="text-sm text-gray-600">Non-Chrome Inventory</p>
+                        <p className="text-2xl font-bold" style={{ color: '#006073' }}>
+                          {nonChromePercentage[0]}%
+                        </p>
+                        <p className="text-sm text-gray-500">affected by CAPI</p>
+                      </div>
                     </div>
 
-                    {/* Chart */}
+                    {/* Revenue Comparison Chart */}
                     <div className="h-64">
                       <h3 className="text-lg font-semibold mb-4" style={{ color: '#006073' }}>
-                        Before vs After AdFixus
+                        Revenue Comparison
                       </h3>
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData}>
+                        <BarChart data={revenueChartData}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="name" />
                           <YAxis tickFormatter={(value) => formatCurrency(value)} />
                           <Bar 
                             dataKey="value" 
-                            fill="#006073"
                             radius={[4, 4, 0, 0]}
                           />
                         </BarChart>
                       </ResponsiveContainer>
+                    </div>
+
+                    {/* Channel Improvements */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4" style={{ color: '#006073' }}>
+                        Revenue Improvements by Channel
+                      </h3>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center p-3 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
+                          <p className="text-sm text-gray-600 mb-1">Display</p>
+                          <p className="font-semibold" style={{ color: '#00C7B1' }}>
+                            {formatCurrency(results.conversionImprovements.displayImprovement)}
+                          </p>
+                          <p className="text-xs text-gray-500">3x conversion rate</p>
+                        </div>
+                        <div className="text-center p-3 rounded-lg" style={{ backgroundColor: '#FFF5F5' }}>
+                          <p className="text-sm text-gray-600 mb-1">Video</p>
+                          <p className="font-semibold" style={{ color: '#FF615A' }}>
+                            {formatCurrency(results.conversionImprovements.videoImprovement)}
+                          </p>
+                          <p className="text-xs text-gray-500">3x conversion rate</p>
+                        </div>
+                        <div className="text-center p-3 rounded-lg" style={{ backgroundColor: '#F3E8FF' }}>
+                          <p className="text-sm text-gray-600 mb-1">Retargeting</p>
+                          <p className="font-semibold" style={{ color: '#8B5CF6' }}>
+                            {formatCurrency(results.conversionImprovements.retargetingImprovement)}
+                          </p>
+                          <p className="text-xs text-gray-500">2x CTR improvement</p>
+                        </div>
+                      </div>
                     </div>
 
                     <Button
@@ -418,7 +542,7 @@ const ROICalculator = () => {
                       style={{ backgroundColor: '#FF615A' }}
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      Download PDF Business Case
+                      Download Impact Analysis
                     </Button>
                   </CardContent>
                 </Card>
@@ -431,10 +555,10 @@ const ROICalculator = () => {
             <Card className="max-w-2xl mx-auto shadow-lg border-0">
               <CardContent className="p-8">
                 <h2 className="text-2xl font-bold mb-4" style={{ color: '#006073' }}>
-                  Ready to unlock this revenue?
+                  Ready to transform your non-Chrome performance?
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  Book a 15-minute working session with our team to discuss your specific implementation.
+                  Book a 15-minute working session with our team to discuss your CAPI implementation strategy.
                 </p>
                 <Button 
                   className="text-white font-semibold px-8 py-3"
