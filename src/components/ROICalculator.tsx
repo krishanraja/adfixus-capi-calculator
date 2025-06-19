@@ -165,9 +165,11 @@ const ROICalculator = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center">
-                <div className="w-16 h-8 bg-gradient-to-r from-teal-600 to-teal-500 rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">AdFixus</span>
-                </div>
+                <img 
+                  src="/lovable-uploads/e05fe6e9-96d1-4dcc-9caa-0d7f03e785ed.png" 
+                  alt="AdFixus" 
+                  className="h-8"
+                />
               </div>
             </div>
           </div>
