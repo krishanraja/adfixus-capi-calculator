@@ -24,7 +24,6 @@ interface CalculationResults {
   
   incrementalRevenue: number;
   incrementalPercentage: number;
-  roi12m: number;
   
   conversionImprovements: {
     displayImprovement: number;
@@ -39,7 +38,6 @@ const ROICalculator = () => {
   const [displayShare, setDisplayShare] = useState<number[]>([60]);
   const [videoShare, setVideoShare] = useState<number[]>([25]);
   const [retargetingShare, setRetargetingShare] = useState<number[]>([15]);
-  const [implementationCost, setImplementationCost] = useState<string>('50000');
   const [results, setResults] = useState<CalculationResults | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
@@ -58,10 +56,6 @@ const ROICalculator = () => {
       newErrors.annualRevenue = 'Please enter a valid annual revenue amount';
     }
     
-    if (!implementationCost || isNaN(Number(implementationCost)) || Number(implementationCost) < 0) {
-      newErrors.implementationCost = 'Please enter a valid implementation cost';
-    }
-    
     if (displayShare[0] + videoShare[0] + retargetingShare[0] !== 100) {
       newErrors.shares = 'Revenue shares must add up to 100%';
     }
@@ -78,7 +72,6 @@ const ROICalculator = () => {
     const displayPercent = displayShare[0] / 100;
     const videoPercent = videoShare[0] / 100;
     const retargetingPercent = retargetingShare[0] / 100;
-    const implCost = Number(implementationCost);
     
     // Current revenue breakdown
     const currentDisplayRevenue = revenue * displayPercent;
@@ -112,7 +105,6 @@ const ROICalculator = () => {
     const projectedRevenue = projectedDisplayRevenue + projectedVideoRevenue + projectedRetargetingRevenue;
     const incrementalRevenue = projectedRevenue - revenue;
     const incrementalPercentage = (incrementalRevenue / revenue) * 100;
-    const roi12m = ((incrementalRevenue - implCost) / implCost) * 100;
     
     setResults({
       currentRevenue: revenue,
@@ -125,7 +117,6 @@ const ROICalculator = () => {
       projectedRetargetingRevenue,
       incrementalRevenue,
       incrementalPercentage,
-      roi12m,
       conversionImprovements: {
         displayImprovement: netDisplayImprovement,
         videoImprovement: netVideoImprovement,
@@ -172,28 +163,26 @@ const ROICalculator = () => {
     pdf.text(`Annual Revenue: ${formatCurrency(Number(annualRevenue))}`, 20, 80);
     pdf.text(`Non-Chrome Inventory: ${nonChromePercentage[0]}%`, 20, 95);
     pdf.text(`Display Share: ${displayShare[0]}% | Video Share: ${videoShare[0]}% | Retargeting: ${retargetingShare[0]}%`, 20, 110);
-    pdf.text(`Implementation Cost: ${formatCurrency(Number(implementationCost))}`, 20, 125);
     
     // Results
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('CAPI Impact Results:', 20, 150);
+    pdf.text('CAPI Impact Results:', 20, 135);
     
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Incremental Annual Revenue: ${formatCurrency(results.incrementalRevenue)} (+${formatNumber(results.incrementalPercentage)}%)`, 20, 165);
-    pdf.text(`Projected Total Revenue: ${formatCurrency(results.projectedRevenue)}`, 20, 180);
-    pdf.text(`ROI at 12 Months: ${formatNumber(results.roi12m)}%`, 20, 195);
+    pdf.text(`Incremental Annual Revenue: ${formatCurrency(results.incrementalRevenue)} (+${formatNumber(results.incrementalPercentage)}%)`, 20, 150);
+    pdf.text(`Projected Total Revenue: ${formatCurrency(results.projectedRevenue)}`, 20, 165);
     
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Revenue Improvements by Channel:', 20, 220);
+    pdf.text('Revenue Improvements by Channel:', 20, 190);
     
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Display: ${formatCurrency(results.conversionImprovements.displayImprovement)}`, 20, 235);
-    pdf.text(`Video: ${formatCurrency(results.conversionImprovements.videoImprovement)}`, 20, 250);
-    pdf.text(`Retargeting: ${formatCurrency(results.conversionImprovements.retargetingImprovement)}`, 20, 265);
+    pdf.text(`Display: ${formatCurrency(results.conversionImprovements.displayImprovement)}`, 20, 205);
+    pdf.text(`Video: ${formatCurrency(results.conversionImprovements.videoImprovement)}`, 20, 220);
+    pdf.text(`Retargeting: ${formatCurrency(results.conversionImprovements.retargetingImprovement)}`, 20, 235);
     
     pdf.save(`AdFixus_CAPI_Analysis_${date}.pdf`);
     
@@ -406,31 +395,6 @@ const ROICalculator = () => {
                     <p className="text-sm text-red-500 text-center">{errors.shares}</p>
                   )}
 
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Label htmlFor="cost">Implementation Cost ($)</Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>One-time setup and integration costs for CAPI implementation</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <Input
-                      id="cost"
-                      type="text"
-                      value={implementationCost}
-                      onChange={(e) => setImplementationCost(e.target.value)}
-                      placeholder="50,000"
-                      className={errors.implementationCost ? 'border-red-500' : ''}
-                    />
-                    {errors.implementationCost && (
-                      <p className="text-sm text-red-500 mt-1">{errors.implementationCost}</p>
-                    )}
-                  </div>
-
                   <Button 
                     onClick={calculateROI}
                     className="w-full text-white font-semibold py-3"
@@ -472,19 +436,20 @@ const ROICalculator = () => {
                         </p>
                       </div>
                       
-                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#FFF5F5' }}>
-                        <p className="text-sm text-gray-600">ROI at 12 Months</p>
-                        <p className="text-2xl font-bold" style={{ color: results.roi12m > 0 ? '#00C7B1' : '#FF615A' }}>
-                          {formatNumber(results.roi12m)}%
-                        </p>
-                      </div>
-                      
                       <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
                         <p className="text-sm text-gray-600">Non-Chrome Inventory</p>
                         <p className="text-2xl font-bold" style={{ color: '#006073' }}>
                           {nonChromePercentage[0]}%
                         </p>
                         <p className="text-sm text-gray-500">affected by CAPI</p>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
+                        <p className="text-sm text-gray-600">Revenue Uplift</p>
+                        <p className="text-2xl font-bold" style={{ color: '#00C7B1' }}>
+                          {formatNumber(results.incrementalPercentage)}%
+                        </p>
+                        <p className="text-sm text-gray-500">improvement</p>
                       </div>
                     </div>
 
