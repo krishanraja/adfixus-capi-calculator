@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -181,7 +180,7 @@ const ROICalculator = () => {
             {/* Large Logo */}
             <div className="mb-8">
               <img 
-                src="/lovable-uploads/e05fe6e9-96d1-4dcc-9caa-0d7f03e785ed.png" 
+                src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png" 
                 alt="AdFixus" 
                 className="h-16 mx-auto"
               />
