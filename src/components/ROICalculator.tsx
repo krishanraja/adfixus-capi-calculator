@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,11 +33,11 @@ interface CalculationResults {
 
 const ROICalculator = () => {
   const [annualRevenue, setAnnualRevenue] = useState<string>('5,000,000');
-  const [chromePercentage, setChromePercentage] = useState<number[]>([50]); // Changed default to 50%
+  const [chromePercentage, setChromePercentage] = useState<number[]>([50]);
   const [displayShare, setDisplayShare] = useState<number[]>([60]);
   const [videoShare, setVideoShare] = useState<number[]>([25]);
   const [retargetingShare, setRetargetingShare] = useState<number[]>([15]);
-  const [performanceCampaignPercentage, setPerformanceCampaignPercentage] = useState<number[]>([50]); // Changed default to 50%
+  const [performanceCampaignPercentage, setPerformanceCampaignPercentage] = useState<number[]>([50]);
   const [results, setResults] = useState<CalculationResults | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
@@ -357,7 +356,7 @@ const ROICalculator = () => {
                         onValueChange={setChromePercentage}
                         max={100}
                         min={0}
-                        step={5}
+                        step={1}
                         className="w-full"
                       />
                       <div className="flex justify-between text-sm text-gray-500 mt-1">
@@ -386,7 +385,7 @@ const ROICalculator = () => {
                         onValueChange={setPerformanceCampaignPercentage}
                         max={100}
                         min={0}
-                        step={5}
+                        step={1}
                         className="w-full"
                       />
                       <div className="flex justify-between text-sm text-gray-500 mt-1">
