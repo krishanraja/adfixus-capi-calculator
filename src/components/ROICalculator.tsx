@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -261,7 +262,7 @@ const ROICalculator = () => {
               Open Web Conversion API
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              See how CAPI can transform your non-Chrome inventory performance with improved conversion rates and better targeting.
+              See how enabling CAPI for can transform your business with improved conversion rates, better targeting and deterministic outcomes measurement.
             </p>
           </div>
 
