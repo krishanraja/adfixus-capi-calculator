@@ -49,10 +49,32 @@ const ROICalculator = () => {
   const CAPI_CTR_MULTIPLIER = 2; // CAPI doubles CTR for retargeting
   const CPM_INCREASE = 0.35; // 35% CPM increase
 
+  const formatCurrencyInput = (value: string) => {
+    // Remove all non-digit characters
+    const numericValue = value.replace(/[^\d]/g, '');
+    
+    // Convert to number and format with commas
+    if (numericValue === '') return '';
+    
+    const number = parseInt(numericValue);
+    return new Intl.NumberFormat('en-US').format(number);
+  };
+
+  const handleRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const formattedValue = formatCurrencyInput(inputValue);
+    setAnnualRevenue(formattedValue);
+  };
+
+  const getNumericRevenue = () => {
+    return parseInt(annualRevenue.replace(/[^\d]/g, '')) || 0;
+  };
+
   const validateInputs = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!annualRevenue || isNaN(Number(annualRevenue)) || Number(annualRevenue) <= 0) {
+    const numericRevenue = getNumericRevenue();
+    if (!annualRevenue || numericRevenue <= 0) {
       newErrors.annualRevenue = 'Please enter a valid annual revenue amount';
     }
     
@@ -67,7 +89,7 @@ const ROICalculator = () => {
   const calculateROI = () => {
     if (!validateInputs()) return;
     
-    const revenue = Number(annualRevenue);
+    const revenue = getNumericRevenue();
     const nonChromePercent = nonChromePercentage[0] / 100;
     const displayPercent = displayShare[0] / 100;
     const videoPercent = videoShare[0] / 100;
@@ -257,7 +279,7 @@ const ROICalculator = () => {
                 <CardContent className="space-y-6">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <Label htmlFor="revenue">Annual Revenue (excluding app inventory) ($)</Label>
+                      <Label htmlFor="revenue">Annual Revenue (excluding app inventory)</Label>
                       <Tooltip>
                         <TooltipTrigger>
                           <HelpCircle className="h-4 w-4 text-gray-400" />
@@ -267,14 +289,19 @@ const ROICalculator = () => {
                         </TooltipContent>
                       </Tooltip>
                     </div>
-                    <Input
-                      id="revenue"
-                      type="text"
-                      value={annualRevenue}
-                      onChange={(e) => setAnnualRevenue(e.target.value)}
-                      placeholder="5,000,000"
-                      className={errors.annualRevenue ? 'border-red-500' : ''}
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                        $
+                      </span>
+                      <Input
+                        id="revenue"
+                        type="text"
+                        value={annualRevenue}
+                        onChange={handleRevenueChange}
+                        placeholder="5,000,000"
+                        className={`pl-8 ${errors.annualRevenue ? 'border-red-500' : ''}`}
+                      />
+                    </div>
                     {errors.annualRevenue && (
                       <p className="text-sm text-red-500 mt-1">{errors.annualRevenue}</p>
                     )}
