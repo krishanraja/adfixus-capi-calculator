@@ -316,7 +316,7 @@ const ROICalculator = () => {
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Your total annual web-based advertising revenue</p>
+                          <p>An estimate of your annual web-based ad revenue.</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -346,7 +346,7 @@ const ROICalculator = () => {
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Percentage of your inventory from Chrome browsers. CAPI benefits all browsers, but Chrome inventory already has some targeting capabilities, so incremental revenue is proportionally lower (70% less) compared to Safari/Firefox inventory.</p>
+                          <p>An estimate of what % Chrome inventory makes up of your total.</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -375,7 +375,7 @@ const ROICalculator = () => {
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Percentage of campaigns focused on performance metrics where CAPI benefits apply</p>
+                          <p>An estimate of the % of your campaign briefs that have a conversion outcome.</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
