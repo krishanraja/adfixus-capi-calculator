@@ -330,15 +330,15 @@ const ROICalculator = () => {
                       <Slider
                         value={chromePercentage}
                         onValueChange={setChromePercentage}
-                        max={80}
-                        min={20}
+                        max={100}
+                        min={0}
                         step={5}
                         className="w-full"
                       />
                       <div className="flex justify-between text-sm text-gray-500 mt-1">
-                        <span>20%</span>
+                        <span>0%</span>
                         <span className="font-semibold" style={{ color: '#006073' }}>{chromePercentage[0]}%</span>
-                        <span>80%</span>
+                        <span>100%</span>
                       </div>
                     </div>
                   </div>
@@ -360,12 +360,12 @@ const ROICalculator = () => {
                         value={performanceCampaignPercentage}
                         onValueChange={setPerformanceCampaignPercentage}
                         max={100}
-                        min={30}
+                        min={0}
                         step={5}
                         className="w-full"
                       />
                       <div className="flex justify-between text-sm text-gray-500 mt-1">
-                        <span>30%</span>
+                        <span>0%</span>
                         <span className="font-semibold" style={{ color: '#006073' }}>{performanceCampaignPercentage[0]}%</span>
                         <span>100%</span>
                       </div>
@@ -398,7 +398,7 @@ const ROICalculator = () => {
                             setVideoShare([newVideoShare]);
                             setRetargetingShare([newRetargetingShare]);
                           }}
-                          max={80}
+                          max={100}
                           min={0}
                           step={5}
                           className="w-full"
@@ -421,7 +421,7 @@ const ROICalculator = () => {
                             const remaining = 100 - displayShare[0] - value[0];
                             setRetargetingShare([Math.max(0, remaining)]);
                           }}
-                          max={60}
+                          max={100}
                           min={0}
                           step={5}
                           className="w-full"
@@ -444,7 +444,7 @@ const ROICalculator = () => {
                             const remaining = 100 - displayShare[0] - value[0];
                             setVideoShare([Math.max(0, remaining)]);
                           }}
-                          max={40}
+                          max={100}
                           min={0}
                           step={5}
                           className="w-full"
