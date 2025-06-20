@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,11 +33,11 @@ interface CalculationResults {
 
 const ROICalculator = () => {
   const [annualRevenue, setAnnualRevenue] = useState<string>('5000000');
-  const [chromePercentage, setChromePercentage] = useState<number[]>([55]); // Changed from nonChromePercentage
+  const [chromePercentage, setChromePercentage] = useState<number[]>([50]); // Changed default to 50%
   const [displayShare, setDisplayShare] = useState<number[]>([60]);
   const [videoShare, setVideoShare] = useState<number[]>([25]);
   const [retargetingShare, setRetargetingShare] = useState<number[]>([15]);
-  const [performanceCampaignPercentage, setPerformanceCampaignPercentage] = useState<number[]>([70]);
+  const [performanceCampaignPercentage, setPerformanceCampaignPercentage] = useState<number[]>([50]); // Changed default to 50%
   const [results, setResults] = useState<CalculationResults | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
@@ -49,6 +48,7 @@ const ROICalculator = () => {
   const CAPI_CR_MULTIPLIER = 3; // CAPI triples conversion rates
   const CAPI_CTR_MULTIPLIER = 2; // CAPI doubles CTR for retargeting
   const CPM_INCREASE = 0.35; // 35% CPM increase
+  const CHROME_BENEFIT_REDUCTION = 0.7; // Chrome benefits are reduced by 70%
 
   const formatCurrencyInput = (value: string) => {
     // Remove all non-digit characters
@@ -91,7 +91,8 @@ const ROICalculator = () => {
     if (!validateInputs()) return;
     
     const revenue = getNumericRevenue();
-    const nonChromePercent = (100 - chromePercentage[0]) / 100; // Calculate non-Chrome from Chrome percentage
+    const chromePercent = chromePercentage[0] / 100;
+    const nonChromePercent = (100 - chromePercentage[0]) / 100;
     const displayPercent = displayShare[0] / 100;
     const videoPercent = videoShare[0] / 100;
     const retargetingPercent = retargetingShare[0] / 100;
@@ -102,18 +103,41 @@ const ROICalculator = () => {
     const currentVideoRevenue = revenue * videoPercent;
     const currentRetargetingRevenue = revenue * retargetingPercent;
     
-    // Calculate non-Chrome affected revenue (where CAPI provides benefit)
-    const affectedDisplayRevenue = currentDisplayRevenue * nonChromePercent * performancePercent;
-    const affectedVideoRevenue = currentVideoRevenue * nonChromePercent * performancePercent;
-    const affectedRetargetingRevenue = currentRetargetingRevenue * nonChromePercent * performancePercent;
+    // Calculate CAPI benefits for all inventory (Chrome and non-Chrome)
+    const performanceDisplayRevenue = currentDisplayRevenue * performancePercent;
+    const performanceVideoRevenue = currentVideoRevenue * performancePercent;
+    const performanceRetargetingRevenue = currentRetargetingRevenue * performancePercent;
+    
+    // Chrome inventory gets reduced benefits (70% less incremental revenue)
+    const chromeDisplayRevenue = performanceDisplayRevenue * chromePercent;
+    const chromeVideoRevenue = performanceVideoRevenue * chromePercent;
+    const chromeRetargetingRevenue = performanceRetargetingRevenue * chromePercent;
+    
+    // Non-Chrome inventory gets full benefits
+    const nonChromeDisplayRevenue = performanceDisplayRevenue * nonChromePercent;
+    const nonChromeVideoRevenue = performanceVideoRevenue * nonChromePercent;
+    const nonChromeRetargetingRevenue = performanceRetargetingRevenue * nonChromePercent;
     
     // Calculate improvements with CAPI
     // For display and video: 3x conversion rate improvement
-    const displayImprovement = affectedDisplayRevenue * (CAPI_CR_MULTIPLIER - 1);
-    const videoImprovement = affectedVideoRevenue * (CAPI_CR_MULTIPLIER - 1);
+    const fullDisplayImprovement = (CAPI_CR_MULTIPLIER - 1);
+    const fullVideoImprovement = (CAPI_CR_MULTIPLIER - 1);
+    const fullRetargetingImprovement = (CAPI_CTR_MULTIPLIER - 1);
     
-    // For retargeting: 2x CTR improvement
-    const retargetingImprovement = affectedRetargetingRevenue * (CAPI_CTR_MULTIPLIER - 1);
+    // Chrome gets reduced benefits
+    const chromeDisplayImprovement = chromeDisplayRevenue * fullDisplayImprovement * (1 - CHROME_BENEFIT_REDUCTION);
+    const chromeVideoImprovement = chromeVideoRevenue * fullVideoImprovement * (1 - CHROME_BENEFIT_REDUCTION);
+    const chromeRetargetingImprovement = chromeRetargetingRevenue * fullRetargetingImprovement * (1 - CHROME_BENEFIT_REDUCTION);
+    
+    // Non-Chrome gets full benefits
+    const nonChromeDisplayImprovement = nonChromeDisplayRevenue * fullDisplayImprovement;
+    const nonChromeVideoImprovement = nonChromeVideoRevenue * fullVideoImprovement;
+    const nonChromeRetargetingImprovement = nonChromeRetargetingRevenue * fullRetargetingImprovement;
+    
+    // Total improvements
+    const displayImprovement = chromeDisplayImprovement + nonChromeDisplayImprovement;
+    const videoImprovement = chromeVideoImprovement + nonChromeVideoImprovement;
+    const retargetingImprovement = chromeRetargetingImprovement + nonChromeRetargetingImprovement;
     
     // Apply CPM increase penalty (35% increase reduces net benefit)
     const cpmPenaltyFactor = 1 - (CPM_INCREASE * 0.7); // Reduce impact by 70% of CPM increase
@@ -322,7 +346,7 @@ const ROICalculator = () => {
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Percentage of your inventory from Chrome browsers (remaining percentage from Safari, Firefox, and other browsers will benefit from CAPI)</p>
+                          <p>Percentage of your inventory from Chrome browsers. CAPI benefits all browsers, but Chrome inventory already has some targeting capabilities, so incremental revenue is proportionally lower (70% less) compared to Safari/Firefox inventory.</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
