@@ -161,6 +161,12 @@ const ROICalculator = () => {
     return num.toFixed(decimals);
   };
 
+  // Format Y-axis values to show in millions
+  const formatYAxisCurrency = (value: number) => {
+    const millions = value / 1000000;
+    return `$${millions.toFixed(0)}M`;
+  };
+
   const generatePDF = () => {
     if (!results) return;
     
@@ -386,13 +392,13 @@ const ROICalculator = () => {
                             // Auto-adjust other shares to maintain 100%
                             const remaining = 100 - value[0];
                             const videoRatio = videoShare[0] / (videoShare[0] + retargetingShare[0]);
-                            const newVideoShare = Math.round(remaining * videoRatio);
-                            const newRetargetingShare = remaining - newVideoShare;
+                            const newVideoShare = Math.max(0, Math.round(remaining * videoRatio));
+                            const newRetargetingShare = Math.max(0, remaining - newVideoShare);
                             setVideoShare([newVideoShare]);
                             setRetargetingShare([newRetargetingShare]);
                           }}
                           max={80}
-                          min={20}
+                          min={0}
                           step={5}
                           className="w-full"
                         />
@@ -412,10 +418,10 @@ const ROICalculator = () => {
                           onValueChange={(value) => {
                             setVideoShare(value);
                             const remaining = 100 - displayShare[0] - value[0];
-                            setRetargetingShare([remaining]);
+                            setRetargetingShare([Math.max(0, remaining)]);
                           }}
                           max={60}
-                          min={10}
+                          min={0}
                           step={5}
                           className="w-full"
                         />
@@ -435,10 +441,10 @@ const ROICalculator = () => {
                           onValueChange={(value) => {
                             setRetargetingShare(value);
                             const remaining = 100 - displayShare[0] - value[0];
-                            setVideoShare([remaining]);
+                            setVideoShare([Math.max(0, remaining)]);
                           }}
                           max={40}
-                          min={5}
+                          min={0}
                           step={5}
                           className="w-full"
                         />
@@ -520,7 +526,7 @@ const ROICalculator = () => {
                         <BarChart data={revenueChartData}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="name" />
-                          <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                          <YAxis tickFormatter={formatYAxisCurrency} />
                           <Bar 
                             dataKey="value" 
                             radius={[4, 4, 0, 0]}
@@ -530,7 +536,7 @@ const ROICalculator = () => {
                     </div>
 
                     {/* Channel Improvements */}
-                    <div>
+                    <div className="mt-8">
                       <h3 className="text-lg font-semibold mb-4" style={{ color: '#006073' }}>
                         Revenue Improvements by Channel
                       </h3>
@@ -578,7 +584,7 @@ const ROICalculator = () => {
             <Card className="max-w-2xl mx-auto shadow-lg border-0">
               <CardContent className="p-8">
                 <h2 className="text-2xl font-bold mb-4" style={{ color: '#006073' }}>
-                  Ready to transform your non-Chrome performance?
+                  Ready to create an industry-leading ad product?
                 </h2>
                 <p className="text-gray-600 mb-6">
                   Book a 15-minute working session with our team to discuss your CAPI implementation strategy.
