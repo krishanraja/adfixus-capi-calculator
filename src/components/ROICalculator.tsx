@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ interface CalculationResults {
 }
 
 const ROICalculator = () => {
-  const [annualRevenue, setAnnualRevenue] = useState<string>('5000000');
+  const [annualRevenue, setAnnualRevenue] = useState<string>('5,000,000');
   const [chromePercentage, setChromePercentage] = useState<number[]>([50]); // Changed default to 50%
   const [displayShare, setDisplayShare] = useState<number[]>([60]);
   const [videoShare, setVideoShare] = useState<number[]>([25]);
