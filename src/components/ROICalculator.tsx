@@ -279,12 +279,12 @@ const ROICalculator = () => {
         {/* Hero Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
-            {/* Large Logo */}
+            {/* Large Logo - Made 2x bigger */}
             <div className="mb-8">
               <img 
                 src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png" 
                 alt="AdFixus" 
-                className="h-16 mx-auto"
+                className="h-32 mx-auto"
               />
             </div>
             <h1 className="text-4xl font-bold mb-4" style={{ color: '#006073' }}>
@@ -338,76 +338,10 @@ const ROICalculator = () => {
                     )}
                   </div>
 
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Label>Chrome Inventory (%)</Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>An estimate of what % Chrome inventory makes up of your total.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div className="px-3">
-                      <Slider
-                        value={chromePercentage}
-                        onValueChange={setChromePercentage}
-                        max={100}
-                        min={0}
-                        step={1}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-sm text-gray-500 mt-1">
-                        <span>0%</span>
-                        <span className="font-semibold" style={{ color: '#006073' }}>{chromePercentage[0]}%</span>
-                        <span>100%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Label>% of campaigns that brief for a performance outcome</Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>An estimate of the % of your campaign briefs that have a conversion outcome.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div className="px-3">
-                      <Slider
-                        value={performanceCampaignPercentage}
-                        onValueChange={setPerformanceCampaignPercentage}
-                        max={100}
-                        min={0}
-                        step={1}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-sm text-gray-500 mt-1">
-                        <span>0%</span>
-                        <span className="font-semibold" style={{ color: '#006073' }}>{performanceCampaignPercentage[0]}%</span>
-                        <span>100%</span>
-                      </div>
-                    </div>
-                  </div>
-
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <div className="flex items-center gap-2 mb-4">
                         <Label>Display (%)</Label>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <HelpCircle className="h-4 w-4 text-gray-400" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Share of revenue from display advertising</p>
-                          </TooltipContent>
-                        </Tooltip>
                       </div>
                       <div className="px-3">
                         <Slider
@@ -476,6 +410,64 @@ const ROICalculator = () => {
                         <div className="text-center text-sm font-semibold mt-1" style={{ color: '#006073' }}>
                           {retargetingShare[0]}%
                         </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Label>Chrome Inventory (%)</Label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>An estimate of what % Chrome inventory makes up of your total.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <div className="px-3">
+                      <Slider
+                        value={chromePercentage}
+                        onValueChange={setChromePercentage}
+                        max={100}
+                        min={0}
+                        step={1}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-sm text-gray-500 mt-1">
+                        <span>0%</span>
+                        <span className="font-semibold" style={{ color: '#006073' }}>{chromePercentage[0]}%</span>
+                        <span>100%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Label>% of campaigns that brief for a performance outcome</Label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>An estimate of the % of your campaign briefs that have a conversion outcome.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <div className="px-3">
+                      <Slider
+                        value={performanceCampaignPercentage}
+                        onValueChange={setPerformanceCampaignPercentage}
+                        max={100}
+                        min={0}
+                        step={1}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-sm text-gray-500 mt-1">
+                        <span>0%</span>
+                        <span className="font-semibold" style={{ color: '#006073' }}>{performanceCampaignPercentage[0]}%</span>
+                        <span>100%</span>
                       </div>
                     </div>
                   </div>
