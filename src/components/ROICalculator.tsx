@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,7 @@ interface CalculationResults {
 
 const ROICalculator = () => {
   const [annualRevenue, setAnnualRevenue] = useState<string>('5000000');
-  const [nonChromePercentage, setNonChromePercentage] = useState<number[]>([45]);
+  const [chromePercentage, setChromePercentage] = useState<number[]>([55]); // Changed from nonChromePercentage
   const [displayShare, setDisplayShare] = useState<number[]>([60]);
   const [videoShare, setVideoShare] = useState<number[]>([25]);
   const [retargetingShare, setRetargetingShare] = useState<number[]>([15]);
@@ -91,7 +90,7 @@ const ROICalculator = () => {
     if (!validateInputs()) return;
     
     const revenue = getNumericRevenue();
-    const nonChromePercent = nonChromePercentage[0] / 100;
+    const nonChromePercent = (100 - chromePercentage[0]) / 100; // Calculate non-Chrome from Chrome percentage
     const displayPercent = displayShare[0] / 100;
     const videoPercent = videoShare[0] / 100;
     const retargetingPercent = retargetingShare[0] / 100;
@@ -185,7 +184,7 @@ const ROICalculator = () => {
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Annual Revenue: ${formatCurrency(Number(annualRevenue))}`, 20, 80);
-    pdf.text(`Non-Chrome Inventory: ${nonChromePercentage[0]}%`, 20, 95);
+    pdf.text(`Chrome Inventory: ${chromePercentage[0]}%`, 20, 95); // Updated label
     pdf.text(`Performance Campaigns: ${performanceCampaignPercentage[0]}%`, 20, 110);
     pdf.text(`Display Share: ${displayShare[0]}% | Video Share: ${videoShare[0]}% | Retargeting: ${retargetingShare[0]}%`, 20, 125);
     
@@ -310,20 +309,20 @@ const ROICalculator = () => {
 
                   <div>
                     <div className="flex items-center gap-2 mb-4">
-                      <Label>Non-Chrome Inventory (%)</Label>
+                      <Label>Chrome Inventory (%)</Label>
                       <Tooltip>
                         <TooltipTrigger>
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Percentage of your inventory from Safari, Firefox, and other non-Chrome browsers</p>
+                          <p>Percentage of your inventory from Chrome browsers (remaining percentage from Safari, Firefox, and other browsers will benefit from CAPI)</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
                     <div className="px-3">
                       <Slider
-                        value={nonChromePercentage}
-                        onValueChange={setNonChromePercentage}
+                        value={chromePercentage}
+                        onValueChange={setChromePercentage}
                         max={80}
                         min={20}
                         step={5}
@@ -331,7 +330,7 @@ const ROICalculator = () => {
                       />
                       <div className="flex justify-between text-sm text-gray-500 mt-1">
                         <span>20%</span>
-                        <span className="font-semibold" style={{ color: '#006073' }}>{nonChromePercentage[0]}%</span>
+                        <span className="font-semibold" style={{ color: '#006073' }}>{chromePercentage[0]}%</span>
                         <span>80%</span>
                       </div>
                     </div>
