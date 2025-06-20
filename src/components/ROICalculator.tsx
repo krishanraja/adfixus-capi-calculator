@@ -519,7 +519,7 @@ const ROICalculator = () => {
                     </div>
 
                     {/* Revenue Comparison Chart */}
-                    <div className="h-64">
+                    <div className="h-64 mb-16">
                       <h3 className="text-lg font-semibold mb-4" style={{ color: '#006073' }}>
                         Revenue Comparison
                       </h3>
@@ -537,7 +537,7 @@ const ROICalculator = () => {
                     </div>
 
                     {/* Channel Improvements */}
-                    <div className="mt-20">
+                    <div className="pt-8">
                       <h3 className="text-lg font-semibold mb-4" style={{ color: '#006073' }}>
                         Revenue Improvements by Channel
                       </h3>
@@ -568,7 +568,7 @@ const ROICalculator = () => {
 
                     <Button
                       onClick={generatePDF}
-                      className="w-full text-white font-semibold py-3"
+                      className="w-full text-white font-semibold py-3 mt-8"
                       style={{ backgroundColor: '#FF615A' }}
                     >
                       <Download className="w-4 h-4 mr-2" />
