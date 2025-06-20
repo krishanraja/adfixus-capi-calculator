@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -537,7 +536,7 @@ const ROICalculator = () => {
                     </div>
 
                     {/* Channel Improvements */}
-                    <div className="mt-12">
+                    <div className="mt-16">
                       <h3 className="text-lg font-semibold mb-4" style={{ color: '#006073' }}>
                         Revenue Improvements by Channel
                       </h3>
