@@ -445,13 +445,13 @@ const ROICalculator = () => {
 
                   <div>
                     <div className="flex items-center gap-2 mb-4">
-                      <Label>% of campaigns that brief for a performance outcome</Label>
+                      <Label>% of campaigns that are remarketing + conversion optimized</Label>
                       <Tooltip>
                         <TooltipTrigger>
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>An estimate of the % of your campaign briefs that have a conversion outcome.</p>
+                          <p>Add up your % of remarketing campaigns and % of conversion-optimized campaigns to get a rough estimate of campaigns eligible for CAPI benefits.</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
