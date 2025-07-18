@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -28,9 +29,11 @@ interface ROIReportRequest {
     projectedRevenue: number;
     incrementalRevenue: number;
     incrementalPercentage: number;
-    displayImprovement: number;
-    videoImprovement: number;
-    retargetingImprovement: number;
+    conversionImprovements: {
+      displayImprovement: number;
+      videoImprovement: number;
+      retargetingImprovement: number;
+    };
   };
 }
 
@@ -44,13 +47,54 @@ const formatCurrency = (amount: number): string => {
 };
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('Edge function invoked:', req.method);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log('Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { userInfo, inputs, results }: ROIReportRequest = await req.json();
+    console.log('Processing email request...');
+    
+    // Parse request body
+    const requestBody = await req.json();
+    console.log('Request body received:', JSON.stringify(requestBody, null, 2));
+    
+    const { userInfo, inputs, results }: ROIReportRequest = requestBody;
+    
+    // Validate required data
+    if (!userInfo) {
+      throw new Error('Missing userInfo in request body');
+    }
+    
+    if (!inputs) {
+      throw new Error('Missing inputs in request body');
+    }
+    
+    if (!results) {
+      throw new Error('Missing results in request body');
+    }
+    
+    console.log('Validated request data:', {
+      userInfo,
+      inputs,
+      results: {
+        currentRevenue: results.currentRevenue,
+        projectedRevenue: results.projectedRevenue,
+        incrementalRevenue: results.incrementalRevenue,
+        incrementalPercentage: results.incrementalPercentage,
+        hasConversionImprovements: !!results.conversionImprovements
+      }
+    });
+
+    // Check API key
+    const apiKey = Deno.env.get("RESEND_API_KEY");
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY is not configured');
+    }
+    console.log('API key found:', apiKey.substring(0, 10) + '...');
 
     const emailContent = `
       <h2>CAPI Impact Report - ${userInfo.firstName} ${userInfo.lastName} from ${userInfo.company}</h2>
@@ -82,11 +126,14 @@ const handler = async (req: Request): Promise<Response> => {
 
       <h3>Channel Improvements:</h3>
       <ul>
-        <li><strong>Display Improvement:</strong> ${formatCurrency(results.displayImprovement)}</li>
-        <li><strong>Video Improvement:</strong> ${formatCurrency(results.videoImprovement)}</li>
-        <li><strong>Retargeting Improvement:</strong> ${formatCurrency(results.retargetingImprovement)}</li>
+        <li><strong>Display Improvement:</strong> ${formatCurrency(results.conversionImprovements.displayImprovement)}</li>
+        <li><strong>Video Improvement:</strong> ${formatCurrency(results.conversionImprovements.videoImprovement)}</li>
+        <li><strong>Retargeting Improvement:</strong> ${formatCurrency(results.conversionImprovements.retargetingImprovement)}</li>
       </ul>
     `;
+
+    console.log('Sending email to:', userInfo.email);
+    console.log('Email content length:', emailContent.length);
 
     const emailResponse = await resend.emails.send({
       from: "CAPI Calculator <onboarding@resend.dev>",
@@ -97,7 +144,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({
+      success: true,
+      emailResponse,
+      message: "Email sent successfully"
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -106,8 +157,14 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (error: any) {
     console.error("Error in send-roi-report function:", error);
+    console.error("Error stack:", error.stack);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message,
+        details: error.stack
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

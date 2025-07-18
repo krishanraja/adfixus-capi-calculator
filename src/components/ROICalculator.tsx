@@ -114,44 +114,50 @@ const ROICalculator = () => {
     setShowContactDialog(true);
   };
 
-  const calculateROI = () => {
-    if (!validateInputs()) return;
-    
+  // Create a synchronous calculation function that returns results immediately
+  const calculateROISync = (): CalculationResults => {
     const revenue = getNumericRevenue();
     const chromePercent = chromePercentage[0] / 100;
     const displayPercent = displayShare[0] / 100;
     const videoPercent = videoShare[0] / 100;
     const performancePercent = performanceCampaignPercentage[0] / 100;
     
-    // Current revenue breakdown (retargeting is calculated as 15% of total revenue)
+    console.log('Calculating ROI with inputs:', {
+      revenue,
+      chromePercent,
+      displayPercent,
+      videoPercent,
+      performancePercent
+    });
+    
+    // Current revenue breakdown
     const currentDisplayRevenue = revenue * displayPercent;
     const currentVideoRevenue = revenue * videoPercent;
-    const currentRetargetingRevenue = revenue * 0.15; // Fixed 15% for retargeting
+    const currentRetargetingRevenue = revenue * 0.15;
     
-    // Only performance campaigns get CAPI benefits
+    // Performance campaigns only
     const performanceDisplayRevenue = currentDisplayRevenue * performancePercent;
     const performanceVideoRevenue = currentVideoRevenue * performancePercent;
     const performanceRetargetingRevenue = currentRetargetingRevenue * performancePercent;
     
-    // Calculate baseline improvements (without Chrome reduction)
+    // Base improvements
     const baseDisplayImprovement = performanceDisplayRevenue * (CAPI_CR_MULTIPLIER - 1);
     const baseVideoImprovement = performanceVideoRevenue * (CAPI_CR_MULTIPLIER - 1);
     const baseRetargetingImprovement = performanceRetargetingRevenue * (CAPI_CTR_MULTIPLIER - 1);
     
-    // Apply Chrome reduction: Chrome inventory gets 70% less benefit
+    // Chrome reduction
     const chromeReductionFactor = chromePercent * CHROME_BENEFIT_REDUCTION;
     const effectiveDisplayImprovement = baseDisplayImprovement * (1 - chromeReductionFactor);
     const effectiveVideoImprovement = baseVideoImprovement * (1 - chromeReductionFactor);
     const effectiveRetargetingImprovement = baseRetargetingImprovement * (1 - chromeReductionFactor);
     
-    // Apply CPM increase penalty: Higher CPMs reduce ROI by affecting cost efficiency
-    // 35% CPM increase reduces net benefit by 25% (less aggressive than before)
+    // CPM penalty
     const cpmPenaltyFactor = 1 / (1 + (CPM_INCREASE * 0.7));
     const netDisplayImprovement = effectiveDisplayImprovement * cpmPenaltyFactor;
     const netVideoImprovement = effectiveVideoImprovement * cpmPenaltyFactor;
     const netRetargetingImprovement = effectiveRetargetingImprovement * cpmPenaltyFactor;
     
-    // Calculate final projections
+    // Final calculations
     const projectedDisplayRevenue = currentDisplayRevenue + netDisplayImprovement;
     const projectedVideoRevenue = currentVideoRevenue + netVideoImprovement;
     const projectedRetargetingRevenue = currentRetargetingRevenue + netRetargetingImprovement;
@@ -160,7 +166,7 @@ const ROICalculator = () => {
     const incrementalRevenue = projectedRevenue - (currentDisplayRevenue + currentVideoRevenue + currentRetargetingRevenue);
     const incrementalPercentage = (incrementalRevenue / (currentDisplayRevenue + currentVideoRevenue + currentRetargetingRevenue)) * 100;
     
-    setResults({
+    const calculatedResults = {
       currentRevenue: currentDisplayRevenue + currentVideoRevenue + currentRetargetingRevenue,
       currentDisplayRevenue,
       currentVideoRevenue,
@@ -176,7 +182,16 @@ const ROICalculator = () => {
         videoImprovement: netVideoImprovement,
         retargetingImprovement: netRetargetingImprovement,
       }
-    });
+    };
+    
+    console.log('Calculated results:', calculatedResults);
+    return calculatedResults;
+  };
+
+  const calculateROI = () => {
+    if (!validateInputs()) return;
+    const calculatedResults = calculateROISync();
+    setResults(calculatedResults);
   };
 
   const formatCurrency = (amount: number) => {
@@ -221,7 +236,7 @@ const ROICalculator = () => {
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Annual Revenue: ${formatCurrency(Number(annualRevenue))}`, 20, 80);
-    pdf.text(`Chrome Inventory: ${chromePercentage[0]}%`, 20, 95); // Updated label
+    pdf.text(`Chrome Inventory: ${chromePercentage[0]}%`, 20, 95);
     pdf.text(`Performance Campaigns: ${performanceCampaignPercentage[0]}%`, 20, 110);
     pdf.text(`Display Share: ${displayShare[0]}% | Video Share: ${videoShare[0]}%`, 20, 125);
     
@@ -354,7 +369,6 @@ const ROICalculator = () => {
                           value={displayShare}
                           onValueChange={(value) => {
                             setDisplayShare(value);
-                            // Auto-adjust video to maintain 100%
                             const remaining = 100 - value[0];
                             setVideoShare([Math.max(0, remaining)]);
                           }}
@@ -654,10 +668,29 @@ const ROICalculator = () => {
                   if (contactForm.firstName && contactForm.lastName && contactForm.email && contactForm.company) {
                     setIsSubmitting(true);
                     try {
-                      calculateROI();
+                      console.log('Starting email send process...');
                       
-                      // Send email with form data and results
-                      const { error } = await supabase.functions.invoke('send-roi-report', {
+                      // Calculate results synchronously instead of relying on state
+                      const calculatedResults = calculateROISync();
+                      console.log('Calculated results for email:', calculatedResults);
+                      
+                      // Update local state for UI display
+                      setResults(calculatedResults);
+                      
+                      // Send email with calculated results
+                      console.log('Sending email with data:', {
+                        userInfo: contactForm,
+                        inputs: {
+                          annualRevenue,
+                          displayShare: displayShare[0],
+                          videoShare: videoShare[0],
+                          chromePercentage: chromePercentage[0],
+                          performanceCampaignPercentage: performanceCampaignPercentage[0]
+                        },
+                        results: calculatedResults
+                      });
+                      
+                      const { data, error } = await supabase.functions.invoke('send-roi-report', {
                         body: {
                           userInfo: contactForm,
                           inputs: {
@@ -667,18 +700,48 @@ const ROICalculator = () => {
                             chromePercentage: chromePercentage[0],
                             performanceCampaignPercentage: performanceCampaignPercentage[0]
                           },
-                          results
+                          results: calculatedResults
                         }
                       });
                       
                       if (error) {
                         console.error('Error sending email:', error);
+                        toast({
+                          title: "Error",
+                          description: `Failed to send email: ${error.message}`,
+                          variant: "destructive"
+                        });
+                      } else {
+                        console.log('Email sent successfully:', data);
+                        toast({
+                          title: "Success!",
+                          description: "Your CAPI impact report has been sent successfully.",
+                        });
+                        setShowContactDialog(false);
+                        // Reset form
+                        setContactForm({
+                          firstName: '',
+                          lastName: '',
+                          email: '',
+                          company: ''
+                        });
                       }
-                      
-                      setShowContactDialog(false);
+                    } catch (error: any) {
+                      console.error('Unexpected error:', error);
+                      toast({
+                        title: "Error",
+                        description: `An unexpected error occurred: ${error.message}`,
+                        variant: "destructive"
+                      });
                     } finally {
                       setIsSubmitting(false);
                     }
+                  } else {
+                    toast({
+                      title: "Missing Information",
+                      description: "Please fill in all required fields.",
+                      variant: "destructive"
+                    });
                   }
                 }}
                 disabled={!contactForm.firstName || !contactForm.lastName || !contactForm.email || !contactForm.company || isSubmitting}
