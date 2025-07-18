@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { HelpCircle, Download, Calendar, TrendingUp, Target, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
 
 interface CalculationResults {
@@ -40,6 +42,14 @@ const ROICalculator = () => {
   const [performanceCampaignPercentage, setPerformanceCampaignPercentage] = useState<number[]>([50]);
   const [results, setResults] = useState<CalculationResults | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showContactDialog, setShowContactDialog] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    company: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   // Constants
@@ -79,12 +89,17 @@ const ROICalculator = () => {
       newErrors.annualRevenue = 'Please enter a valid annual revenue amount';
     }
     
-    if (displayShare[0] + videoShare[0] + retargetingShare[0] !== 100) {
-      newErrors.shares = 'Revenue shares must add up to 100%';
+    if (displayShare[0] + videoShare[0] !== 100) {
+      newErrors.shares = 'Display and Video shares must add up to 100%';
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleCalculateClick = () => {
+    if (!validateInputs()) return;
+    setShowContactDialog(true);
   };
 
   const calculateROI = () => {
@@ -95,7 +110,7 @@ const ROICalculator = () => {
     const nonChromePercent = (100 - chromePercentage[0]) / 100;
     const displayPercent = displayShare[0] / 100;
     const videoPercent = videoShare[0] / 100;
-    const retargetingPercent = retargetingShare[0] / 100;
+    const retargetingPercent = 0; // Retargeting is now part of performance campaigns
     const performancePercent = performanceCampaignPercentage[0] / 100;
     
     // Current revenue breakdown
@@ -217,7 +232,7 @@ const ROICalculator = () => {
     pdf.text(`Annual Revenue: ${formatCurrency(Number(annualRevenue))}`, 20, 80);
     pdf.text(`Chrome Inventory: ${chromePercentage[0]}%`, 20, 95); // Updated label
     pdf.text(`Performance Campaigns: ${performanceCampaignPercentage[0]}%`, 20, 110);
-    pdf.text(`Display Share: ${displayShare[0]}% | Video Share: ${videoShare[0]}% | Retargeting: ${retargetingShare[0]}%`, 20, 125);
+    pdf.text(`Display Share: ${displayShare[0]}% | Video Share: ${videoShare[0]}%`, 20, 125);
     
     // Results
     pdf.setFontSize(16);
@@ -338,7 +353,7 @@ const ROICalculator = () => {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="flex items-center gap-2 mb-4">
                         <Label>Display (%)</Label>
@@ -348,13 +363,9 @@ const ROICalculator = () => {
                           value={displayShare}
                           onValueChange={(value) => {
                             setDisplayShare(value);
-                            // Auto-adjust other shares to maintain 100%
+                            // Auto-adjust video to maintain 100%
                             const remaining = 100 - value[0];
-                            const videoRatio = videoShare[0] / (videoShare[0] + retargetingShare[0]);
-                            const newVideoShare = Math.max(0, Math.round(remaining * videoRatio));
-                            const newRetargetingShare = Math.max(0, remaining - newVideoShare);
-                            setVideoShare([newVideoShare]);
-                            setRetargetingShare([newRetargetingShare]);
+                            setVideoShare([Math.max(0, remaining)]);
                           }}
                           max={100}
                           min={0}
@@ -376,8 +387,8 @@ const ROICalculator = () => {
                           value={videoShare}
                           onValueChange={(value) => {
                             setVideoShare(value);
-                            const remaining = 100 - displayShare[0] - value[0];
-                            setRetargetingShare([Math.max(0, remaining)]);
+                            const remaining = 100 - value[0];
+                            setDisplayShare([Math.max(0, remaining)]);
                           }}
                           max={100}
                           min={0}
@@ -386,29 +397,6 @@ const ROICalculator = () => {
                         />
                         <div className="text-center text-sm font-semibold mt-1" style={{ color: '#006073' }}>
                           {videoShare[0]}%
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <Label>Retargeting (%)</Label>
-                      </div>
-                      <div className="px-3">
-                        <Slider
-                          value={retargetingShare}
-                          onValueChange={(value) => {
-                            setRetargetingShare(value);
-                            const remaining = 100 - displayShare[0] - value[0];
-                            setVideoShare([Math.max(0, remaining)]);
-                          }}
-                          max={100}
-                          min={0}
-                          step={5}
-                          className="w-full"
-                        />
-                        <div className="text-center text-sm font-semibold mt-1" style={{ color: '#006073' }}>
-                          {retargetingShare[0]}%
                         </div>
                       </div>
                     </div>
@@ -477,7 +465,7 @@ const ROICalculator = () => {
                   )}
 
                   <Button 
-                    onClick={calculateROI}
+                    onClick={handleCalculateClick}
                     className="w-full text-white font-semibold py-3"
                     style={{ backgroundColor: '#00C7B1' }}
                   >
@@ -617,6 +605,101 @@ const ROICalculator = () => {
             </Card>
           </div>
         </div>
+
+        {/* Contact Form Dialog */}
+        <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold" style={{ color: '#006073' }}>
+                Get Your CAPI Impact Report
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="firstName">First Name *</Label>
+                  <Input
+                    id="firstName"
+                    value={contactForm.firstName}
+                    onChange={(e) => setContactForm({...contactForm, firstName: e.target.value})}
+                    placeholder="John"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Input
+                    id="lastName"
+                    value={contactForm.lastName}
+                    onChange={(e) => setContactForm({...contactForm, lastName: e.target.value})}
+                    placeholder="Doe"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={contactForm.email}
+                  onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                  placeholder="john@company.com"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="company">Company *</Label>
+                <Input
+                  id="company"
+                  value={contactForm.company}
+                  onChange={(e) => setContactForm({...contactForm, company: e.target.value})}
+                  placeholder="Your Company"
+                  required
+                />
+              </div>
+              <Button 
+                onClick={async () => {
+                  if (contactForm.firstName && contactForm.lastName && contactForm.email && contactForm.company) {
+                    setIsSubmitting(true);
+                    try {
+                      calculateROI();
+                      
+                      // Send email with form data and results
+                      const { error } = await supabase.functions.invoke('send-roi-report', {
+                        body: {
+                          userInfo: contactForm,
+                          inputs: {
+                            annualRevenue,
+                            displayShare: displayShare[0],
+                            videoShare: videoShare[0],
+                            chromePercentage: chromePercentage[0],
+                            performanceCampaignPercentage: performanceCampaignPercentage[0]
+                          },
+                          results
+                        }
+                      });
+                      
+                      if (error) {
+                        console.error('Error sending email:', error);
+                      }
+                      
+                      setShowContactDialog(false);
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }
+                }}
+                disabled={!contactForm.firstName || !contactForm.lastName || !contactForm.email || !contactForm.company || isSubmitting}
+                className="w-full text-white font-semibold"
+                style={{ backgroundColor: '#00C7B1' }}
+              >
+                {isSubmitting ? 'Generating Report...' : 'Get My Report'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
       </div>
     </TooltipProvider>
   );
