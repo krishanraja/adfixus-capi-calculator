@@ -89,8 +89,20 @@ const ROICalculator = () => {
       newErrors.annualRevenue = 'Please enter a valid annual revenue amount';
     }
     
-    if (displayShare[0] + videoShare[0] !== 100) {
+    if (numericRevenue < 100000) {
+      newErrors.annualRevenue = 'Revenue must be at least $100,000';
+    }
+    
+    if (Math.abs(displayShare[0] + videoShare[0] - 100) > 0.1) {
       newErrors.shares = 'Display and Video shares must add up to 100%';
+    }
+    
+    if (chromePercentage[0] < 0 || chromePercentage[0] > 100) {
+      newErrors.chrome = 'Chrome percentage must be between 0% and 100%';
+    }
+    
+    if (performanceCampaignPercentage[0] < 0 || performanceCampaignPercentage[0] > 100) {
+      newErrors.performance = 'Performance campaign percentage must be between 0% and 100%';
     }
     
     setErrors(newErrors);
@@ -107,70 +119,49 @@ const ROICalculator = () => {
     
     const revenue = getNumericRevenue();
     const chromePercent = chromePercentage[0] / 100;
-    const nonChromePercent = (100 - chromePercentage[0]) / 100;
     const displayPercent = displayShare[0] / 100;
     const videoPercent = videoShare[0] / 100;
-    const retargetingPercent = 0; // Retargeting is now part of performance campaigns
     const performancePercent = performanceCampaignPercentage[0] / 100;
     
-    // Current revenue breakdown
+    // Current revenue breakdown (retargeting is calculated as 15% of total revenue)
     const currentDisplayRevenue = revenue * displayPercent;
     const currentVideoRevenue = revenue * videoPercent;
-    const currentRetargetingRevenue = revenue * retargetingPercent;
+    const currentRetargetingRevenue = revenue * 0.15; // Fixed 15% for retargeting
     
-    // Calculate CAPI benefits for all inventory (Chrome and non-Chrome)
+    // Only performance campaigns get CAPI benefits
     const performanceDisplayRevenue = currentDisplayRevenue * performancePercent;
     const performanceVideoRevenue = currentVideoRevenue * performancePercent;
     const performanceRetargetingRevenue = currentRetargetingRevenue * performancePercent;
     
-    // Chrome inventory gets reduced benefits (70% less incremental revenue)
-    const chromeDisplayRevenue = performanceDisplayRevenue * chromePercent;
-    const chromeVideoRevenue = performanceVideoRevenue * chromePercent;
-    const chromeRetargetingRevenue = performanceRetargetingRevenue * chromePercent;
+    // Calculate baseline improvements (without Chrome reduction)
+    const baseDisplayImprovement = performanceDisplayRevenue * (CAPI_CR_MULTIPLIER - 1);
+    const baseVideoImprovement = performanceVideoRevenue * (CAPI_CR_MULTIPLIER - 1);
+    const baseRetargetingImprovement = performanceRetargetingRevenue * (CAPI_CTR_MULTIPLIER - 1);
     
-    // Non-Chrome inventory gets full benefits
-    const nonChromeDisplayRevenue = performanceDisplayRevenue * nonChromePercent;
-    const nonChromeVideoRevenue = performanceVideoRevenue * nonChromePercent;
-    const nonChromeRetargetingRevenue = performanceRetargetingRevenue * nonChromePercent;
+    // Apply Chrome reduction: Chrome inventory gets 70% less benefit
+    const chromeReductionFactor = chromePercent * CHROME_BENEFIT_REDUCTION;
+    const effectiveDisplayImprovement = baseDisplayImprovement * (1 - chromeReductionFactor);
+    const effectiveVideoImprovement = baseVideoImprovement * (1 - chromeReductionFactor);
+    const effectiveRetargetingImprovement = baseRetargetingImprovement * (1 - chromeReductionFactor);
     
-    // Calculate improvements with CAPI
-    // For display and video: 3x conversion rate improvement
-    const fullDisplayImprovement = (CAPI_CR_MULTIPLIER - 1);
-    const fullVideoImprovement = (CAPI_CR_MULTIPLIER - 1);
-    const fullRetargetingImprovement = (CAPI_CTR_MULTIPLIER - 1);
+    // Apply CPM increase penalty: Higher CPMs reduce ROI by affecting cost efficiency
+    // 35% CPM increase reduces net benefit by 25% (less aggressive than before)
+    const cpmPenaltyFactor = 1 / (1 + (CPM_INCREASE * 0.7));
+    const netDisplayImprovement = effectiveDisplayImprovement * cpmPenaltyFactor;
+    const netVideoImprovement = effectiveVideoImprovement * cpmPenaltyFactor;
+    const netRetargetingImprovement = effectiveRetargetingImprovement * cpmPenaltyFactor;
     
-    // Chrome gets reduced benefits
-    const chromeDisplayImprovement = chromeDisplayRevenue * fullDisplayImprovement * (1 - CHROME_BENEFIT_REDUCTION);
-    const chromeVideoImprovement = chromeVideoRevenue * fullVideoImprovement * (1 - CHROME_BENEFIT_REDUCTION);
-    const chromeRetargetingImprovement = chromeRetargetingRevenue * fullRetargetingImprovement * (1 - CHROME_BENEFIT_REDUCTION);
-    
-    // Non-Chrome gets full benefits
-    const nonChromeDisplayImprovement = nonChromeDisplayRevenue * fullDisplayImprovement;
-    const nonChromeVideoImprovement = nonChromeVideoRevenue * fullVideoImprovement;
-    const nonChromeRetargetingImprovement = nonChromeRetargetingRevenue * fullRetargetingImprovement;
-    
-    // Total improvements
-    const displayImprovement = chromeDisplayImprovement + nonChromeDisplayImprovement;
-    const videoImprovement = chromeVideoImprovement + nonChromeVideoImprovement;
-    const retargetingImprovement = chromeRetargetingImprovement + nonChromeRetargetingImprovement;
-    
-    // Apply CPM increase penalty (35% increase reduces net benefit)
-    const cpmPenaltyFactor = 1 - (CPM_INCREASE * 0.7); // Reduce impact by 70% of CPM increase
-    const netDisplayImprovement = displayImprovement * cpmPenaltyFactor;
-    const netVideoImprovement = videoImprovement * cpmPenaltyFactor;
-    const netRetargetingImprovement = retargetingImprovement * cpmPenaltyFactor;
-    
-    // Calculate projections
+    // Calculate final projections
     const projectedDisplayRevenue = currentDisplayRevenue + netDisplayImprovement;
     const projectedVideoRevenue = currentVideoRevenue + netVideoImprovement;
     const projectedRetargetingRevenue = currentRetargetingRevenue + netRetargetingImprovement;
     
     const projectedRevenue = projectedDisplayRevenue + projectedVideoRevenue + projectedRetargetingRevenue;
-    const incrementalRevenue = projectedRevenue - revenue;
-    const incrementalPercentage = (incrementalRevenue / revenue) * 100;
+    const incrementalRevenue = projectedRevenue - (currentDisplayRevenue + currentVideoRevenue + currentRetargetingRevenue);
+    const incrementalPercentage = (incrementalRevenue / (currentDisplayRevenue + currentVideoRevenue + currentRetargetingRevenue)) * 100;
     
     setResults({
-      currentRevenue: revenue,
+      currentRevenue: currentDisplayRevenue + currentVideoRevenue + currentRetargetingRevenue,
       currentDisplayRevenue,
       currentVideoRevenue,
       currentRetargetingRevenue,
