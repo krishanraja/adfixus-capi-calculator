@@ -40,7 +40,6 @@ const ROICalculator = () => {
   const [videoShare, setVideoShare] = useState<number[]>([25]);
   const [retargetingShare, setRetargetingShare] = useState<number[]>([15]);
   const [performanceCampaignPercentage, setPerformanceCampaignPercentage] = useState<number[]>([50]);
-  const [publisherYieldOptimization, setPublisherYieldOptimization] = useState<number[]>([60]);
   const [results, setResults] = useState<CalculationResults | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -61,6 +60,7 @@ const ROICalculator = () => {
   const CAPI_CTR_MULTIPLIER = 2; // CAPI doubles CTR for retargeting
   const CPM_INCREASE = 0.35; // 35% CPM increase
   const CHROME_BENEFIT_REDUCTION = 0.7; // Chrome benefits are reduced by 70%
+  const PUBLISHER_UPSELL_SUCCESS_RATE = 0.375; // Only 37.5% of eligible campaigns get successfully upsold to CAPI
 
   const formatCurrencyInput = (value: string) => {
     // Remove all non-digit characters
@@ -107,10 +107,6 @@ const ROICalculator = () => {
       newErrors.performance = 'Performance campaign percentage must be between 0% and 100%';
     }
     
-    if (publisherYieldOptimization[0] < 20 || publisherYieldOptimization[0] > 80) {
-      newErrors.publisherYield = 'Publisher yield optimization must be between 20% and 80%';
-    }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -127,7 +123,6 @@ const ROICalculator = () => {
     const displayPercent = displayShare[0] / 100;
     const videoPercent = videoShare[0] / 100;
     const performancePercent = performanceCampaignPercentage[0] / 100;
-    const publisherYieldPercent = publisherYieldOptimization[0] / 100;
     
     console.log('Calculating ROI with inputs:', {
       revenue,
@@ -158,9 +153,9 @@ const ROICalculator = () => {
     const effectiveVideoImprovement = baseVideoImprovement * (1 - chromeReductionFactor);
     const effectiveRetargetingImprovement = baseRetargetingImprovement * (1 - chromeReductionFactor);
     
-    // CPM penalty and publisher yield optimization
+    // CPM penalty and publisher upsell success rate constraint
     const cpmPenaltyFactor = 1 / (1 + (CPM_INCREASE * 0.7));
-    const publisherConstraintFactor = publisherYieldPercent; // Higher yield = more inventory available
+    const publisherConstraintFactor = PUBLISHER_UPSELL_SUCCESS_RATE; // Only 37.5% of campaigns get upsold
     
     const netDisplayImprovement = effectiveDisplayImprovement * cpmPenaltyFactor * publisherConstraintFactor;
     const netVideoImprovement = effectiveVideoImprovement * cpmPenaltyFactor * publisherConstraintFactor;
@@ -248,7 +243,6 @@ const ROICalculator = () => {
     pdf.text(`Chrome Inventory: ${chromePercentage[0]}%`, 20, 95);
     pdf.text(`Performance Campaigns: ${performanceCampaignPercentage[0]}%`, 20, 110);
     pdf.text(`Display Share: ${displayShare[0]}% | Web Video Share: ${videoShare[0]}%`, 20, 125);
-    pdf.text(`Publisher Yield Optimization: ${publisherYieldOptimization[0]}%`, 20, 140);
     
     // Results
     pdf.setFontSize(16);
@@ -475,34 +469,6 @@ const ROICalculator = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Label>Publisher Yield Optimization (%)</Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Premium inventory availability for high-performing CAPI campaigns. Higher performance may reduce publisher sell-through at scale.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div className="px-3">
-                      <Slider
-                        value={publisherYieldOptimization}
-                        onValueChange={setPublisherYieldOptimization}
-                        max={80}
-                        min={20}
-                        step={5}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-sm text-gray-500 mt-1">
-                        <span>20%</span>
-                        <span className="font-semibold" style={{ color: '#006073' }}>{publisherYieldOptimization[0]}%</span>
-                        <span>80%</span>
-                      </div>
-                    </div>
-                  </div>
 
                   {errors.shares && (
                     <p className="text-sm text-red-500 text-center">{errors.shares}</p>
@@ -724,8 +690,7 @@ const ROICalculator = () => {
                             displayShare: displayShare[0],
                             videoShare: videoShare[0],
                             chromePercentage: chromePercentage[0],
-                            performanceCampaignPercentage: performanceCampaignPercentage[0],
-                            publisherYieldOptimization: publisherYieldOptimization[0]
+                            performanceCampaignPercentage: performanceCampaignPercentage[0]
                           },
                         results: calculatedResults
                       });
@@ -738,8 +703,7 @@ const ROICalculator = () => {
                             displayShare: displayShare[0],
                             videoShare: videoShare[0],
                             chromePercentage: chromePercentage[0],
-                            performanceCampaignPercentage: performanceCampaignPercentage[0],
-                            publisherYieldOptimization: publisherYieldOptimization[0]
+                            performanceCampaignPercentage: performanceCampaignPercentage[0]
                           },
                           results: calculatedResults
                         }
