@@ -1,270 +1,61 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { HelpCircle, Download, Calendar, TrendingUp, Target, Zap } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import jsPDF from 'jspdf';
-
-interface CalculationResults {
-  currentRevenue: number;
-  currentDisplayRevenue: number;
-  currentVideoRevenue: number;
-  currentRetargetingRevenue: number;
-  
-  projectedRevenue: number;
-  projectedDisplayRevenue: number;
-  projectedVideoRevenue: number;
-  projectedRetargetingRevenue: number;
-  
-  incrementalRevenue: number;
-  incrementalPercentage: number;
-  
-  conversionImprovements: {
-    displayImprovement: number;
-    videoImprovement: number;
-    retargetingImprovement: number;
-  };
-}
+import { useROICalculator } from '@/hooks/useROICalculator';
+import { useContactForm } from '@/hooks/useContactForm';
+import { ROIInputForm } from './roi/ROIInputForm';
+import { ROIResults } from './roi/ROIResults';
+import { ContactDialog } from './roi/ContactDialog';
+import { generatePDF } from '@/utils/pdfGenerator';
 
 const ROICalculator = () => {
-  const [annualRevenue, setAnnualRevenue] = useState<string>('5,000,000');
-  const [chromePercentage, setChromePercentage] = useState<number[]>([50]);
-  const [displayShare, setDisplayShare] = useState<number[]>([60]);
-  const [videoShare, setVideoShare] = useState<number[]>([25]);
-  const [retargetingShare, setRetargetingShare] = useState<number[]>([15]);
-  const [performanceCampaignPercentage, setPerformanceCampaignPercentage] = useState<number[]>([50]);
-  const [results, setResults] = useState<CalculationResults | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showContactDialog, setShowContactDialog] = useState(false);
-  const [contactForm, setContactForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    company: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const {
+    annualRevenue,
+    chromePercentage,
+    displayShare,
+    videoShare,
+    performanceCampaignPercentage,
+    results,
+    errors,
+    setAnnualRevenue,
+    setChromePercentage,
+    setPerformanceCampaignPercentage,
+    handleDisplayShareChange,
+    handleVideoShareChange,
+    validateInputs,
+    calculateROIResults,
+    getROIInputs,
+  } = useROICalculator();
 
-  // Constants
-  const BASELINE_DISPLAY_CR = 2.58; // 2.58%
-  const BASELINE_VIDEO_CR = 4.17; // 4.17%
-  const DISPLAY_CAPI_CR_MULTIPLIER = 3; // Display CAPI triples conversion rates
-  const WEB_VIDEO_CAPI_CR_MULTIPLIER = 1.3; // Web video CAPI has modest 30% improvement (branding focus)
-  const CAPI_CTR_MULTIPLIER = 2; // CAPI doubles CTR for retargeting
-  const CPM_INCREASE = 0.35; // 35% CPM increase
-  const CHROME_BENEFIT_REDUCTION = 0.7; // Chrome benefits are reduced by 70%
-  const PUBLISHER_UPSELL_SUCCESS_RATE = 0.375; // Only 37.5% of eligible campaigns get successfully upsold to CAPI
-
-  const formatCurrencyInput = (value: string) => {
-    // Remove all non-digit characters
-    const numericValue = value.replace(/[^\d]/g, '');
-    
-    // Convert to number and format with commas
-    if (numericValue === '') return '';
-    
-    const number = parseInt(numericValue);
-    return new Intl.NumberFormat('en-US').format(number);
-  };
-
-  const handleRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    const formattedValue = formatCurrencyInput(inputValue);
-    setAnnualRevenue(formattedValue);
-  };
-
-  const getNumericRevenue = () => {
-    return parseInt(annualRevenue.replace(/[^\d]/g, '')) || 0;
-  };
-
-  const validateInputs = () => {
-    const newErrors: Record<string, string> = {};
-    
-    const numericRevenue = getNumericRevenue();
-    if (!annualRevenue || numericRevenue <= 0) {
-      newErrors.annualRevenue = 'Please enter a valid annual revenue amount';
-    }
-    
-    if (numericRevenue < 100000) {
-      newErrors.annualRevenue = 'Revenue must be at least $100,000';
-    }
-    
-    if (Math.abs(displayShare[0] + videoShare[0] - 100) > 0.1) {
-      newErrors.shares = 'Display and Video shares must add up to 100%';
-    }
-    
-    if (chromePercentage[0] < 0 || chromePercentage[0] > 100) {
-      newErrors.chrome = 'Chrome percentage must be between 0% and 100%';
-    }
-    
-    if (performanceCampaignPercentage[0] < 0 || performanceCampaignPercentage[0] > 100) {
-      newErrors.performance = 'Performance campaign percentage must be between 0% and 100%';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const {
+    showContactDialog,
+    setShowContactDialog,
+    contactForm,
+    updateContactForm,
+    isSubmitting,
+    isFormValid,
+    submitContactForm,
+  } = useContactForm();
 
   const handleCalculateClick = () => {
     if (!validateInputs()) return;
     setShowContactDialog(true);
   };
 
-  // Create a synchronous calculation function that returns results immediately
-  const calculateROISync = (): CalculationResults => {
-    const revenue = getNumericRevenue();
-    const chromePercent = chromePercentage[0] / 100;
-    const displayPercent = displayShare[0] / 100;
-    const videoPercent = videoShare[0] / 100;
-    const performancePercent = performanceCampaignPercentage[0] / 100;
-    
-    console.log('Calculating ROI with inputs:', {
-      revenue,
-      chromePercent,
-      displayPercent,
-      videoPercent,
-      performancePercent
-    });
-    
-    // Current revenue breakdown
-    const currentDisplayRevenue = revenue * displayPercent;
-    const currentVideoRevenue = revenue * videoPercent;
-    const currentRetargetingRevenue = revenue * 0.15;
-    
-    // Performance campaigns only
-    const performanceDisplayRevenue = currentDisplayRevenue * performancePercent;
-    const performanceVideoRevenue = currentVideoRevenue * performancePercent;
-    const performanceRetargetingRevenue = currentRetargetingRevenue * performancePercent;
-    
-    // Base improvements
-    const baseDisplayImprovement = performanceDisplayRevenue * (DISPLAY_CAPI_CR_MULTIPLIER - 1);
-    const baseVideoImprovement = performanceVideoRevenue * (WEB_VIDEO_CAPI_CR_MULTIPLIER - 1);
-    const baseRetargetingImprovement = performanceRetargetingRevenue * (CAPI_CTR_MULTIPLIER - 1);
-    
-    // Chrome reduction
-    const chromeReductionFactor = chromePercent * CHROME_BENEFIT_REDUCTION;
-    const effectiveDisplayImprovement = baseDisplayImprovement * (1 - chromeReductionFactor);
-    const effectiveVideoImprovement = baseVideoImprovement * (1 - chromeReductionFactor);
-    const effectiveRetargetingImprovement = baseRetargetingImprovement * (1 - chromeReductionFactor);
-    
-    // CPM penalty and publisher upsell success rate constraint
-    const cpmPenaltyFactor = 1 / (1 + (CPM_INCREASE * 0.7));
-    const publisherConstraintFactor = PUBLISHER_UPSELL_SUCCESS_RATE; // Only 37.5% of campaigns get upsold
-    
-    const netDisplayImprovement = effectiveDisplayImprovement * cpmPenaltyFactor * publisherConstraintFactor;
-    const netVideoImprovement = effectiveVideoImprovement * cpmPenaltyFactor * publisherConstraintFactor;
-    const netRetargetingImprovement = effectiveRetargetingImprovement * cpmPenaltyFactor * publisherConstraintFactor;
-    
-    // Final calculations
-    const projectedDisplayRevenue = currentDisplayRevenue + netDisplayImprovement;
-    const projectedVideoRevenue = currentVideoRevenue + netVideoImprovement;
-    const projectedRetargetingRevenue = currentRetargetingRevenue + netRetargetingImprovement;
-    
-    const projectedRevenue = projectedDisplayRevenue + projectedVideoRevenue + projectedRetargetingRevenue;
-    const incrementalRevenue = projectedRevenue - (currentDisplayRevenue + currentVideoRevenue + currentRetargetingRevenue);
-    const incrementalPercentage = (incrementalRevenue / (currentDisplayRevenue + currentVideoRevenue + currentRetargetingRevenue)) * 100;
-    
-    const calculatedResults = {
-      currentRevenue: currentDisplayRevenue + currentVideoRevenue + currentRetargetingRevenue,
-      currentDisplayRevenue,
-      currentVideoRevenue,
-      currentRetargetingRevenue,
-      projectedRevenue,
-      projectedDisplayRevenue,
-      projectedVideoRevenue,
-      projectedRetargetingRevenue,
-      incrementalRevenue,
-      incrementalPercentage,
-      conversionImprovements: {
-        displayImprovement: netDisplayImprovement,
-        videoImprovement: netVideoImprovement,
-        retargetingImprovement: netRetargetingImprovement,
-      }
-    };
-    
-    console.log('Calculated results:', calculatedResults);
-    return calculatedResults;
+  const handleContactSubmit = async () => {
+    const inputs = getROIInputs();
+    const calculatedResults = calculateROIResults();
+    await submitContactForm(inputs, calculatedResults);
   };
 
-  const calculateROI = () => {
-    if (!validateInputs()) return;
-    const calculatedResults = calculateROISync();
-    setResults(calculatedResults);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatNumber = (num: number, decimals = 1) => {
-    return num.toFixed(decimals);
-  };
-
-  // Format Y-axis values to show in millions
-  const formatYAxisCurrency = (value: number) => {
-    const millions = value / 1000000;
-    return `$${millions.toFixed(0)}M`;
-  };
-
-  const generatePDF = () => {
+  const handleGeneratePDF = () => {
     if (!results) return;
     
-    const pdf = new jsPDF();
-    const date = new Date().toISOString().split('T')[0];
-    
-    // Header
-    pdf.setFontSize(20);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('AdFixus CAPI Revenue Impact Analysis', 20, 30);
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
-    
-    // Inputs
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Current Setup:', 20, 65);
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Annual Revenue: ${formatCurrency(Number(annualRevenue))}`, 20, 80);
-    pdf.text(`Chrome Inventory: ${chromePercentage[0]}%`, 20, 95);
-    pdf.text(`Performance Campaigns: ${performanceCampaignPercentage[0]}%`, 20, 110);
-    pdf.text(`Display Share: ${displayShare[0]}% | Web Video Share: ${videoShare[0]}%`, 20, 125);
-    
-    // Results
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('CAPI Impact Results:', 20, 150);
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Incremental Annual Revenue: ${formatCurrency(results.incrementalRevenue)} (+${formatNumber(results.incrementalPercentage)}%)`, 20, 165);
-    pdf.text(`Projected Total Revenue: ${formatCurrency(results.projectedRevenue)}`, 20, 180);
-    
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Revenue Improvements by Channel:', 20, 205);
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Display: ${formatCurrency(results.conversionImprovements.displayImprovement)}`, 20, 220);
-    pdf.text(`Web Video: ${formatCurrency(results.conversionImprovements.videoImprovement)} (+30% data quality)`, 20, 235);
-    pdf.text(`Retargeting: ${formatCurrency(results.conversionImprovements.retargetingImprovement)}`, 20, 250);
-    
-    pdf.save(`AdFixus_CAPI_Analysis_${date}.pdf`);
+    const inputs = getROIInputs();
+    generatePDF(inputs, results);
     
     toast({
       title: "PDF Generated!",
@@ -272,22 +63,11 @@ const ROICalculator = () => {
     });
   };
 
-  const revenueChartData = results ? [
-    { name: 'Current', value: results.currentRevenue, fill: '#94A3B8' },
-    { name: 'With CAPI', value: results.projectedRevenue, fill: '#006073' },
-  ] : [];
-
-  const improvementData = results ? [
-    { name: 'Display', value: results.conversionImprovements.displayImprovement, fill: '#00C7B1' },
-    { name: 'Web Video', value: results.conversionImprovements.videoImprovement, fill: '#FF615A' },
-    { name: 'Retargeting', value: results.conversionImprovements.retargetingImprovement, fill: '#8B5CF6' },
-  ] : [];
-
   return (
     <TooltipProvider>
-      <div className="min-h-screen" style={{ backgroundColor: '#F7F9FA' }}>
+      <div className="min-h-screen bg-background">
         {/* Header */}
-        <div className="border-b bg-white">
+        <div className="border-b bg-card">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center">
@@ -304,7 +84,7 @@ const ROICalculator = () => {
         {/* Hero Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
-            {/* Large Logo - Made 2x bigger */}
+            {/* Large Logo */}
             <div className="mb-8">
               <img 
                 src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png" 
@@ -312,285 +92,38 @@ const ROICalculator = () => {
                 className="h-32 mx-auto"
               />
             </div>
-            <h1 className="text-4xl font-bold mb-4" style={{ color: '#006073' }}>
+            <h1 className="text-4xl font-bold mb-4 text-brand-primary">
               The industry's only deterministic<br />
               Open Web Conversion API
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               See how enabling CAPI for can transform your business with improved conversion rates, better targeting and deterministic outcomes measurement.
             </p>
           </div>
 
           {/* Calculator Grid */}
           <div className="space-y-8">
-            {/* Input Card - Centered */}
-            <div className="max-w-2xl mx-auto">
-              <Card className="shadow-lg border-0">
-                <CardHeader>
-                  <CardTitle className="text-2xl flex items-center gap-2" style={{ color: '#006073' }}>
-                    <Target className="h-6 w-6" />
-                    Your Revenue Profile
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Label htmlFor="revenue">Annual Revenue (excluding app inventory)</Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>An estimate of your annual web-based ad revenue.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
-                        $
-                      </span>
-                      <Input
-                        id="revenue"
-                        type="text"
-                        value={annualRevenue}
-                        onChange={handleRevenueChange}
-                        placeholder="5,000,000"
-                        className={`pl-8 ${errors.annualRevenue ? 'border-red-500' : ''}`}
-                      />
-                    </div>
-                    {errors.annualRevenue && (
-                      <p className="text-sm text-red-500 mt-1">{errors.annualRevenue}</p>
-                    )}
-                  </div>
+            <ROIInputForm
+              annualRevenue={annualRevenue}
+              onAnnualRevenueChange={setAnnualRevenue}
+              chromePercentage={chromePercentage}
+              onChromePercentageChange={setChromePercentage}
+              displayShare={displayShare}
+              onDisplayShareChange={handleDisplayShareChange}
+              videoShare={videoShare}
+              onVideoShareChange={handleVideoShareChange}
+              performanceCampaignPercentage={performanceCampaignPercentage}
+              onPerformanceCampaignPercentageChange={setPerformanceCampaignPercentage}
+              errors={errors}
+              onCalculateClick={handleCalculateClick}
+            />
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <Label>Display (%)</Label>
-                      </div>
-                      <div className="px-3">
-                        <Slider
-                          value={displayShare}
-                          onValueChange={(value) => {
-                            setDisplayShare(value);
-                            const remaining = 100 - value[0];
-                            setVideoShare([Math.max(0, remaining)]);
-                          }}
-                          max={100}
-                          min={0}
-                          step={5}
-                          className="w-full"
-                        />
-                        <div className="text-center text-sm font-semibold mt-1" style={{ color: '#006073' }}>
-                          {displayShare[0]}%
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <Label>Web Video (%)</Label>
-                      </div>
-                      <div className="px-3">
-                        <Slider
-                          value={videoShare}
-                          onValueChange={(value) => {
-                            setVideoShare(value);
-                            const remaining = 100 - value[0];
-                            setDisplayShare([Math.max(0, remaining)]);
-                          }}
-                          max={100}
-                          min={0}
-                          step={5}
-                          className="w-full"
-                        />
-                        <div className="text-center text-sm font-semibold mt-1" style={{ color: '#006073' }}>
-                          {videoShare[0]}%
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Label>Chrome Inventory (%)</Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>An estimate of what % Chrome inventory makes up of your total.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div className="px-3">
-                      <Slider
-                        value={chromePercentage}
-                        onValueChange={setChromePercentage}
-                        max={100}
-                        min={0}
-                        step={1}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-sm text-gray-500 mt-1">
-                        <span>0%</span>
-                        <span className="font-semibold" style={{ color: '#006073' }}>{chromePercentage[0]}%</span>
-                        <span>100%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Label>% of campaigns that are remarketing + conversion optimized</Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Add up your % of remarketing campaigns and % of conversion-optimized campaigns to get a rough estimate of campaigns eligible for CAPI benefits.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div className="px-3">
-                      <Slider
-                        value={performanceCampaignPercentage}
-                        onValueChange={setPerformanceCampaignPercentage}
-                        max={100}
-                        min={0}
-                        step={1}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-sm text-gray-500 mt-1">
-                        <span>0%</span>
-                        <span className="font-semibold" style={{ color: '#006073' }}>{performanceCampaignPercentage[0]}%</span>
-                        <span>100%</span>
-                      </div>
-                    </div>
-                  </div>
-
-
-                  {errors.shares && (
-                    <p className="text-sm text-red-500 text-center">{errors.shares}</p>
-                  )}
-
-                  <Button 
-                    onClick={handleCalculateClick}
-                    className="w-full text-white font-semibold py-3"
-                    style={{ backgroundColor: '#00C7B1' }}
-                  >
-                    <Zap className="w-4 h-4 mr-2" />
-                    Calculate CAPI Impact
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Results Card */}
             {results && (
-              <div className="max-w-2xl mx-auto">
-                <Card className="shadow-lg border-0">
-                  <CardHeader>
-                    <CardTitle className="text-2xl flex items-center gap-2" style={{ color: '#006073' }}>
-                      <TrendingUp className="h-6 w-6" />
-                      Your CAPI Revenue Impact
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                        <p className="text-sm text-gray-600">Incremental Annual Revenue</p>
-                        <p className="text-2xl font-bold" style={{ color: '#006073' }}>
-                          {formatCurrency(results.incrementalRevenue)}
-                        </p>
-                        <p className="text-sm font-medium" style={{ color: '#00C7B1' }}>
-                          +{formatNumber(results.incrementalPercentage)}%
-                        </p>
-                      </div>
-                      
-                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                        <p className="text-sm text-gray-600">Projected Total Revenue</p>
-                        <p className="text-2xl font-bold" style={{ color: '#006073' }}>
-                          {formatCurrency(results.projectedRevenue)}
-                        </p>
-                      </div>
-                      
-                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                        <p className="text-sm text-gray-600">Performance Campaigns</p>
-                        <p className="text-2xl font-bold" style={{ color: '#006073' }}>
-                          {performanceCampaignPercentage[0]}%
-                        </p>
-                        <p className="text-sm text-gray-500">eligible for CAPI</p>
-                      </div>
-                      
-                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                        <p className="text-sm text-gray-600">Revenue Uplift</p>
-                        <p className="text-2xl font-bold" style={{ color: '#00C7B1' }}>
-                          {formatNumber(results.incrementalPercentage)}%
-                        </p>
-                        <p className="text-sm text-gray-500">improvement</p>
-                      </div>
-                    </div>
-
-                    {/* Revenue Comparison Chart */}
-                    <div className="h-64 mb-16">
-                      <h3 className="text-lg font-semibold mb-4" style={{ color: '#006073' }}>
-                        Revenue Comparison
-                      </h3>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={revenueChartData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis tickFormatter={formatYAxisCurrency} />
-                          <Bar 
-                            dataKey="value" 
-                            radius={[4, 4, 0, 0]}
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    {/* Channel Improvements */}
-                    <div className="pt-8">
-                      <h3 className="text-lg font-semibold mb-4" style={{ color: '#006073' }}>
-                        Revenue Improvements by Channel
-                      </h3>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="text-center p-3 rounded-lg" style={{ backgroundColor: '#F0FDFC' }}>
-                          <p className="text-sm text-gray-600 mb-1">Display</p>
-                          <p className="font-semibold" style={{ color: '#00C7B1' }}>
-                            {formatCurrency(results.conversionImprovements.displayImprovement)}
-                          </p>
-                          <p className="text-xs text-gray-500">3x conversion rate</p>
-                        </div>
-                        <div className="text-center p-3 rounded-lg" style={{ backgroundColor: '#FFF5F5' }}>
-                          <p className="text-sm text-gray-600 mb-1">Web Video</p>
-                          <p className="font-semibold" style={{ color: '#FF615A' }}>
-                            {formatCurrency(results.conversionImprovements.videoImprovement)}
-                          </p>
-                          <p className="text-xs text-gray-500">+30% data quality</p>
-                        </div>
-                        <div className="text-center p-3 rounded-lg" style={{ backgroundColor: '#F3E8FF' }}>
-                          <p className="text-sm text-gray-600 mb-1">Retargeting</p>
-                          <p className="font-semibold" style={{ color: '#8B5CF6' }}>
-                            {formatCurrency(results.conversionImprovements.retargetingImprovement)}
-                          </p>
-                          <p className="text-xs text-gray-500">2x CTR improvement</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button
-                      onClick={generatePDF}
-                      className="w-full text-white font-semibold py-3 mt-8"
-                      style={{ backgroundColor: '#FF615A' }}
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Impact Analysis
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
+              <ROIResults
+                results={results}
+                performanceCampaignPercentage={performanceCampaignPercentage[0]}
+                onGeneratePDF={handleGeneratePDF}
+              />
             )}
           </div>
 
@@ -598,16 +131,13 @@ const ROICalculator = () => {
           <div className="mt-16 text-center">
             <Card className="max-w-2xl mx-auto shadow-lg border-0">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-bold mb-4" style={{ color: '#006073' }}>
+                <h2 className="text-2xl font-bold mb-4 text-brand-primary">
                   Ready to create an industry-leading ad product?
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-muted-foreground mb-6">
                   Book a 15-minute working session with our team to discuss your CAPI implementation strategy.
                 </p>
-                <Button 
-                  className="text-white font-semibold px-8 py-3"
-                  style={{ backgroundColor: '#00C7B1' }}
-                >
+                <Button className="text-white font-semibold px-8 py-3 bg-brand-secondary hover:bg-brand-secondary/90">
                   <Calendar className="w-4 h-4 mr-2" />
                   Book a 15-min Working Session
                 </Button>
@@ -616,149 +146,15 @@ const ROICalculator = () => {
           </div>
         </div>
 
-        {/* Contact Form Dialog */}
-        <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold" style={{ color: '#006073' }}>
-                Get Your CAPI Impact Report
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="firstName">First Name *</Label>
-                  <Input
-                    id="firstName"
-                    value={contactForm.firstName}
-                    onChange={(e) => setContactForm({...contactForm, firstName: e.target.value})}
-                    placeholder="John"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name *</Label>
-                  <Input
-                    id="lastName"
-                    value={contactForm.lastName}
-                    onChange={(e) => setContactForm({...contactForm, lastName: e.target.value})}
-                    placeholder="Doe"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="email">Email Address *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={contactForm.email}
-                  onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
-                  placeholder="john@company.com"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="company">Company *</Label>
-                <Input
-                  id="company"
-                  value={contactForm.company}
-                  onChange={(e) => setContactForm({...contactForm, company: e.target.value})}
-                  placeholder="Your Company"
-                  required
-                />
-              </div>
-              <Button 
-                onClick={async () => {
-                  if (contactForm.firstName && contactForm.lastName && contactForm.email && contactForm.company) {
-                    setIsSubmitting(true);
-                    try {
-                      console.log('Starting email send process...');
-                      
-                      // Calculate results synchronously instead of relying on state
-                      const calculatedResults = calculateROISync();
-                      console.log('Calculated results for email:', calculatedResults);
-                      
-                      // Update local state for UI display
-                      setResults(calculatedResults);
-                      
-                      // Send email with calculated results
-                      console.log('Sending email with data:', {
-                        userInfo: contactForm,
-                          inputs: {
-                            annualRevenue,
-                            displayShare: displayShare[0],
-                            videoShare: videoShare[0],
-                            chromePercentage: chromePercentage[0],
-                            performanceCampaignPercentage: performanceCampaignPercentage[0]
-                          },
-                        results: calculatedResults
-                      });
-                      
-                      const { data, error } = await supabase.functions.invoke('send-roi-report', {
-                        body: {
-                          userInfo: contactForm,
-                          inputs: {
-                            annualRevenue,
-                            displayShare: displayShare[0],
-                            videoShare: videoShare[0],
-                            chromePercentage: chromePercentage[0],
-                            performanceCampaignPercentage: performanceCampaignPercentage[0]
-                          },
-                          results: calculatedResults
-                        }
-                      });
-                      
-                      if (error) {
-                        console.error('Error sending email:', error);
-                        toast({
-                          title: "Error",
-                          description: `Failed to send email: ${error.message}`,
-                          variant: "destructive"
-                        });
-                      } else {
-                        console.log('Email sent successfully:', data);
-                        toast({
-                          title: "Success!",
-                          description: "Your CAPI impact report has been sent successfully.",
-                        });
-                        setShowContactDialog(false);
-                        // Reset form
-                        setContactForm({
-                          firstName: '',
-                          lastName: '',
-                          email: '',
-                          company: ''
-                        });
-                      }
-                    } catch (error: any) {
-                      console.error('Unexpected error:', error);
-                      toast({
-                        title: "Error",
-                        description: `An unexpected error occurred: ${error.message}`,
-                        variant: "destructive"
-                      });
-                    } finally {
-                      setIsSubmitting(false);
-                    }
-                  } else {
-                    toast({
-                      title: "Missing Information",
-                      description: "Please fill in all required fields.",
-                      variant: "destructive"
-                    });
-                  }
-                }}
-                disabled={!contactForm.firstName || !contactForm.lastName || !contactForm.email || !contactForm.company || isSubmitting}
-                className="w-full text-white font-semibold"
-                style={{ backgroundColor: '#00C7B1' }}
-              >
-                {isSubmitting ? 'Generating Report...' : 'Get My Report'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
+        <ContactDialog
+          showContactDialog={showContactDialog}
+          onOpenChange={setShowContactDialog}
+          contactForm={contactForm}
+          onUpdateContactForm={updateContactForm}
+          onSubmit={handleContactSubmit}
+          isSubmitting={isSubmitting}
+          isFormValid={isFormValid()}
+        />
       </div>
     </TooltipProvider>
   );

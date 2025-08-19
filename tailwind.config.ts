@@ -61,6 +61,15 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				brand: {
+					primary: 'hsl(var(--brand-primary))',
+					secondary: 'hsl(var(--brand-secondary))',
+					accent: 'hsl(var(--brand-accent))',
+					purple: 'hsl(var(--brand-purple))',
+					surface: 'hsl(var(--brand-surface))',
+					'surface-red': 'hsl(var(--brand-surface-red))',
+					'surface-purple': 'hsl(var(--brand-surface-purple))'
 				}
 			},
 			borderRadius: {
