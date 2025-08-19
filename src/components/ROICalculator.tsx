@@ -40,6 +40,7 @@ const ROICalculator = () => {
   const [videoShare, setVideoShare] = useState<number[]>([25]);
   const [retargetingShare, setRetargetingShare] = useState<number[]>([15]);
   const [performanceCampaignPercentage, setPerformanceCampaignPercentage] = useState<number[]>([50]);
+  const [publisherYieldOptimization, setPublisherYieldOptimization] = useState<number[]>([60]);
   const [results, setResults] = useState<CalculationResults | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -55,7 +56,8 @@ const ROICalculator = () => {
   // Constants
   const BASELINE_DISPLAY_CR = 2.58; // 2.58%
   const BASELINE_VIDEO_CR = 4.17; // 4.17%
-  const CAPI_CR_MULTIPLIER = 3; // CAPI triples conversion rates
+  const DISPLAY_CAPI_CR_MULTIPLIER = 3; // Display CAPI triples conversion rates
+  const WEB_VIDEO_CAPI_CR_MULTIPLIER = 1.3; // Web video CAPI has modest 30% improvement (branding focus)
   const CAPI_CTR_MULTIPLIER = 2; // CAPI doubles CTR for retargeting
   const CPM_INCREASE = 0.35; // 35% CPM increase
   const CHROME_BENEFIT_REDUCTION = 0.7; // Chrome benefits are reduced by 70%
@@ -105,6 +107,10 @@ const ROICalculator = () => {
       newErrors.performance = 'Performance campaign percentage must be between 0% and 100%';
     }
     
+    if (publisherYieldOptimization[0] < 20 || publisherYieldOptimization[0] > 80) {
+      newErrors.publisherYield = 'Publisher yield optimization must be between 20% and 80%';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -121,6 +127,7 @@ const ROICalculator = () => {
     const displayPercent = displayShare[0] / 100;
     const videoPercent = videoShare[0] / 100;
     const performancePercent = performanceCampaignPercentage[0] / 100;
+    const publisherYieldPercent = publisherYieldOptimization[0] / 100;
     
     console.log('Calculating ROI with inputs:', {
       revenue,
@@ -141,8 +148,8 @@ const ROICalculator = () => {
     const performanceRetargetingRevenue = currentRetargetingRevenue * performancePercent;
     
     // Base improvements
-    const baseDisplayImprovement = performanceDisplayRevenue * (CAPI_CR_MULTIPLIER - 1);
-    const baseVideoImprovement = performanceVideoRevenue * (CAPI_CR_MULTIPLIER - 1);
+    const baseDisplayImprovement = performanceDisplayRevenue * (DISPLAY_CAPI_CR_MULTIPLIER - 1);
+    const baseVideoImprovement = performanceVideoRevenue * (WEB_VIDEO_CAPI_CR_MULTIPLIER - 1);
     const baseRetargetingImprovement = performanceRetargetingRevenue * (CAPI_CTR_MULTIPLIER - 1);
     
     // Chrome reduction
@@ -151,11 +158,13 @@ const ROICalculator = () => {
     const effectiveVideoImprovement = baseVideoImprovement * (1 - chromeReductionFactor);
     const effectiveRetargetingImprovement = baseRetargetingImprovement * (1 - chromeReductionFactor);
     
-    // CPM penalty
+    // CPM penalty and publisher yield optimization
     const cpmPenaltyFactor = 1 / (1 + (CPM_INCREASE * 0.7));
-    const netDisplayImprovement = effectiveDisplayImprovement * cpmPenaltyFactor;
-    const netVideoImprovement = effectiveVideoImprovement * cpmPenaltyFactor;
-    const netRetargetingImprovement = effectiveRetargetingImprovement * cpmPenaltyFactor;
+    const publisherConstraintFactor = publisherYieldPercent; // Higher yield = more inventory available
+    
+    const netDisplayImprovement = effectiveDisplayImprovement * cpmPenaltyFactor * publisherConstraintFactor;
+    const netVideoImprovement = effectiveVideoImprovement * cpmPenaltyFactor * publisherConstraintFactor;
+    const netRetargetingImprovement = effectiveRetargetingImprovement * cpmPenaltyFactor * publisherConstraintFactor;
     
     // Final calculations
     const projectedDisplayRevenue = currentDisplayRevenue + netDisplayImprovement;
@@ -238,7 +247,8 @@ const ROICalculator = () => {
     pdf.text(`Annual Revenue: ${formatCurrency(Number(annualRevenue))}`, 20, 80);
     pdf.text(`Chrome Inventory: ${chromePercentage[0]}%`, 20, 95);
     pdf.text(`Performance Campaigns: ${performanceCampaignPercentage[0]}%`, 20, 110);
-    pdf.text(`Display Share: ${displayShare[0]}% | Video Share: ${videoShare[0]}%`, 20, 125);
+    pdf.text(`Display Share: ${displayShare[0]}% | Web Video Share: ${videoShare[0]}%`, 20, 125);
+    pdf.text(`Publisher Yield Optimization: ${publisherYieldOptimization[0]}%`, 20, 140);
     
     // Results
     pdf.setFontSize(16);
@@ -257,7 +267,7 @@ const ROICalculator = () => {
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Display: ${formatCurrency(results.conversionImprovements.displayImprovement)}`, 20, 220);
-    pdf.text(`Video: ${formatCurrency(results.conversionImprovements.videoImprovement)}`, 20, 235);
+    pdf.text(`Web Video: ${formatCurrency(results.conversionImprovements.videoImprovement)} (+30% data quality)`, 20, 235);
     pdf.text(`Retargeting: ${formatCurrency(results.conversionImprovements.retargetingImprovement)}`, 20, 250);
     
     pdf.save(`AdFixus_CAPI_Analysis_${date}.pdf`);
@@ -275,7 +285,7 @@ const ROICalculator = () => {
 
   const improvementData = results ? [
     { name: 'Display', value: results.conversionImprovements.displayImprovement, fill: '#00C7B1' },
-    { name: 'Video', value: results.conversionImprovements.videoImprovement, fill: '#FF615A' },
+    { name: 'Web Video', value: results.conversionImprovements.videoImprovement, fill: '#FF615A' },
     { name: 'Retargeting', value: results.conversionImprovements.retargetingImprovement, fill: '#8B5CF6' },
   ] : [];
 
@@ -385,7 +395,7 @@ const ROICalculator = () => {
 
                     <div>
                       <div className="flex items-center gap-2 mb-4">
-                        <Label>Video (%)</Label>
+                        <Label>Web Video (%)</Label>
                       </div>
                       <div className="px-3">
                         <Slider
@@ -461,6 +471,35 @@ const ROICalculator = () => {
                         <span>0%</span>
                         <span className="font-semibold" style={{ color: '#006073' }}>{performanceCampaignPercentage[0]}%</span>
                         <span>100%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Label>Publisher Yield Optimization (%)</Label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Premium inventory availability for high-performing CAPI campaigns. Higher performance may reduce publisher sell-through at scale.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <div className="px-3">
+                      <Slider
+                        value={publisherYieldOptimization}
+                        onValueChange={setPublisherYieldOptimization}
+                        max={80}
+                        min={20}
+                        step={5}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-sm text-gray-500 mt-1">
+                        <span>20%</span>
+                        <span className="font-semibold" style={{ color: '#006073' }}>{publisherYieldOptimization[0]}%</span>
+                        <span>80%</span>
                       </div>
                     </div>
                   </div>
@@ -559,11 +598,11 @@ const ROICalculator = () => {
                           <p className="text-xs text-gray-500">3x conversion rate</p>
                         </div>
                         <div className="text-center p-3 rounded-lg" style={{ backgroundColor: '#FFF5F5' }}>
-                          <p className="text-sm text-gray-600 mb-1">Video</p>
+                          <p className="text-sm text-gray-600 mb-1">Web Video</p>
                           <p className="font-semibold" style={{ color: '#FF615A' }}>
                             {formatCurrency(results.conversionImprovements.videoImprovement)}
                           </p>
-                          <p className="text-xs text-gray-500">3x conversion rate</p>
+                          <p className="text-xs text-gray-500">+30% data quality</p>
                         </div>
                         <div className="text-center p-3 rounded-lg" style={{ backgroundColor: '#F3E8FF' }}>
                           <p className="text-sm text-gray-600 mb-1">Retargeting</p>
@@ -680,13 +719,14 @@ const ROICalculator = () => {
                       // Send email with calculated results
                       console.log('Sending email with data:', {
                         userInfo: contactForm,
-                        inputs: {
-                          annualRevenue,
-                          displayShare: displayShare[0],
-                          videoShare: videoShare[0],
-                          chromePercentage: chromePercentage[0],
-                          performanceCampaignPercentage: performanceCampaignPercentage[0]
-                        },
+                          inputs: {
+                            annualRevenue,
+                            displayShare: displayShare[0],
+                            videoShare: videoShare[0],
+                            chromePercentage: chromePercentage[0],
+                            performanceCampaignPercentage: performanceCampaignPercentage[0],
+                            publisherYieldOptimization: publisherYieldOptimization[0]
+                          },
                         results: calculatedResults
                       });
                       
@@ -698,7 +738,8 @@ const ROICalculator = () => {
                             displayShare: displayShare[0],
                             videoShare: videoShare[0],
                             chromePercentage: chromePercentage[0],
-                            performanceCampaignPercentage: performanceCampaignPercentage[0]
+                            performanceCampaignPercentage: performanceCampaignPercentage[0],
+                            publisherYieldOptimization: publisherYieldOptimization[0]
                           },
                           results: calculatedResults
                         }
