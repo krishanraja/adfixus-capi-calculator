@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
-    padding: 50,
+    padding: 30,
     fontSize: 12,
     fontFamily: 'Helvetica',
   },
@@ -154,15 +154,15 @@ const styles = StyleSheet.create({
   
   // Logo
   logo: {
-    width: 120,
-    height: 40,
-    marginBottom: 20,
+    width: 60,
+    height: 20,
+    marginBottom: 10,
   },
   
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 15,
   },
   
   // Footer
