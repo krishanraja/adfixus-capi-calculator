@@ -11,7 +11,6 @@ const styles = StyleSheet.create({
     padding: 40,
     fontSize: 12,
     fontFamily: 'Helvetica',
-    minHeight: '100vh',
   },
   
   // Typography
@@ -155,7 +154,6 @@ const styles = StyleSheet.create({
   
   // Logo
   logo: {
-    width: 120,
     height: 32,
     marginBottom: 10,
   },
