@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
-    padding: 40,
+    padding: 30,
     fontSize: 12,
     fontFamily: 'Helvetica',
   },
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#0F172A',
     marginBottom: 15,
-    marginTop: 30,
+    marginTop: 15,
   },
   
   body: {
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   
   // Layout Components
   section: {
-    marginBottom: 30,
+    marginBottom: 15,
   },
   
   row: {
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   
   // Metric Cards
   metricCard: {
-    width: 150,
+    width: 120,
     height: 80,
     border: '2px solid #0EA5E9',
     borderRadius: 8,
@@ -154,6 +154,7 @@ const styles = StyleSheet.create({
   
   // Logo
   logo: {
+    width: 120,
     height: 32,
     marginBottom: 10,
   },
