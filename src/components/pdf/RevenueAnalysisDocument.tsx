@@ -8,9 +8,10 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
-    padding: 30,
+    padding: 40,
     fontSize: 12,
     fontFamily: 'Helvetica',
+    minHeight: '100vh',
   },
   
   // Typography
@@ -165,10 +166,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   
-  // Footer
+  // Footer - Simple inline footer
   footer: {
-    marginTop: 'auto',
-    paddingTop: 20,
+    marginTop: 30,
+    paddingTop: 15,
     borderTop: '1px solid #E2E8F0',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -320,8 +321,8 @@ export function RevenueAnalysisDocument({ inputs, results }: RevenueAnalysisDocu
 
         <View style={styles.footer}>
           <Text>CONFIDENTIAL - Executive Use Only</Text>
-          <Text>Page 1 of 3</Text>
-          <Text>Generated: {new Date().toLocaleDateString()} | Contact: sales@adfixus.com</Text>
+          <Text>Page 1</Text>
+          <Text>Generated: {new Date().toLocaleDateString()}</Text>
         </View>
       </Page>
 
@@ -389,8 +390,8 @@ export function RevenueAnalysisDocument({ inputs, results }: RevenueAnalysisDocu
 
         <View style={styles.footer}>
           <Text>CONFIDENTIAL - Executive Use Only</Text>
-          <Text>Page 2 of 3</Text>
-          <Text>Generated: {new Date().toLocaleDateString()} | Contact: sales@adfixus.com</Text>
+          <Text>Page 2</Text>
+          <Text>Generated: {new Date().toLocaleDateString()}</Text>
         </View>
       </Page>
 
@@ -448,8 +449,8 @@ export function RevenueAnalysisDocument({ inputs, results }: RevenueAnalysisDocu
 
         <View style={styles.footer}>
           <Text>CONFIDENTIAL - Executive Use Only</Text>
-          <Text>Page 3 of 3</Text>
-          <Text>Generated: {new Date().toLocaleDateString()} | Contact: sales@adfixus.com</Text>
+          <Text>Page 3</Text>
+          <Text>Generated: {new Date().toLocaleDateString()}</Text>
         </View>
       </Page>
     </Document>
