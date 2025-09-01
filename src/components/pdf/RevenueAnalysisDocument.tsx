@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
   
   // Logo
   logo: {
-    width: 60,
-    height: 20,
+    width: 120,
+    height: 32,
     marginBottom: 10,
   },
   
@@ -167,10 +167,9 @@ const styles = StyleSheet.create({
   
   // Footer
   footer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 50,
-    right: 50,
+    marginTop: 'auto',
+    paddingTop: 20,
+    borderTop: '1px solid #E2E8F0',
     flexDirection: 'row',
     justifyContent: 'space-between',
     fontSize: 9,
@@ -248,7 +247,7 @@ export function RevenueAnalysisDocument({ inputs, results }: RevenueAnalysisDocu
       <Page size="LETTER" style={styles.page}>
         <View style={styles.header}>
           <Image 
-            src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png" 
+            src="/lovable-uploads/e05fe6e9-96d1-4dcc-9caa-0d7f03e785ed.png" 
             style={styles.logo}
           />
         </View>
@@ -330,7 +329,7 @@ export function RevenueAnalysisDocument({ inputs, results }: RevenueAnalysisDocu
       <Page size="LETTER" style={styles.page}>
         <View style={styles.header}>
           <Image 
-            src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png" 
+            src="/lovable-uploads/e05fe6e9-96d1-4dcc-9caa-0d7f03e785ed.png" 
             style={styles.logo}
           />
         </View>
@@ -399,7 +398,7 @@ export function RevenueAnalysisDocument({ inputs, results }: RevenueAnalysisDocu
       <Page size="LETTER" style={styles.page}>
         <View style={styles.header}>
           <Image 
-            src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png" 
+            src="/lovable-uploads/e05fe6e9-96d1-4dcc-9caa-0d7f03e785ed.png" 
             style={styles.logo}
           />
         </View>
