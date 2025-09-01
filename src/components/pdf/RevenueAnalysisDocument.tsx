@@ -1,5 +1,5 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import type { ROIResults, ROIInputs } from '@/types/roi';
 import { formatExecutiveCurrency, formatExecutivePercent, getRiskGrade } from '@/utils/pdfGenerator';
 
@@ -152,6 +152,19 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   
+  // Logo
+  logo: {
+    width: 120,
+    height: 40,
+    marginBottom: 20,
+  },
+  
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  
   // Footer
   footer: {
     position: 'absolute',
@@ -233,6 +246,12 @@ export function RevenueAnalysisDocument({ inputs, results }: RevenueAnalysisDocu
     <Document>
       {/* Page 1: Executive Summary */}
       <Page size="LETTER" style={styles.page}>
+        <View style={styles.header}>
+          <Image 
+            src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png" 
+            style={styles.logo}
+          />
+        </View>
         <Text style={styles.heroTitle}>REVENUE IMPACT ANALYSIS</Text>
         <Text style={styles.subtitle}>AdFixus Conversion API Implementation Study</Text>
         
@@ -309,6 +328,12 @@ export function RevenueAnalysisDocument({ inputs, results }: RevenueAnalysisDocu
 
       {/* Page 2: Detailed Analysis */}
       <Page size="LETTER" style={styles.page}>
+        <View style={styles.header}>
+          <Image 
+            src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png" 
+            style={styles.logo}
+          />
+        </View>
         <Text style={styles.sectionTitle}>DETAILED REVENUE ANALYSIS</Text>
         
         <View style={styles.section}>
@@ -372,6 +397,12 @@ export function RevenueAnalysisDocument({ inputs, results }: RevenueAnalysisDocu
 
       {/* Page 3: Action Plan */}
       <Page size="LETTER" style={styles.page}>
+        <View style={styles.header}>
+          <Image 
+            src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png" 
+            style={styles.logo}
+          />
+        </View>
         <Text style={styles.sectionTitle}>STRATEGIC ACTION PLAN</Text>
         
         <View style={styles.section}>
