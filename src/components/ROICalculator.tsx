@@ -8,7 +8,7 @@ import { useContactForm } from '@/hooks/useContactForm';
 import { ROIInputForm } from './roi/ROIInputForm';
 import { ROIResults } from './roi/ROIResults';
 import { ContactDialog } from './roi/ContactDialog';
-import { generatePDF } from '@/utils/pdfGenerator';
+import { buildAdfixusProposalPdf } from '@/utils/pdfmakeGenerator';
 
 const ROICalculator = () => {
   const { toast } = useToast();
@@ -51,16 +51,23 @@ const ROICalculator = () => {
     await submitContactForm(inputs, calculatedResults);
   };
 
-  const handleGeneratePDF = () => {
+  const handleGeneratePDF = async () => {
     if (!results) return;
     
-    const inputs = getROIInputs();
-    generatePDF(inputs, results);
-    
-    toast({
-      title: "PDF Generated!",
-      description: "Your CAPI impact analysis has been downloaded.",
-    });
+    try {
+      const roiInputs = getROIInputs();
+      await buildAdfixusProposalPdf(roiInputs, results);
+      toast({
+        title: "PDF Generated",
+        description: "Your AdFixus CAPI proposal has been downloaded.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error", 
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
