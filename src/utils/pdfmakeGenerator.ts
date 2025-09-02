@@ -1,7 +1,46 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
-import { formatExecutiveCurrency, formatExecutivePercent, getRiskGrade } from "./pdfGenerator";
 import type { ROIResults, ROIInputs } from "@/types/roi";
+
+// Professional formatting for executives
+export const formatExecutiveCurrency = (amount: number): string => {
+  if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
+  if (amount >= 1000) return `$${(amount / 1000).toFixed(0)}K`;
+  return `$${amount.toFixed(0)}`;
+};
+
+export const formatExecutivePercent = (percent: number): string => {
+  return `${percent > 0 ? '+' : ''}${percent.toFixed(1)}%`;
+};
+
+// Risk assessment grading
+export const getRiskGrade = (chromePercentage: number): { grade: string; color: string; description: string } => {
+  if (chromePercentage <= 15) return { 
+    grade: 'A', 
+    color: '#10B981', 
+    description: 'Excellent Identity Health' 
+  };
+  if (chromePercentage <= 30) return { 
+    grade: 'B', 
+    color: '#0EA5E9', 
+    description: 'Good Identity Coverage' 
+  };
+  if (chromePercentage <= 50) return { 
+    grade: 'C', 
+    color: '#F59E0B', 
+    description: 'Moderate Risk Exposure' 
+  };
+  if (chromePercentage <= 70) return { 
+    grade: 'D', 
+    color: '#EF4444', 
+    description: 'High Revenue Risk' 
+  };
+  return { 
+    grade: 'F', 
+    color: '#EF4444', 
+    description: 'Critical Revenue Loss' 
+  };
+};
 
 // Set up pdfMake fonts
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
