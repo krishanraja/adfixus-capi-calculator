@@ -418,7 +418,7 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                 "Secure executive approval for AdFixus CAPI implementation",
                 "Confirm pilot domain selection and technical requirements",
                 "Establish baseline KPI measurement and reporting framework",
-                "Schedule technical onboarding call with AdFixus implementation team",
+                "Schedule technical onboarding call with AdFixus implementation team at sales@adfixus.com",
                 "Define go-live timeline and success metrics"
               ],
               style: "body"

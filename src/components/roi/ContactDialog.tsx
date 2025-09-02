@@ -61,7 +61,7 @@ export function ContactDialog({
               type="email"
               value={contactForm.email}
               onChange={(e) => onUpdateContactForm('email', e.target.value)}
-              placeholder="john@company.com"
+              placeholder="sales@adfixus.com"
               required
             />
           </div>
