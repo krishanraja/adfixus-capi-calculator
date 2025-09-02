@@ -43,7 +43,15 @@ export const getRiskGrade = (chromePercentage: number): { grade: string; color: 
 };
 
 // Set up pdfMake fonts
-pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
+try {
+  if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+  } else if (pdfFonts) {
+    pdfMake.vfs = pdfFonts;
+  }
+} catch (error) {
+  console.warn('Failed to load pdfMake fonts:', error);
+}
 
 // Convert URL to base64
 async function urlToBase64(url: string): Promise<string> {
