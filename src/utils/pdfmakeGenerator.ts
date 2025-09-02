@@ -50,7 +50,7 @@ try {
     pdfMake.vfs = pdfFonts;
   }
 } catch (error) {
-  console.warn('Failed to load pdfMake fonts:', error);
+  // Font loading failed - continue without custom fonts
 }
 
 // Convert URL to base64
@@ -65,7 +65,6 @@ async function urlToBase64(url: string): Promise<string> {
       reader.readAsDataURL(blob);
     });
   } catch (error) {
-    console.error("Failed to convert URL to base64:", error);
     // Return a placeholder or empty data URL if conversion fails
     return "data:image/png;base64,";
   }
@@ -432,7 +431,6 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
     pdfMake.createPdf(docDefinition).download("AdFixus - CAPI Proposal for Publishers.pdf");
     
   } catch (error) {
-    console.error("PDF generation failed:", error);
     throw error;
   }
 }

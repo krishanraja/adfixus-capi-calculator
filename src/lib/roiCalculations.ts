@@ -10,8 +10,6 @@ export function calculateROI(inputs: ROIInputs): ROIResults {
     performanceCampaignPercentage
   } = inputs;
 
-  console.log('Calculating ROI with inputs:', inputs);
-
   // Convert percentages to decimals
   const chromePercent = chromePercentage / 100;
   const displayPercent = displayShare / 100;
@@ -75,6 +73,5 @@ export function calculateROI(inputs: ROIInputs): ROIResults {
     }
   };
 
-  console.log('Calculated results:', results);
   return results;
 }

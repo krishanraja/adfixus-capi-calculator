@@ -47,11 +47,6 @@ export function useContactForm() {
     setIsSubmitting(true);
     
     try {
-      console.log('Sending email with data:', {
-        userInfo: contactForm,
-        inputs,
-        results
-      });
 
       const { data, error } = await supabase.functions.invoke('send-roi-report', {
         body: {
@@ -68,14 +63,12 @@ export function useContactForm() {
       });
 
       if (error) {
-        console.error('Error sending email:', error);
         toast({
           title: "Error",
           description: `Failed to send email: ${error.message}`,
           variant: "destructive"
         });
       } else {
-        console.log('Email sent successfully:', data);
         toast({
           title: "Success!",
           description: "Your CAPI impact report has been sent successfully.",
@@ -84,7 +77,6 @@ export function useContactForm() {
         resetContactForm();
       }
     } catch (error: any) {
-      console.error('Unexpected error:', error);
       toast({
         title: "Error",
         description: `An unexpected error occurred: ${error.message}`,

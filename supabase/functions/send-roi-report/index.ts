@@ -47,20 +47,16 @@ const formatCurrency = (amount: number): string => {
 };
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('Edge function invoked:', req.method);
   
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    console.log('Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('Processing email request...');
     
     // Parse request body
     const requestBody = await req.json();
-    console.log('Request body received:', JSON.stringify(requestBody, null, 2));
     
     const { userInfo, inputs, results }: ROIReportRequest = requestBody;
     
@@ -76,25 +72,12 @@ const handler = async (req: Request): Promise<Response> => {
     if (!results) {
       throw new Error('Missing results in request body');
     }
-    
-    console.log('Validated request data:', {
-      userInfo,
-      inputs,
-      results: {
-        currentRevenue: results.currentRevenue,
-        projectedRevenue: results.projectedRevenue,
-        incrementalRevenue: results.incrementalRevenue,
-        incrementalPercentage: results.incrementalPercentage,
-        hasConversionImprovements: !!results.conversionImprovements
-      }
-    });
 
     // Check API key
     const apiKey = Deno.env.get("RESEND_API_KEY");
     if (!apiKey) {
       throw new Error('RESEND_API_KEY is not configured');
     }
-    console.log('API key found:', apiKey.substring(0, 10) + '...');
 
     const emailContent = `
       <h2>CAPI Impact Report - ${userInfo.firstName} ${userInfo.lastName} from ${userInfo.company}</h2>
@@ -132,17 +115,12 @@ const handler = async (req: Request): Promise<Response> => {
       </ul>
     `;
 
-    console.log('Sending email to:', userInfo.email);
-    console.log('Email content length:', emailContent.length);
-
     const emailResponse = await resend.emails.send({
       from: "CAPI Calculator <onboarding@resend.dev>",
-      to: ["hello@krishraja.com"],
+      to: [userInfo.email],
       subject: `CAPI Report - ${userInfo.firstName} ${userInfo.lastName} - ${userInfo.company}`,
       html: emailContent,
     });
-
-    console.log("Email sent successfully:", emailResponse);
 
     return new Response(JSON.stringify({
       success: true,
@@ -156,8 +134,6 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error in send-roi-report function:", error);
-    console.error("Error stack:", error.stack);
     
     return new Response(
       JSON.stringify({ 
