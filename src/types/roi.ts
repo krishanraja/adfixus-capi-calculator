@@ -33,7 +33,7 @@ export interface ContactForm {
   company: string;
 }
 
-export type StepType = 'hero' | 'quiz' | 'calculator' | 'results';
+export type StepType = 'hero' | 'calculator' | 'results';
 
 export interface ValidationErrors {
   annualRevenue?: string;

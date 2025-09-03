@@ -8,7 +8,7 @@ interface HeroStepProps {
 
 export function HeroStep({ onNext }: HeroStepProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-surface to-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4">
       <div className="max-w-4xl w-full text-center">
         {/* Main Logo */}
         <div className="mb-8">

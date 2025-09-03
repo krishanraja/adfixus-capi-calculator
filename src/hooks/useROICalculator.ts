@@ -72,7 +72,7 @@ export function useROICalculator() {
   };
 
   const nextStep = () => {
-    const steps: StepType[] = ['hero', 'quiz', 'calculator', 'results'];
+    const steps: StepType[] = ['hero', 'calculator', 'results'];
     const currentIndex = steps.indexOf(currentStep);
     if (currentIndex < steps.length - 1) {
       setCurrentStep(steps[currentIndex + 1]);
@@ -80,7 +80,7 @@ export function useROICalculator() {
   };
 
   const previousStep = () => {
-    const steps: StepType[] = ['hero', 'quiz', 'calculator', 'results'];
+    const steps: StepType[] = ['hero', 'calculator', 'results'];
     const currentIndex = steps.indexOf(currentStep);
     if (currentIndex > 0) {
       setCurrentStep(steps[currentIndex - 1]);

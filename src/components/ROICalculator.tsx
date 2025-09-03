@@ -2,7 +2,7 @@ import { useROICalculator } from '@/hooks/useROICalculator';
 import { useContactForm } from '@/hooks/useContactForm';
 import { Navigation } from '@/components/Navigation';
 import { HeroStep } from '@/components/steps/HeroStep';
-import { QuizStep } from '@/components/steps/QuizStep';
+
 import { CalculatorStep } from '@/components/steps/CalculatorStep';
 import { ResultsStep } from '@/components/steps/ResultsStep';
 import { ContactDialog } from '@/components/roi/ContactDialog';
@@ -80,8 +80,6 @@ const ROICalculator = () => {
     switch (currentStep) {
       case 'hero':
         return <HeroStep onNext={nextStep} />;
-      case 'quiz':
-        return <QuizStep onNext={nextStep} onPrevious={previousStep} />;
       case 'calculator':
         return (
           <CalculatorStep
@@ -117,7 +115,7 @@ const ROICalculator = () => {
   return (
     <TooltipProvider>
       <div className="min-h-screen">
-        {currentStep !== 'hero' && (
+        {(currentStep === 'calculator' || currentStep === 'results') && (
           <Navigation currentStep={currentStep} onReset={resetToHero} />
         )}
         

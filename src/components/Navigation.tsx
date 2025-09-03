@@ -10,7 +10,6 @@ interface NavigationProps {
 
 const steps = [
   { id: 'hero', label: 'Home', icon: Home },
-  { id: 'quiz', label: 'Identity Health', icon: FileText },
   { id: 'calculator', label: 'Revenue Calculator', icon: Calculator },
   { id: 'results', label: 'Results', icon: BarChart3 }
 ];
