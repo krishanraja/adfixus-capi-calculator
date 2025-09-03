@@ -417,10 +417,34 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                 "Secure executive approval for AdFixus CAPI implementation",
                 "Confirm pilot domain selection and technical requirements",
                 "Establish baseline KPI measurement and reporting framework",
-                "Schedule technical onboarding call with AdFixus implementation team at sales@adfixus.com",
+                "Contact AdFixus implementation team to schedule technical onboarding",
                 "Define go-live timeline and success metrics"
               ],
-              style: "body"
+              style: "body",
+              margin: [0, 0, 0, 12]
+            },
+            
+            // Contact Information
+            { text: "Contact AdFixus Sales Team", style: "h2" },
+            {
+              stack: [
+                { 
+                  text: "Email: sales@adfixus.com", 
+                  style: "body",
+                  link: "mailto:sales@adfixus.com",
+                  color: "#0EA5E9",
+                  decoration: "underline",
+                  margin: [0, 0, 0, 6]
+                },
+                {
+                  text: "Book A Call",
+                  style: "body",
+                  link: "https://outlook.office.com/book/SalesTeambooking@adfixus.com",
+                  color: "#0EA5E9",
+                  decoration: "underline",
+                  bold: true
+                }
+              ]
             }
           ]
         }
