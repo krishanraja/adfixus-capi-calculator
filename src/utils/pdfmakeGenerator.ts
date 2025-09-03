@@ -316,19 +316,19 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                     { text: "Display Advertising", style: "tableBody" },
                     { text: formatExecutiveCurrency(results.currentDisplayRevenue), style: "tableBody" },
                     { text: formatExecutiveCurrency(results.projectedDisplayRevenue), style: "tableBody" },
-                    { text: formatExecutivePercent(results.conversionImprovements.displayImprovement), style: "tableBody", color: "#10B981" }
+                    { text: formatExecutivePercent((results.conversionImprovements.displayImprovement / results.currentDisplayRevenue) * 100), style: "tableBody", color: "#10B981" }
                   ],
                   [
                     { text: "Video Advertising", style: "tableBody" },
                     { text: formatExecutiveCurrency(results.currentVideoRevenue), style: "tableBody" },
                     { text: formatExecutiveCurrency(results.projectedVideoRevenue), style: "tableBody" },
-                    { text: formatExecutivePercent(results.conversionImprovements.videoImprovement), style: "tableBody", color: "#10B981" }
+                    { text: formatExecutivePercent((results.conversionImprovements.videoImprovement / results.currentVideoRevenue) * 100), style: "tableBody", color: "#10B981" }
                   ],
                   [
                     { text: "Retargeting", style: "tableBody" },
                     { text: formatExecutiveCurrency(results.currentRetargetingRevenue), style: "tableBody" },
                     { text: formatExecutiveCurrency(results.projectedRetargetingRevenue), style: "tableBody" },
-                    { text: formatExecutivePercent(results.conversionImprovements.retargetingImprovement), style: "tableBody", color: "#10B981" }
+                    { text: formatExecutivePercent((results.conversionImprovements.retargetingImprovement / results.currentRetargetingRevenue) * 100), style: "tableBody", color: "#10B981" }
                   ],
                   [
                     { text: "TOTAL", style: "tableHeader" },
