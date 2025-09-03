@@ -144,7 +144,10 @@ const ROICalculator = () => {
                 <p className="text-muted-foreground mb-6">
                   Book a 15-minute working session with our team to discuss your CAPI implementation strategy.
                 </p>
-                <Button className="text-white font-semibold px-8 py-3 bg-brand-secondary hover:bg-brand-secondary/90">
+                <Button 
+                  className="text-white font-semibold px-8 py-3 bg-brand-secondary hover:bg-brand-secondary/90"
+                  onClick={() => window.open('https://outlook.office.com/book/SalesTeambooking@adfixus.com', '_blank')}
+                >
                   <Calendar className="w-4 h-4 mr-2" />
                   Book a 15-min Working Session
                 </Button>
