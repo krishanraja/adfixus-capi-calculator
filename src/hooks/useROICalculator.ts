@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import type { ROIInputs, ROIResults, ContactForm, ValidationErrors } from '@/types/roi';
+import type { ROIInputs, ROIResults, ContactForm, ValidationErrors, StepType } from '@/types/roi';
 import { calculateROI } from '@/lib/roiCalculations';
 import { ROI_CONSTANTS } from '@/constants/roiConstants';
 import { getNumericValue } from '@/utils/formatting';
 
 export function useROICalculator() {
+  const [currentStep, setCurrentStep] = useState<StepType>('hero');
   const [annualRevenue, setAnnualRevenue] = useState<string>('5,000,000');
   const [chromePercentage, setChromePercentage] = useState<number[]>([50]);
   const [displayShare, setDisplayShare] = useState<number[]>([60]);
@@ -54,6 +55,7 @@ export function useROICalculator() {
     const inputs = getROIInputs();
     const calculatedResults = calculateROI(inputs);
     setResults(calculatedResults);
+    setCurrentStep('results');
     return calculatedResults;
   };
 
@@ -69,8 +71,31 @@ export function useROICalculator() {
     setDisplayShare([Math.max(0, remaining)]);
   };
 
+  const nextStep = () => {
+    const steps: StepType[] = ['hero', 'quiz', 'calculator', 'results'];
+    const currentIndex = steps.indexOf(currentStep);
+    if (currentIndex < steps.length - 1) {
+      setCurrentStep(steps[currentIndex + 1]);
+    }
+  };
+
+  const previousStep = () => {
+    const steps: StepType[] = ['hero', 'quiz', 'calculator', 'results'];
+    const currentIndex = steps.indexOf(currentStep);
+    if (currentIndex > 0) {
+      setCurrentStep(steps[currentIndex - 1]);
+    }
+  };
+
+  const resetToHero = () => {
+    setCurrentStep('hero');
+    setResults(null);
+    setErrors({});
+  };
+
   return {
     // State
+    currentStep,
     annualRevenue,
     chromePercentage,
     displayShare,
@@ -89,5 +114,8 @@ export function useROICalculator() {
     validateInputs,
     calculateROIResults,
     getROIInputs,
+    nextStep,
+    previousStep,
+    resetToHero,
   };
 }
