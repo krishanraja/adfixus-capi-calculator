@@ -10,7 +10,7 @@ export const formatExecutiveCurrency = (amount: number): string => {
 };
 
 export const formatExecutivePercent = (percent: number): string => {
-  return `${percent > 0 ? '+' : ''}${percent.toFixed(1)}%`;
+  return `${percent > 0 ? '+' : ''}${percent.toFixed(0)}%`;
 };
 
 // Risk assessment grading
