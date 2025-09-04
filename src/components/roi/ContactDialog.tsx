@@ -28,7 +28,7 @@ export function ContactDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-brand-primary">
-            Get Your CAPI Impact Report
+            Download Your CAPI Impact Report
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
@@ -80,7 +80,7 @@ export function ContactDialog({
             disabled={!isFormValid || isSubmitting}
             className="w-full text-white font-semibold bg-brand-secondary hover:bg-brand-secondary/90"
           >
-            {isSubmitting ? 'Generating Report...' : 'Get My Report'}
+            {isSubmitting ? 'Generating Report...' : 'Download Report'}
           </Button>
         </div>
       </DialogContent>

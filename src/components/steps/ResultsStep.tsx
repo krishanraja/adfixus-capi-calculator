@@ -53,7 +53,7 @@ export function ResultsStep({
                 className="bg-brand-secondary hover:bg-brand-secondary/90 text-white font-semibold px-8"
               >
                 <a 
-                  href="https://outlook.office.com/book/SalesTeambooking@adfixus.com" 
+                  href={import.meta.env.VITE_MEETING_BOOKING_URL || "https://outlook.office.com/book/SalesTeambooking@adfixus.com"} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2"

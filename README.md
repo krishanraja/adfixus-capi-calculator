@@ -1,110 +1,96 @@
-
 # AdFixus CAPI ROI Calculator
 
-An interactive single-page ROI calculator that demonstrates the revenue upside of implementing AdFixus Stream's deterministic Conversions API.
+A React-based calculator that helps businesses understand the revenue impact of implementing AdFixus Stream's Conversions API (CAPI) solution.
 
-## Features
+## ⚡ Quickstart
 
-- **Interactive Input Form**: Collect key business metrics with helpful tooltips
-- **Real-time Calculations**: Instant ROI analysis with comprehensive metrics
-- **Visual Analytics**: Before/after revenue comparison chart
-- **PDF Export**: Professional business case document generation
-- **Responsive Design**: Works perfectly on desktop and mobile devices
-- **Professional Branding**: AdFixus color scheme and styling
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-## Key Metrics Calculated
+2. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your meeting booking URL
+   ```
 
-- Incremental monthly revenue ($ and %)
-- 12-month incremental revenue projection
-- Payback period in weeks
-- ROI percentage at 12 months
-- Visual before/after comparison
+3. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-## Math Logic
+4. **Build for production**
+   ```bash
+   npm run build
+   ```
 
-The calculator uses the following formulas:
+5. **Deploy**
+   - Upload `dist/` folder to any static hosting service (Netlify, Vercel, etc.)
 
-```javascript
-baselineRevenue = (impressions / 1000) × cpm
-upliftedImpressions = impressions × (1 + inventoryGain%)
-upliftedCPM = cpm × (1 + cpmLift%)
-upliftRevenue = (upliftedImpressions / 1000) × upliftedCPM
-incrementalRevenue = upliftRevenue – baselineRevenue
-paybackWeeks = (implementationCost / incrementalRevenue) × 4.345
-ROI12m = ((incrementalRevenue × 12) – implementationCost) / implementationCost
-```
+## 🛠 Tech Stack
 
-## Test Data
+- **Frontend Framework**: React 18 with TypeScript
+- **Styling**: Tailwind CSS with custom design system
+- **UI Components**: Radix UI primitives with shadcn/ui
+- **PDF Generation**: pdfMake (client-side)
+- **Charts**: Recharts
+- **Build Tool**: Vite
+- **Validation**: Zod with React Hook Form
 
-Use these values for testing:
-- Monthly Impressions: 25,000,000
-- Average CPM: $3.20
-- CPM Lift: 15%
-- Inventory Gain: 40%
-- Implementation Cost: $25,000
+## 📦 Key Features
 
-Expected Results:
-- Incremental Monthly Revenue: ~$48,000
-- Payback Period: ~5.4 weeks
-- ROI at 12 months: ~1,610%
+- Interactive ROI calculation with real-time updates
+- Visual analytics with responsive charts
+- PDF proposal generation (client-side)
+- Mobile-responsive design
+- Configurable meeting booking integration
+- Zero backend dependencies
 
-## Tech Stack
+## 🔧 Environment Variables
 
-- **React 18** with TypeScript
-- **Tailwind CSS** for styling
-- **Shadcn/UI** component library
-- **Recharts** for data visualization
-- **jsPDF** for PDF generation
-- **Vite** for build tooling
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_MEETING_BOOKING_URL` | URL for booking strategy sessions | Outlook booking link |
+| `VITE_COMPANY_NAME` | Company name for branding | AdFixus |
 
-## Brand Colors
+## 📊 ROI Calculation Logic
 
-- Deep Teal `#006073` (primary)
-- Aqua `#00C7B1` (accent)
-- Coral `#FF615A` (alert/CTA)
-- Off-white `#F7F9FA` (background)
+The calculator uses these formulas:
+- **Baseline Revenue**: Annual revenue × Display/Video shares
+- **CAPI Impact**: Based on browser inventory and performance metrics
+- **Incremental Revenue**: Projected - Current revenue
+- **ROI**: (Incremental Revenue / Implementation Cost) × 100
 
-## Usage for Sales Teams
+## 🚀 Deployment
 
-1. Share the calculator URL with prospects
-2. Prospects input their current metrics (3-4 fields)
-3. Click "Calculate" for instant ROI analysis
-4. Download professional PDF business case
-5. Use results for internal stakeholder discussions
-
-## Development
+### Static Hosting (Recommended)
+Deploy to any static host like Netlify, Vercel, or AWS S3:
 
 ```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
 npm run build
+# Upload dist/ folder to your hosting provider
 ```
 
-## Accessibility
+### Custom Domain Setup
+1. Build the project: `npm run build`
+2. Configure your host to serve from `dist/index.html`
+3. Set up redirects for SPA routing (all routes → `/index.html`)
 
-- WCAG AA color contrast compliance
-- Keyboard navigation support
-- Responsive design for all screen sizes
-- Semantic HTML structure
+## 📝 Updating Meeting URL
 
-## Customization
+Edit the `VITE_MEETING_BOOKING_URL` in your `.env` file:
 
-The calculator is designed for easy customization:
-- Update brand colors in the component styles
-- Modify default values based on industry benchmarks
-- Adjust calculation formulas as needed
-- Customize PDF template and branding
+```bash
+VITE_MEETING_BOOKING_URL=https://your-booking-platform.com/book
+```
 
-## Hand-off Notes for Engineers
+## 📚 Additional Documentation
 
-- All calculations are in the main `ROICalculator.tsx` component
-- PDF generation uses jsPDF with custom template
-- Chart visualization uses Recharts BarChart
-- Form validation includes real-time error handling
-- Responsive design uses Tailwind's grid system
-- Brand colors are applied inline for easy identification
+- [HANDOFF.md](./HANDOFF.md) - Developer onboarding guide
+- [SECURITY.md](./SECURITY.md) - Security considerations
+- [CHANGELOG.md](./CHANGELOG.md) - Version history
+
+## 🤝 Support
+
+For technical questions or feature requests, contact the development team or refer to the handoff documentation.

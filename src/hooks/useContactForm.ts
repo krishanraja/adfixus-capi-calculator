@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { buildAdfixusProposalPdf } from '@/utils/pdfmakeGenerator';
 import type { ContactForm, ROIInputs, ROIResults } from '@/types/roi';
 
 export function useContactForm() {
@@ -47,39 +47,20 @@ export function useContactForm() {
     setIsSubmitting(true);
     
     try {
-
-      const { data, error } = await supabase.functions.invoke('send-roi-report', {
-        body: {
-          userInfo: contactForm,
-          inputs: {
-            annualRevenue: inputs.annualRevenue.toString(),
-            displayShare: inputs.displayShare,
-            videoShare: inputs.videoShare,
-            chromePercentage: inputs.chromePercentage,
-            performanceCampaignPercentage: inputs.performanceCampaignPercentage
-          },
-          results
-        }
+      // Generate and download PDF report
+      await buildAdfixusProposalPdf(inputs, results);
+      
+      toast({
+        title: "Success!",
+        description: "Your CAPI impact report has been downloaded successfully.",
       });
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: `Failed to send email: ${error.message}`,
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "Success!",
-          description: "Your CAPI impact report has been sent successfully.",
-        });
-        setShowContactDialog(false);
-        resetContactForm();
-      }
+      
+      setShowContactDialog(false);
+      resetContactForm();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: `An unexpected error occurred: ${error.message}`,
+        description: `Failed to generate report: ${error.message}`,
         variant: "destructive"
       });
     } finally {
