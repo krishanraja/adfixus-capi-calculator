@@ -210,3 +210,5 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
+
+// Function version: 2.0 - Updated 2025-01-13
