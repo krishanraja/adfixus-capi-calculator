@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Home, Calculator, FileText } from 'lucide-react';
+import { BarChart3, Home, Calculator, Phone } from 'lucide-react';
 import type { StepType } from '@/types/roi';
 
 interface NavigationProps {
@@ -58,15 +58,26 @@ export function Navigation({ currentStep, onReset }: NavigationProps) {
             })}
           </div>
 
-          {/* Reset Button */}
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={onReset}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            Reset
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex items-center space-x-3">
+            <Button 
+              variant="default" 
+              size="sm"
+              onClick={() => window.open(import.meta.env.VITE_MEETING_BOOKING_URL || 'https://outlook.office.com/book/SalesTeambooking@adfixus.com', '_blank')}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Phone className="w-4 h-4 mr-2" />
+              Book a Call
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onReset}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Reset
+            </Button>
+          </div>
         </div>
       </div>
     </nav>

@@ -50,6 +50,25 @@ export function useContactForm() {
       // Generate and download PDF report
       await buildAdfixusProposalPdf(inputs, results);
       
+      // Send email with PDF contents and contact details
+      const response = await fetch(`https://ojtfnhzqhfsprebvpmvx.supabase.co/functions/v1/send-pdf-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qdGZuaHpxaGZzcHJlYnZwbXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1NDQwNDQsImV4cCI6MjA2ODEyMDA0NH0.4EQ-NFJWqu9v3VXzk21g_O-sEmNr7y6kDoYrgICc584`
+        },
+        body: JSON.stringify({
+          contactForm,
+          inputs,
+          results
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Email sending failed:', await response.text());
+        // Don't fail the entire process if email fails
+      }
+      
       toast({
         title: "Success!",
         description: "Your CAPI impact report has been downloaded successfully.",

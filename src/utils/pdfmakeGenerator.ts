@@ -273,6 +273,27 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                 }
               ],
               columnGap: 8
+            },
+            
+            // Contact Information in Executive Summary
+            { 
+              text: "Contact AdFixus Sales Team", 
+              style: "h2",
+              margin: [0, 20, 0, 6]
+            },
+            {
+              stack: [
+                { 
+                  text: "Email: sales@adfixus.com", 
+                  style: "body",
+                  margin: [0, 0, 0, 3]
+                },
+                {
+                  text: "Book A Call",
+                  style: "body",
+                  bold: true
+                }
+              ]
             }
           ]
         },

@@ -115,9 +115,7 @@ const ROICalculator = () => {
   return (
     <TooltipProvider>
       <div className="min-h-screen">
-        {(currentStep === 'calculator' || currentStep === 'results') && (
-          <Navigation currentStep={currentStep} onReset={resetToHero} />
-        )}
+        <Navigation currentStep={currentStep} onReset={resetToHero} />
         
         {renderCurrentStep()}
 
