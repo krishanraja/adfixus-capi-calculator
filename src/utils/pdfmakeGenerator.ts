@@ -291,6 +291,9 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                 {
                   text: "Book A Call",
                   style: "body",
+                  link: "https://outlook.office.com/book/SalesTeambooking@adfixus.com",
+                  color: "#0EA5E9",
+                  decoration: "underline",
                   bold: true
                 }
               ]
