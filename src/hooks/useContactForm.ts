@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { buildAdfixusProposalPdf } from '@/utils/pdfmakeGenerator';
+import { supabase } from '@/integrations/supabase/client';
 import type { ContactForm, ROIInputs, ROIResults } from '@/types/roi';
 
 export function useContactForm() {
@@ -50,23 +51,35 @@ export function useContactForm() {
       // Generate and download PDF report
       await buildAdfixusProposalPdf(inputs, results);
       
-      // Send email with PDF contents and contact details
-      const response = await fetch(`https://ojtfnhzqhfsprebvpmvx.supabase.co/functions/v1/send-pdf-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qdGZuaHpxaGZzcHJlYnZwbXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1NDQwNDQsImV4cCI6MjA2ODEyMDA0NH0.4EQ-NFJWqu9v3VXzk21g_O-sEmNr7y6kDoYrgICc584`
-        },
-        body: JSON.stringify({
-          contactForm,
-          inputs,
-          results
-        })
-      });
+      // Send email with PDF contents and contact details using Supabase client
+      try {
+        console.log('Sending email with data:', { contactForm, inputs: Object.keys(inputs), results: Object.keys(results) });
+        
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-pdf-email', {
+          body: {
+            contactForm,
+            inputs,
+            results
+          }
+        });
 
-      if (!response.ok) {
-        console.error('Email sending failed:', await response.text());
-        // Don't fail the entire process if email fails
+        if (emailError) {
+          console.error('Email function error:', emailError);
+          toast({
+            title: "Email Warning",
+            description: "Report downloaded successfully, but email notification failed.",
+            variant: "default"
+          });
+        } else {
+          console.log('Email sent successfully:', emailData);
+        }
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        toast({
+          title: "Email Warning", 
+          description: "Report downloaded successfully, but email notification failed.",
+          variant: "default"
+        });
       }
       
       toast({

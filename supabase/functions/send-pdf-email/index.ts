@@ -48,7 +48,59 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { contactForm, inputs, results }: EmailRequest = await req.json();
+    // Check if RESEND_API_KEY is configured
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.error("RESEND_API_KEY is not configured");
+      return new Response(
+        JSON.stringify({ error: "Email service is not configured" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Parse and validate request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+      console.log("Request body received:", JSON.stringify(requestBody, null, 2));
+    } catch (parseError) {
+      console.error("Failed to parse request body:", parseError);
+      return new Response(
+        JSON.stringify({ error: "Invalid request body" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Validate required fields
+    const { contactForm, inputs, results } = requestBody;
+    
+    if (!contactForm || !contactForm.email || !contactForm.firstName || !contactForm.lastName || !contactForm.company) {
+      console.error("Missing or invalid contactForm data:", contactForm);
+      return new Response(
+        JSON.stringify({ error: "Missing contact form data" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    if (!inputs || !results) {
+      console.error("Missing inputs or results data");
+      return new Response(
+        JSON.stringify({ error: "Missing calculator data" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     console.log("Sending PDF email for:", contactForm.email);
 
@@ -116,15 +168,27 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    const emailResponse = await resend.emails.send({
-      from: "AdFixus Calculator <onboarding@resend.dev>",
-      to: ["hello@krishraja.com"],
-      subject: `New CAPI ROI Analysis - ${contactForm.company} (${contactForm.firstName} ${contactForm.lastName})`,
-      html: emailHtml,
-      replyTo: contactForm.email,
-    });
-
-    console.log("Email sent successfully:", emailResponse);
+    // Send email with better error handling
+    let emailResponse;
+    try {
+      emailResponse = await resend.emails.send({
+        from: "AdFixus Calculator <onboarding@resend.dev>",
+        to: ["hello@krishraja.com"],
+        subject: `New CAPI ROI Analysis - ${contactForm.company} (${contactForm.firstName} ${contactForm.lastName})`,
+        html: emailHtml,
+        replyTo: contactForm.email,
+      });
+      console.log("Email sent successfully:", emailResponse);
+    } catch (emailError) {
+      console.error("Failed to send email:", emailError);
+      return new Response(
+        JSON.stringify({ error: "Failed to send email", details: emailError.message }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     return new Response(JSON.stringify({ success: true, emailId: emailResponse.data?.id }), {
       status: 200,
