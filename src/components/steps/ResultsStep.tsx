@@ -6,14 +6,14 @@ import type { ROIResults as ROIResultsType } from '@/types/roi';
 interface ResultsStepProps {
   results: ROIResultsType;
   performanceCampaignPercentage: number;
-  onGeneratePDF: () => void;
+  onOpenContactDialog: () => void;
   onPrevious: () => void;
 }
 
 export function ResultsStep({ 
   results, 
   performanceCampaignPercentage, 
-  onGeneratePDF, 
+  onOpenContactDialog, 
   onPrevious 
 }: ResultsStepProps) {
   return (
@@ -30,10 +30,10 @@ export function ResultsStep({
         </div>
 
         {/* Results */}
-        <ROIResults
-          results={results}
+        <ROIResults 
+          results={results} 
           performanceCampaignPercentage={performanceCampaignPercentage}
-          onGeneratePDF={onGeneratePDF}
+          onOpenContactDialog={onOpenContactDialog}
         />
 
         {/* CTA Section */}

@@ -8,10 +8,10 @@ import type { ROIResults as ROIResultsType } from '@/types/roi';
 interface ROIResultsProps {
   results: ROIResultsType;
   performanceCampaignPercentage: number;
-  onGeneratePDF: () => void;
+  onOpenContactDialog: () => void;
 }
 
-export function ROIResults({ results, performanceCampaignPercentage, onGeneratePDF }: ROIResultsProps) {
+export function ROIResults({ results, performanceCampaignPercentage, onOpenContactDialog }: ROIResultsProps) {
   return (
     <div className="max-w-2xl mx-auto">
       <Card className="shadow-lg border-0">
@@ -90,7 +90,7 @@ export function ROIResults({ results, performanceCampaignPercentage, onGenerateP
           </div>
 
           <Button
-            onClick={onGeneratePDF}
+            onClick={onOpenContactDialog}
             className="w-full text-white font-semibold py-3 mt-8 bg-brand-accent hover:bg-brand-accent/90"
           >
             <Download className="w-4 h-4 mr-2" />

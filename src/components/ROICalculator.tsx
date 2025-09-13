@@ -57,25 +57,6 @@ const ROICalculator = () => {
     }
   };
 
-  const handleGeneratePDF = async () => {
-    if (!results) return;
-    
-    try {
-      const roiInputs = getROIInputs();
-      await buildAdfixusProposalPdf(roiInputs, results);
-      toast({
-        title: "PDF Generated",
-        description: "Your AdFixus CAPI proposal has been downloaded.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error", 
-        description: "Failed to generate PDF. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 'hero':
@@ -103,7 +84,7 @@ const ROICalculator = () => {
           <ResultsStep
             results={results}
             performanceCampaignPercentage={performanceCampaignPercentage[0]}
-            onGeneratePDF={handleGeneratePDF}
+            onOpenContactDialog={() => setShowContactDialog(true)}
             onPrevious={previousStep}
           />
         ) : null;
