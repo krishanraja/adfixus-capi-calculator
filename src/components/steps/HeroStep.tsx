@@ -22,7 +22,7 @@ export function HeroStep({ onNext }: HeroStepProps) {
         {/* Hero Content */}
         <div className="mb-12">
           <h1 className="text-5xl font-bold text-brand-primary mb-6">
-            Track conversions accurately across Australia's top publishers
+            Build a seamless and stable Conversion API with one contract.
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             Discover how AdFixus unique Conversion API can boost your advertising performance and conversion tracking. Get a personalized plan in just a few minutes.
