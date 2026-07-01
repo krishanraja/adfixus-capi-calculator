@@ -14,15 +14,17 @@ change the core, change it here and re-sync `src/core/` into every repo (see
 | Repo | Audience | Purpose | Engine scope | Draws |
 |------|----------|---------|--------------|-------|
 | **adfixus-id-simulator** | Public lead magnet | Measure **ID durability** for an open-web publisher | `id-only` | `results.idInfrastructure` (Safari addressability recovery + CPM delta + CDP savings) |
-| **adfixus-capi-calculator** | Public lead magnet | Measure the **CAPI Sales-Plan** — campaign ramp + $30K-cap economics + deal models | `id-capi` | `results.capiCapabilities` + the commercial deal models (revenue-share / annual-cap / flat-fee) |
+| **adfixus-capi-calculator** | Public lead magnet | **The CAPI data bridge** — restore the publisher↔advertiser conversion signal and show what it's worth (campaign ramp + $30K-cap economics + deal models behind a depth drawer) | `id-capi` | `results.capiCapabilities` + the commercial deal models (revenue-share / annual-cap / flat-fee) |
 | **adfixus-sales** | Internal (team-only) | **Target Business Report Card** — live enrichment + v6 rubric + full ROI/commercial | `id-capi-performance` | the full stack + `pricingConfig` + commercial modelling |
 
-All three are React 18 + Vite + TypeScript + Tailwind + shadcn/ui and all three
-are **iframe-embeddable into adfixus.com**.
+All three are React 18 + Vite + TypeScript + Tailwind + shadcn/ui, share the
+**guided-flow shell** (`src/components/flow/*` — provocation → one question →
+reveal → depth drawer), and are **iframe-embeddable into adfixus.com**.
 
 - The **two lead magnets are 100% client-side** — no backend, no login, no
   secrets. They import `src/core` and render benefit slices only; they never
-  import `pricingConfig`.
+  import `pricingConfig`. Their single CTA opens a booking link
+  (`VITE_MEETING_BOOKING_URL`); there is no form and no lead store.
 - **adfixus-sales has a serverless backend** (Vercel `api/*`) that holds all the
   third-party enrichment keys server-side and is reached through
   `src/lib/proxyClient.ts`. It is **team-only**, served behind Vercel
@@ -51,10 +53,13 @@ src/core/
     domain.ts                     # CoreDomain + singleDomain() helper
     scenarios.ts                  # inputs / results / scenario / AssumptionOverrides types
   embed/embed.ts                  # iframe height-reporting module
-  adapters/leadAdapter.ts         # pluggable lead capture (localStorage default)
   selfcheck.ts                    # dependency-free golden-values test
   index.ts                        # re-exports everything above
 ```
+
+> The core is shared benefit math + embed + design. Lead capture is **not** part
+> of it: the two public lead magnets use a booking-link CTA, not a form. A tool
+> that needs to persist leads adds its own adapter (see §6).
 
 ### 2.1 Engine API
 
@@ -237,22 +242,30 @@ on another origin, pass `initAdfixusEmbed({ appName, parentOrigin })`.
 
 ---
 
-## 6. Adapters (pluggable)
+## 6. Lead capture & PDF
 
-- **Lead capture** (`src/core/adapters/leadAdapter.ts`): default appends the lead
-  to `localStorage["adfixus_leads"]`. To send leads to a CRM/ESP later, implement
-  the `LeadAdapter` interface and call `setLeadAdapter(yours)` once at startup —
-  nothing else changes. In **adfixus-sales** the lead can also be POSTed to the
-  proxy `POST /api/lead` (Resend), server-side.
-- **PDF**: generated fully client-side with pdfmake and downloaded. No email in
-  the lead magnets.
+- **Lead capture is tool-specific, not part of the core.** The two public lead
+  magnets do **not** collect a form; their single CTA opens the booking link
+  (`VITE_MEETING_BOOKING_URL`) in a new tab. A tool that needs to persist leads
+  (e.g. **adfixus-sales**) adds its own adapter — client-side `localStorage`, or a
+  server-side `POST /api/lead` (Resend) through its proxy — keeping any
+  credentials server-side, never in a `VITE_` var.
+- **PDF**: generated fully client-side with pdfmake and downloaded (in
+  capi-calculator, from inside the "See the full plan" depth drawer). No email,
+  no upload.
 
 ---
 
 ## 7. Keeping repos in sync
 
-`src/core/`, `src/index.css`, `tailwind.config.ts`, and this
-`docs/ADFIXUS_CORE_SPEC.md` must stay **identical** across the three repos. When
-you change one, copy it to the others and run the self-check in each. There is
-deliberately no shared npm package (kept simple for handover); promoting the core
-to a private package is a good future step.
+The **shared engine + design** must stay **identical** across the three repos:
+`src/core/engine/`, `src/core/constants/`, `src/core/types/`,
+`src/core/embed/embed.ts`, `src/core/selfcheck.ts`, the guided-flow shell
+`src/components/flow/*`, `src/index.css`, `tailwind.config.ts`, and this
+`docs/ADFIXUS_CORE_SPEC.md`. When you change one, copy it to the others and run
+the self-check in each.
+
+Tool-specific pieces are **not** synced: each tool's `src/components/{bridge,
+salesplan,commercial}/*`, its `useSalesPlan`-style hook, any lead adapter, and its
+scope. There is deliberately no shared npm package (kept simple for handover);
+promoting the core to a private package is a good future step.

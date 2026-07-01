@@ -1,19 +1,51 @@
 # Changelog
 
-All notable changes to **adfixus-capi-calculator**, the public AdFixus CAPI
-Sales-Plan Simulator lead magnet.
+All notable changes to **adfixus-capi-calculator**, the public AdFixus lead magnet
+for **the CAPI data bridge**.
 
-> **Current architecture (authoritative):** a 100% client-side React SPA. Core
-> benefit math lives in the shared **`src/core`** engine (`scope: 'id-capi'`, via
-> `src/hooks/useSalesPlan.ts` → `calculateCapiBenefits`); the campaign ramp and the
-> deal-model economics live in `src/utils/*`. It compares three commercial deal
-> models (revenue-share / annual-cap / flat-fee) with a $30K/campaign monthly cap,
-> and is iframe-embeddable into adfixus.com. **No Supabase, no backend, no login,
-> no secrets.** Older entries below predate the current build.
+> **Current architecture (authoritative):** a 100% client-side React SPA with an
+> Apple-grade guided flow (provocation → one match-rate slider → signal-bridge
+> reveal → depth drawer). Core benefit math lives in the shared **`src/core`**
+> engine (`scope: 'id-capi'`, via `src/hooks/useSalesPlan.ts` →
+> `calculateCapiBenefits`); the campaign ramp and the deal-model economics live in
+> `src/utils/*` and are shown only inside the depth drawer. It compares three
+> commercial deal models (revenue-share / annual-cap / flat-fee) with a
+> $30K/campaign monthly cap, and is iframe-embeddable into adfixus.com. **No
+> backend, no login, no lead form, no secrets.** Older entries below predate the
+> current build.
 
 ---
 
-## [3.0.0] - CAPI Sales-Plan Simulator on the shared core (current)
+## [4.0.0] - Production cleanup (current)
+
+### Removed
+- **Dead code:** the unused `Navigation.tsx`, `src/App.css`, `use-mobile`, the
+  unused `leadAdapter` (the guided flow captures no leads), ~30 unreferenced
+  shadcn/ui primitives, a stray Lovable image and `placeholder.svg`, and the
+  leftover `bun.lockb` (the repo uses npm).
+- **Unused dependencies:** `@hookform/resolvers`, `react-hook-form`, `zod`,
+  `@tailwindcss/typography`, and the `@radix-ui/*` packages backing the deleted UI
+  primitives (38 packages pruned).
+
+### Changed
+- Rewrote `README.md`, `HANDOVER.md`, `docs/ADFIXUS_CORE_SPEC.md`, and corrected
+  `SECURITY.md` to the data-bridge + guided-flow reality (no lead form, one env
+  var).
+- Fixed lint: ESM import for the Tailwind plugin (was `require()`); removed dead
+  `eslint-disable` directives. `npm run build` and `npm run lint` are clean
+  (only expected vendored-shadcn / FlowShell react-refresh warnings remain).
+- Untracked `.env` (`git rm --cached`); gitignored `.env`, `.env.local`, `.vercel`.
+
+## [3.1.0] - The CAPI data bridge + guided flow
+
+### Reframed
+- Reframed the product as **the publisher↔advertiser data bridge**: restore the
+  conversion signal first (the animated `SignalBridge` reveal leads), with the
+  full sales plan / economics / deal models demoted behind a depth drawer.
+- Wrapped everything in the shared Apple-grade guided-flow shell
+  (`src/components/flow/*`).
+
+## [3.0.0] - CAPI simulator on the shared core
 
 ### Rebuilt
 - Rebuilt as a **publisher sales-plan simulator**: campaign ramp + $30K-cap

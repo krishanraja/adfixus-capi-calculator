@@ -1,4 +1,4 @@
-# Security — adfixus-capi-calculator (CAPI Sales-Plan Simulator)
+# Security — adfixus-capi-calculator (The CAPI Data Bridge)
 
 ## Overview
 
@@ -10,15 +10,15 @@ sent to a backend. There is **no login, no database, and no API keys / secrets**
 
 - **No backend:** all math and PDF generation happen client-side — no server-side
   attack surface, no secrets to leak.
-- **No secrets:** the app requires none. The only environment variables are
-  `VITE_MEETING_BOOKING_URL` and `VITE_COMPANY_NAME` (both public links/labels),
-  safe to expose. `VITE_*` values are baked into the client and must only ever hold
-  public information.
-- **Lead data:** captured contacts are stored in the browser's `localStorage`
-  (`adfixus_leads`) via the pluggable `leadAdapter`; nothing is transmitted. If you
-  later route leads to a CRM/ESP, implement `LeadAdapter` and keep any credentials
-  **server-side** (never in a `VITE_` var).
-- **XSS:** React's default escaping; form inputs validated with Zod.
+- **No secrets:** the app requires none. The only environment variable is
+  `VITE_MEETING_BOOKING_URL` (a public booking link), safe to expose. `VITE_*`
+  values are baked into the client and must only ever hold public information —
+  never a credential.
+- **No lead capture, no PII:** the guided flow has no form and no lead store. Its
+  single CTA opens the booking link in a new tab. If you later route leads to a
+  CRM/ESP, add an adapter and keep any credentials **server-side** (never in a
+  `VITE_` var).
+- **XSS:** React's default escaping; the only user input is a numeric slider.
 - **Note:** because inputs and math are client-side, results are estimates and can
   be altered by the user — treat them as illustrative, not authoritative quotes.
 

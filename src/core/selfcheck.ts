@@ -36,16 +36,13 @@ let failed = 0;
 for (const c of checks) {
   const ok = Math.abs(c.got - c.want) <= c.tol;
   if (!ok) failed++;
-  // eslint-disable-next-line no-console
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${c.label}: got ${c.got}, want ${c.want} (±${c.tol})`);
 }
 
 if (failed > 0) {
-  // eslint-disable-next-line no-console
   console.error(`\n${failed} golden value(s) drifted — the engine math changed.`);
   (globalThis as { process?: { exit?: (code: number) => void } }).process?.exit?.(1);
 } else {
-  // eslint-disable-next-line no-console
   console.log('\nAll AdFixus core golden values OK.');
 }
 
