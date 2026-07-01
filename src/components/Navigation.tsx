@@ -23,7 +23,7 @@ export function Navigation({ onReset }: NavigationProps) {
               style={{ filter: 'brightness(0) invert(1)' }}
             />
             <span className="hidden sm:inline text-sm font-medium text-muted-foreground border-l border-border/60 pl-3">
-              CAPI Sales Plan
+              The CAPI Data Bridge
             </span>
           </div>
 

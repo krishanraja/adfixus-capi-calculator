@@ -50,13 +50,14 @@ export const PlanSummary = ({ results }: PlanSummaryProps) => {
     <div className="space-y-6">
       <div className="text-center space-y-3 animate-fade-in">
         <p className="text-sm text-muted-foreground uppercase tracking-widest">
-          Your CAPI sales-plan opportunity
+          What closing the bridge is worth
         </p>
-        <h1 className="text-5xl md:text-7xl font-bold gradient-text">
+        <h2 className="text-5xl md:text-7xl font-bold gradient-text">
           {formatCommercialCurrency(netAnnualBenefit)}
-        </h1>
+        </h2>
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
-          Net incremental publisher revenue per year from CAPI campaigns, after revenue share.
+          Net incremental publisher revenue per year once the restored conversion signal reaches
+          your advertisers — after revenue share.
         </p>
       </div>
 

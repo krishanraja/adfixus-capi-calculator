@@ -5,17 +5,17 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>AdFixus CAPI Sales-Plan Simulator</title>
+        <title>AdFixus CAPI — The Publisher ↔ Advertiser Data Bridge</title>
         <meta
           name="description"
-          content="Model your publisher CAPI opportunity and get a concrete plan to mobilise your sales team — monthly campaign ramp, per-campaign economics, and commercial model comparison."
+          content="Without durable identity, the conversion signal a publisher sends its advertisers is broken across the anonymous majority. See how AdFixus + CAPI restores a clean, verified-human signal across all traffic — and what closing that gap is worth."
         />
-        <meta name="keywords" content="CAPI, conversion API, publisher revenue, sales plan, AdFixus" />
+        <meta name="keywords" content="CAPI, conversion API, durable identity, match rate, publisher revenue, attribution, AdFixus" />
         <link rel="canonical" href="/" />
-        <meta property="og:title" content="AdFixus CAPI Sales-Plan Simulator" />
+        <meta property="og:title" content="AdFixus CAPI — The Publisher ↔ Advertiser Data Bridge" />
         <meta
           property="og:description"
-          content="Model your publisher CAPI opportunity and mobilise your sales team to sell it."
+          content="Restore a clean, verified-human conversion signal across all your traffic — so advertisers see true conversions and budget follows."
         />
         <meta property="og:type" content="website" />
       </Helmet>

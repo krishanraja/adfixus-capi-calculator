@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Download, Phone } from 'lucide-react';
+import { Download, Phone, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { Navigation } from '@/components/Navigation';
+import { BridgeHero } from '@/components/bridge/BridgeHero';
+import { SignalCoverage } from '@/components/bridge/SignalCoverage';
 import { InputsPanel } from '@/components/salesplan/InputsPanel';
 import { PlanSummary } from '@/components/salesplan/PlanSummary';
 import { CampaignRamp } from '@/components/salesplan/CampaignRamp';
@@ -11,7 +13,7 @@ import { MobilizeSalesTeam } from '@/components/salesplan/MobilizeSalesTeam';
 import { CampaignEconomicsTable } from '@/components/commercial/CampaignEconomicsTable';
 import { CommercialScenarios } from '@/components/commercial/CommercialScenarios';
 import { ProofPointCard } from '@/components/commercial/ProofPointCard';
-import { useSalesPlan } from '@/hooks/useSalesPlan';
+import { useSalesPlan, BASELINE_MATCH_RATE } from '@/hooks/useSalesPlan';
 import { buildSalesPlanPdf } from '@/utils/pdfGenerator';
 
 const BOOKING_URL =
@@ -30,7 +32,7 @@ export default function SalesPlanApp() {
     setIsGenerating(true);
     try {
       await buildSalesPlanPdf(inputs, results);
-      toast({ title: 'Sales plan downloaded', description: 'Your CAPI sales-plan PDF is ready.' });
+      toast({ title: 'Plan downloaded', description: 'Your CAPI data-bridge plan is ready.' });
     } catch {
       toast({
         title: 'Something went wrong',
@@ -47,14 +49,39 @@ export default function SalesPlanApp() {
       <div className="min-h-dvh-safe hero-gradient">
         <Navigation onReset={reset} />
 
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-10 space-y-16">
+          {/* ---- 1. LEAD: the bridge idea + the signal being restored ---- */}
+          <BridgeHero coverage={inputs.matchRateImproved} baseline={BASELINE_MATCH_RATE} />
+
+          {/* ---- 2. INTERACTIVE: how much of your signal is invisible today ---- */}
+          <SignalCoverage
+            matchRate={inputs.matchRateImproved}
+            baseline={BASELINE_MATCH_RATE}
+            onMatchRateChange={(v) => update('matchRateImproved', v)}
+          />
+
+          {/* ---- Transition to the payoff ---- */}
+          <div className="flex flex-col items-center text-center gap-3 pt-4">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-primary/5">
+              <ArrowDown className="h-4 w-4 text-primary" />
+            </span>
+            <p className="text-xs uppercase tracking-[0.25em] text-primary font-medium">
+              What closing the bridge is worth
+            </p>
+            <p className="text-sm text-muted-foreground max-w-xl">
+              Now put numbers to it. Model your property below and see the revenue the restored
+              signal unlocks — and a concrete plan to mobilise your team to sell it.
+            </p>
+          </div>
+
+          {/* ---- 3. PAYOFF: the sales plan / economics / deal models ---- */}
           <div className="grid lg:grid-cols-[380px_1fr] gap-8">
             {/* Inputs — sticky on desktop */}
             <aside className="lg:sticky lg:top-24 lg:self-start space-y-6">
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Model your opportunity</h2>
+                <h2 className="text-lg font-semibold text-foreground">Model your property</h2>
                 <p className="text-sm text-muted-foreground">
-                  Adjust the sliders to build your CAPI sales plan.
+                  Your inputs shape both the signal above and the plan below.
                 </p>
               </div>
               <InputsPanel inputs={inputs} update={update} />
@@ -97,7 +124,7 @@ export default function SalesPlanApp() {
 
               <div className="text-center py-8">
                 <p className="text-sm text-muted-foreground mb-4">
-                  Ready to build your rollout plan with the AdFixus team?
+                  Ready to close the bridge with the AdFixus team?
                 </p>
                 <Button
                   size="lg"
