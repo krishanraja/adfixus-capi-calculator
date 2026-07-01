@@ -1,6 +1,39 @@
 # Changelog
 
-## [2.0.0] - Developer Handoff Release
+All notable changes to **adfixus-capi-calculator**, the public AdFixus CAPI
+Sales-Plan Simulator lead magnet.
+
+> **Current architecture (authoritative):** a 100% client-side React SPA. Core
+> benefit math lives in the shared **`src/core`** engine (`scope: 'id-capi'`, via
+> `src/hooks/useSalesPlan.ts` → `calculateCapiBenefits`); the campaign ramp and the
+> deal-model economics live in `src/utils/*`. It compares three commercial deal
+> models (revenue-share / annual-cap / flat-fee) with a $30K/campaign monthly cap,
+> and is iframe-embeddable into adfixus.com. **No Supabase, no backend, no login,
+> no secrets.** Older entries below predate the current build.
+
+---
+
+## [3.0.0] - CAPI Sales-Plan Simulator on the shared core (current)
+
+### Rebuilt
+- Rebuilt as a **publisher sales-plan simulator**: campaign ramp + $30K-cap
+  economics + side-by-side commercial deal models (revenue-share / annual-cap /
+  flat-fee), all driven by the shared `src/core` engine
+  (`calculateCapiBenefits`, scope `id-capi`). Replaced the old per-format
+  `roiCalculations.ts` with the verified engine.
+- Re-skinned to the canonical **dark + bright-cyan** design system (PDF included)
+  and added the shared **embed module** (`src/core/embed/embed.ts`).
+
+### Docs
+- Rewrote `README.md`, `HANDOVER.md`, `SECURITY.md`; synced
+  `docs/ADFIXUS_CORE_SPEC.md`.
+
+### Removed
+- All Supabase / backend remnants — the tool is 100% client-side.
+
+---
+
+## [2.0.0] - Developer Handoff Release (historical)
 
 ### 🎯 Major Changes
 - **Removed Supabase dependency**: Eliminated all backend dependencies for simplified deployment
