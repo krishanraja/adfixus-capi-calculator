@@ -1,144 +1,139 @@
+// SalesPlanApp — the Apple-grade guided-flow surface for the CAPI data bridge.
+//
+// The default path is three screens and almost no input:
+//   1. Provocation — "Your advertisers only credit the conversions they can see."
+//   2. AskStep     — ONE control: the restored match rate (30% → 75%+), smart
+//                    default already set.
+//   3. Reveal      — the SignalBridge visual (the conversion signal restored) +
+//                    a single number for what closing the bridge is worth, and
+//                    one calm CTA.
+//
+// ALL the existing depth — the bridge narrative, the interactive signal-coverage
+// grid, the full configurable inputs, the sales plan, campaign ramp, $30K-cap
+// per-campaign economics and the deal-model comparison — is unchanged and lives
+// behind the DepthDrawer ("See the full plan"). Nothing lost, just demoted.
+
 import { useState } from 'react';
-import { Download, Phone, ArrowDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Phone } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { useToast } from '@/hooks/use-toast';
-import { Navigation } from '@/components/Navigation';
-import { BridgeHero } from '@/components/bridge/BridgeHero';
-import { SignalCoverage } from '@/components/bridge/SignalCoverage';
-import { InputsPanel } from '@/components/salesplan/InputsPanel';
-import { PlanSummary } from '@/components/salesplan/PlanSummary';
-import { CampaignRamp } from '@/components/salesplan/CampaignRamp';
-import { MobilizeSalesTeam } from '@/components/salesplan/MobilizeSalesTeam';
-import { CampaignEconomicsTable } from '@/components/commercial/CampaignEconomicsTable';
-import { CommercialScenarios } from '@/components/commercial/CommercialScenarios';
-import { ProofPointCard } from '@/components/commercial/ProofPointCard';
+import { SignalBridge } from '@/components/bridge/SignalBridge';
+import { FullPlan } from '@/components/salesplan/FullPlan';
 import { useSalesPlan, BASELINE_MATCH_RATE } from '@/hooks/useSalesPlan';
-import { buildSalesPlanPdf } from '@/utils/pdfGenerator';
+import {
+  formatCommercialCurrency,
+  getCapiMonthlyIncremental,
+} from '@/utils/commercialCalculations';
+import {
+  FlowShell,
+  Provocation,
+  AskStep,
+  Reveal,
+  AnimatedNumber,
+  DepthDrawer,
+} from '@/components/flow';
+import { MatchRateControl } from '@/components/flow/MatchRateControl';
 
 const BOOKING_URL =
   import.meta.env.VITE_MEETING_BOOKING_URL ||
   'https://outlook.office.com/book/SalesTeambooking@adfixus.com';
 
+type Step = 0 | 1 | 2;
+
 export default function SalesPlanApp() {
-  const { inputs, update, reset, plan } = useSalesPlan();
+  const { inputs, update, plan } = useSalesPlan();
   const { results } = plan;
-  const { toast } = useToast();
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [step, setStep] = useState<Step>(0);
 
-  const capiConfig = results.capiCapabilities?.capiConfiguration;
-
-  const handleDownload = async () => {
-    setIsGenerating(true);
-    try {
-      await buildSalesPlanPdf(inputs, results);
-      toast({ title: 'Plan downloaded', description: 'Your CAPI data-bridge plan is ready.' });
-    } catch {
-      toast({
-        title: 'Something went wrong',
-        description: 'Could not generate the PDF. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  // The single "what closing the bridge is worth" number — net annual publisher
+  // benefit after revenue share, identical to the PlanSummary hero.
+  const annualCapiIncremental = getCapiMonthlyIncremental(results) * 12;
+  const netAnnualBenefit =
+    annualCapiIncremental * (1 - (results.pricing.capiServiceFeeRate ?? 0.125));
 
   return (
     <TooltipProvider>
-      <div className="min-h-dvh-safe hero-gradient">
-        <Navigation onReset={reset} />
-
-        <main className="container mx-auto px-4 py-10 space-y-16">
-          {/* ---- 1. LEAD: the bridge idea + the signal being restored ---- */}
-          <BridgeHero coverage={inputs.matchRateImproved} baseline={BASELINE_MATCH_RATE} />
-
-          {/* ---- 2. INTERACTIVE: how much of your signal is invisible today ---- */}
-          <SignalCoverage
-            matchRate={inputs.matchRateImproved}
-            baseline={BASELINE_MATCH_RATE}
-            onMatchRateChange={(v) => update('matchRateImproved', v)}
+      <FlowShell stepIndex={step} stepCount={3} showProgress={step < 2}>
+        {step === 0 && (
+          <Provocation
+            eyebrow="The publisher ↔ advertiser data bridge"
+            headline={
+              <>
+                Your advertisers only credit the conversions they can{' '}
+                <span className="gradient-text">see</span>.
+              </>
+            }
+            support="Across the anonymous majority — Safari and ITP, logged-out visitors, an ever-larger slice of the open web — the conversion signal you send is broken. The outcomes still happen; advertisers just can't attribute them to you, so they quietly pull budget."
+            ctaLabel="Show me the gap"
+            onContinue={() => setStep(1)}
           />
+        )}
 
-          {/* ---- Transition to the payoff ---- */}
-          <div className="flex flex-col items-center text-center gap-3 pt-4">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-primary/5">
-              <ArrowDown className="h-4 w-4 text-primary" />
-            </span>
-            <p className="text-xs uppercase tracking-[0.25em] text-primary font-medium">
-              What closing the bridge is worth
-            </p>
-            <p className="text-sm text-muted-foreground max-w-xl">
-              Now put numbers to it. Model your property below and see the revenue the restored
-              signal unlocks — and a concrete plan to mobilise your team to sell it.
-            </p>
-          </div>
+        {step === 1 && (
+          <AskStep
+            eyebrow="One question"
+            question={
+              <>
+                How much of your conversion signal could a durable ID{' '}
+                <span className="gradient-text">restore</span>?
+              </>
+            }
+            hint="A durable, verified-human identity at the edge plus CAPI typically lifts match rate from ~30% toward 75%+. This is the only lever we need to show you what it's worth."
+            ctaLabel="See what it's worth"
+            onContinue={() => setStep(2)}
+            onBack={() => setStep(0)}
+          >
+            <MatchRateControl
+              value={inputs.matchRateImproved}
+              baseline={BASELINE_MATCH_RATE}
+              onChange={(v) => update('matchRateImproved', v)}
+            />
+          </AskStep>
+        )}
 
-          {/* ---- 3. PAYOFF: the sales plan / economics / deal models ---- */}
-          <div className="grid lg:grid-cols-[380px_1fr] gap-8">
-            {/* Inputs — sticky on desktop */}
-            <aside className="lg:sticky lg:top-24 lg:self-start space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">Model your property</h2>
-                <p className="text-sm text-muted-foreground">
-                  Your inputs shape both the signal above and the plan below.
-                </p>
+        {step === 2 && (
+          <Reveal
+            eyebrow="The bridge, closed"
+            visual={
+              <div className="glass-card rounded-2xl border-primary/10 p-4 sm:p-8">
+                <SignalBridge
+                  coverage={inputs.matchRateImproved}
+                  baseline={BASELINE_MATCH_RATE}
+                />
               </div>
-              <InputsPanel inputs={inputs} update={update} />
-            </aside>
-
-            {/* Results / the sales plan */}
-            <div className="space-y-10 stagger-fade">
-              <PlanSummary results={results} />
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button onClick={handleDownload} disabled={isGenerating} className="btn-gradient border-0 gap-2">
-                  <Download className="h-4 w-4" />
-                  {isGenerating ? 'Generating…' : 'Download the plan (PDF)'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => window.open(BOOKING_URL, '_blank')}
-                  className="gap-2"
-                >
-                  <Phone className="h-4 w-4" />
-                  Book a meeting
-                </Button>
-              </div>
-
-              {capiConfig && <CampaignRamp config={capiConfig} />}
-
-              <MobilizeSalesTeam results={results} />
-
-              <section className="space-y-3">
-                <h2 className="text-lg font-semibold text-foreground">Per-campaign economics</h2>
-                <CampaignEconomicsTable avgCampaignSpend={inputs.avgCampaignSpend} />
-              </section>
-
-              <section className="space-y-3">
-                <h2 className="text-lg font-semibold text-foreground">Commercial model comparison</h2>
-                <CommercialScenarios results={results} />
-              </section>
-
-              <ProofPointCard />
-
-              <div className="text-center py-8">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Ready to close the bridge with the AdFixus team?
-                </p>
-                <Button
-                  size="lg"
-                  onClick={() => window.open(BOOKING_URL, '_blank')}
-                  className="btn-gradient border-0 gap-2"
-                >
-                  <Phone className="h-4 w-4" />
-                  Book a meeting
-                </Button>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
+            }
+            hero={
+              <span className="gradient-text">
+                <AnimatedNumber value={netAnnualBenefit} format={formatCommercialCurrency} />
+              </span>
+            }
+            meaning="Net incremental publisher revenue a year — the conversions you already earn, finally reaching your advertisers as a clean, verified-human signal. Attribution restored, budget follows."
+            cta={
+              <button
+                type="button"
+                onClick={() => window.open(BOOKING_URL, '_blank')}
+                className="btn-gradient inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-semibold"
+              >
+                <Phone className="h-4 w-4" />
+                Book a meeting
+              </button>
+            }
+            secondary={
+              <DepthDrawer
+                label="See the full plan"
+                title="The full CAPI data-bridge plan"
+                subtitle="Signal coverage, the sales plan, campaign economics and deal models — all configurable."
+              >
+                <FullPlan
+                  inputs={inputs}
+                  update={update}
+                  results={results}
+                  bookingUrl={BOOKING_URL}
+                />
+              </DepthDrawer>
+            }
+          />
+        )}
+      </FlowShell>
     </TooltipProvider>
   );
 }
