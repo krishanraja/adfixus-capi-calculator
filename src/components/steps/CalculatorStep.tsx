@@ -35,11 +35,11 @@ export function CalculatorStep({
   onPrevious
 }: CalculatorStepProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-surface to-white py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-card to-background py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-brand-primary mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Revenue Impact Calculator
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

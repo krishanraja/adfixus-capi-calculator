@@ -1,96 +1,36 @@
-# AdFixus CAPI ROI Calculator
+# AdFixus CAPI Calculator
 
-A React-based calculator that helps businesses understand the revenue impact of implementing AdFixus Stream's Conversions API (CAPI) solution.
+A public, embeddable **lead magnet** that shows a publisher the revenue impact of
+running **CAPI (Conversions API)** campaigns on top of a durable AdFixus ID —
+better match rates, higher conversion tracking, and incremental campaign revenue.
 
-## ⚡ Quickstart
+Part of the AdFixus tool family (with `adfixus-id-simulator` and `adfixus-sales`).
+All three share one design system and one calculation engine — see
+**[docs/ADFIXUS_CORE_SPEC.md](docs/ADFIXUS_CORE_SPEC.md)** and **[HANDOVER.md](HANDOVER.md)**.
 
-1. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-2. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your meeting booking URL
-   ```
-
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Build for production**
-   ```bash
-   npm run build
-   ```
-
-5. **Deploy**
-   - Upload `dist/` folder to any static hosting service (Netlify, Vercel, etc.)
-
-## 🛠 Tech Stack
-
-- **Frontend Framework**: React 18 with TypeScript
-- **Styling**: Tailwind CSS with custom design system
-- **UI Components**: Radix UI primitives with shadcn/ui
-- **PDF Generation**: pdfMake (client-side)
-- **Charts**: Recharts
-- **Build Tool**: Vite
-- **Validation**: Zod with React Hook Form
-
-## 📦 Key Features
-
-- Interactive ROI calculation with real-time updates
-- Visual analytics with responsive charts
-- PDF proposal generation (client-side)
-- Mobile-responsive design
-- Configurable meeting booking integration
-- Zero backend dependencies
-
-## 🔧 Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_MEETING_BOOKING_URL` | URL for booking strategy sessions | Outlook booking link |
-| `VITE_COMPANY_NAME` | Company name for branding | AdFixus |
-
-## 📊 ROI Calculation Logic
-
-The calculator uses these formulas:
-- **Baseline Revenue**: Annual revenue × Display/Video shares
-- **CAPI Impact**: Based on browser inventory and performance metrics
-- **Incremental Revenue**: Projected - Current revenue
-- **ROI**: (Incremental Revenue / Implementation Cost) × 100
-
-## 🚀 Deployment
-
-### Static Hosting (Recommended)
-Deploy to any static host like Netlify, Vercel, or AWS S3:
+## Run it
 
 ```bash
-npm run build
-# Upload dist/ folder to your hosting provider
+npm install
+npm run dev      # http://localhost:8080
+npm run build    # → dist/  (static, deploy anywhere)
+npm run preview
 ```
 
-### Custom Domain Setup
-1. Build the project: `npm run build`
-2. Configure your host to serve from `dist/index.html`
-3. Set up redirects for SPA routing (all routes → `/index.html`)
+No environment setup is required to run it. Optional: `VITE_MEETING_BOOKING_URL`
+(the "book a meeting" link) and `VITE_COMPANY_NAME`. See `.env.example`.
 
-## 📝 Updating Meeting URL
+## Key facts
 
-Edit the `VITE_MEETING_BOOKING_URL` in your `.env` file:
+- **100% client-side.** No backend, no Supabase, no login, no API keys. PDF is
+  generated in the browser; captured contacts are stored in `localStorage`
+  (`adfixus_leads`) via a pluggable adapter you can point at a CRM later.
+- **Embeddable.** Iframes cleanly into adfixus.com via `src/core/embed/embed.ts`.
+- **Canonical dark + bright-cyan brand**, shared with the other two tools.
+- **Math lives in `src/core/`** — the shared, verified AdFixus engine (run the
+  self-check command from the spec to confirm the golden values).
 
-```bash
-VITE_MEETING_BOOKING_URL=https://your-booking-platform.com/book
-```
+## Tech stack
 
-## 📚 Additional Documentation
-
-- [HANDOFF.md](./HANDOFF.md) - Developer onboarding guide
-- [SECURITY.md](./SECURITY.md) - Security considerations
-- [CHANGELOG.md](./CHANGELOG.md) - Version history
-
-## 🤝 Support
-
-For technical questions or feature requests, contact the development team or refer to the handoff documentation.
+React 18 · TypeScript · Vite 5 · Tailwind 3 · shadcn/ui (Radix) · Recharts ·
+pdfmake · React Router.

@@ -27,7 +27,7 @@ export function ContactDialog({
     <Dialog open={showContactDialog} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-brand-primary">
+          <DialogTitle className="text-xl font-semibold text-primary">
             Download Your CAPI Impact Report
           </DialogTitle>
         </DialogHeader>
@@ -78,7 +78,7 @@ export function ContactDialog({
           <Button 
             onClick={onSubmit}
             disabled={!isFormValid || isSubmitting}
-            className="w-full text-white font-semibold bg-brand-secondary hover:bg-brand-secondary/90"
+            className="w-full text-primary-foreground font-semibold bg-primary hover:bg-primary/90"
           >
             {isSubmitting ? 'Generating Report...' : 'Download Report'}
           </Button>

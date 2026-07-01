@@ -13,32 +13,46 @@ export const formatExecutivePercent = (percent: number): string => {
   return `${percent > 0 ? '+' : ''}${percent.toFixed(0)}%`;
 };
 
+// AdFixus dark-cyan brand palette for the PDF
+const BRAND = {
+  cyan: '#12B7E8',        // AdFixus bright cyan primary/accent
+  dark: '#000000',        // page background
+  panel: '#0A0A0A',       // panel / table fill
+  panelAlt: '#141414',    // alternating table row
+  white: '#FFFFFF',       // primary text
+  mutedText: '#B3B3B3',   // secondary text
+  border: '#2E2E2E',      // table borders
+  green: '#10B981',       // positive / gain
+  red: '#EF4444',         // negative / loss
+  amber: '#F59E0B',       // warning
+};
+
 // Risk assessment grading
 export const getRiskGrade = (chromePercentage: number): { grade: string; color: string; description: string } => {
-  if (chromePercentage <= 15) return { 
-    grade: 'A', 
-    color: '#10B981', 
-    description: 'Excellent Identity Health' 
+  if (chromePercentage <= 15) return {
+    grade: 'A',
+    color: BRAND.green,
+    description: 'Excellent Identity Health'
   };
-  if (chromePercentage <= 30) return { 
-    grade: 'B', 
-    color: '#0EA5E9', 
-    description: 'Good Identity Coverage' 
+  if (chromePercentage <= 30) return {
+    grade: 'B',
+    color: BRAND.cyan,
+    description: 'Good Identity Coverage'
   };
-  if (chromePercentage <= 50) return { 
-    grade: 'C', 
-    color: '#F59E0B', 
-    description: 'Moderate Risk Exposure' 
+  if (chromePercentage <= 50) return {
+    grade: 'C',
+    color: BRAND.amber,
+    description: 'Moderate Risk Exposure'
   };
-  if (chromePercentage <= 70) return { 
-    grade: 'D', 
-    color: '#EF4444', 
-    description: 'High Revenue Risk' 
+  if (chromePercentage <= 70) return {
+    grade: 'D',
+    color: BRAND.red,
+    description: 'High Revenue Risk'
   };
-  return { 
-    grade: 'F', 
-    color: '#EF4444', 
-    description: 'Critical Revenue Loss' 
+  return {
+    grade: 'F',
+    color: BRAND.red,
+    description: 'Critical Revenue Loss'
   };
 };
 
@@ -83,6 +97,19 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
     const docDefinition: any = {
       pageSize: "A4",
       pageMargins: [40, 60, 40, 60],
+      // Dark AdFixus brand background covering the full page.
+      background: (currentPage: number, pageSize: { width: number; height: number }) => ({
+        canvas: [
+          {
+            type: "rect",
+            x: 0,
+            y: 0,
+            w: pageSize.width,
+            h: pageSize.height,
+            color: BRAND.dark
+          }
+        ]
+      }),
       info: {
         title: "AdFixus - CAPI Proposal for Publishers",
         subject: "Executive Report - Revenue Impact Analysis",
@@ -120,62 +147,63 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
         margin: [0, 10]
       }),
       styles: {
-        h1: { 
-          fontSize: 16, 
-          bold: true, 
-          color: "#1E293B", 
-          margin: [0, 0, 0, 12] 
+        h1: {
+          fontSize: 16,
+          bold: true,
+          color: BRAND.cyan,
+          margin: [0, 0, 0, 12]
         },
-        h2: { 
-          fontSize: 13, 
-          bold: true, 
-          color: "#1E293B", 
-          margin: [0, 12, 0, 6] 
+        h2: {
+          fontSize: 13,
+          bold: true,
+          color: BRAND.cyan,
+          margin: [0, 12, 0, 6]
         },
-        body: { 
-          fontSize: 10, 
-          color: "#475569", 
+        body: {
+          fontSize: 10,
+          color: BRAND.white,
           lineHeight: 1.25,
           margin: [0, 0, 0, 6]
         },
-        kpiLabel: { 
-          fontSize: 9, 
-          color: "#475569",
-          alignment: "center" 
+        kpiLabel: {
+          fontSize: 9,
+          color: BRAND.mutedText,
+          alignment: "center"
         },
-        kpiValue: { 
-          fontSize: 14, 
-          bold: true, 
-          color: "#1E293B",
-          alignment: "center" 
+        kpiValue: {
+          fontSize: 14,
+          bold: true,
+          color: BRAND.white,
+          alignment: "center"
         },
-        foot: { 
-          fontSize: 8, 
-          color: "#475569" 
+        foot: {
+          fontSize: 8,
+          color: BRAND.mutedText
         },
-        tableHeader: { 
-          bold: true, 
-          fillColor: "#F8FAFC",
-          color: "#1E293B",
+        tableHeader: {
+          bold: true,
+          fillColor: BRAND.panelAlt,
+          color: BRAND.white,
           fontSize: 9
         },
         tableBody: {
           fontSize: 9,
-          color: "#475569"
+          color: BRAND.white
         },
         headerTitle: {
           fontSize: 14,
           bold: true,
-          color: "#1E293B"
+          color: BRAND.cyan
         },
         priority: {
           fontSize: 9,
+          color: BRAND.white,
           margin: [0, 2, 0, 2]
         }
       },
-      defaultStyle: { 
+      defaultStyle: {
         fontSize: 10,
-        color: "#475569"
+        color: BRAND.white
       },
 
       content: [
@@ -227,14 +255,14 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                     widths: ["*"],
                     body: [
                       [{ text: "Monthly Revenue Loss", style: "kpiLabel" }],
-                      [{ text: formatExecutiveCurrency(monthlyRevenueLoss), style: "kpiValue", color: "#EF4444" }]
+                      [{ text: formatExecutiveCurrency(monthlyRevenueLoss), style: "kpiValue", color: BRAND.red }]
                     ]
                   },
                   layout: {
                     hLineWidth: () => 1,
                     vLineWidth: () => 1,
-                    hLineColor: () => "#E2E8F0",
-                    vLineColor: () => "#E2E8F0"
+                    hLineColor: () => BRAND.border,
+                    vLineColor: () => BRAND.border
                   }
                 },
                 {
@@ -250,8 +278,8 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                   layout: {
                     hLineWidth: () => 1,
                     vLineWidth: () => 1,
-                    hLineColor: () => "#E2E8F0",
-                    vLineColor: () => "#E2E8F0"
+                    hLineColor: () => BRAND.border,
+                    vLineColor: () => BRAND.border
                   }
                 },
                 {
@@ -261,14 +289,14 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                     widths: ["*"],
                     body: [
                       [{ text: "Recovery Opportunity", style: "kpiLabel" }],
-                      [{ text: formatExecutiveCurrency(recoveryOpportunity), style: "kpiValue", color: "#10B981" }]
+                      [{ text: formatExecutiveCurrency(recoveryOpportunity), style: "kpiValue", color: BRAND.green }]
                     ]
                   },
                   layout: {
                     hLineWidth: () => 1,
                     vLineWidth: () => 1,
-                    hLineColor: () => "#E2E8F0",
-                    vLineColor: () => "#E2E8F0"
+                    hLineColor: () => BRAND.border,
+                    vLineColor: () => BRAND.border
                   }
                 }
               ],
@@ -292,7 +320,7 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                   text: "Book A Call",
                   style: "body",
                   link: "https://outlook.office.com/book/SalesTeambooking@adfixus.com",
-                  color: "#0EA5E9",
+                  color: BRAND.cyan,
                   decoration: "underline",
                   bold: true
                 }
@@ -340,30 +368,30 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                     { text: "Display Advertising", style: "tableBody" },
                     { text: formatExecutiveCurrency(results.currentDisplayRevenue), style: "tableBody" },
                     { text: formatExecutiveCurrency(results.projectedDisplayRevenue), style: "tableBody" },
-                    { text: formatExecutivePercent((results.conversionImprovements.displayImprovement / results.currentDisplayRevenue) * 100), style: "tableBody", color: "#10B981" }
+                    { text: formatExecutivePercent((results.conversionImprovements.displayImprovement / results.currentDisplayRevenue) * 100), style: "tableBody", color: BRAND.green }
                   ],
                   [
                     { text: "Video Advertising", style: "tableBody" },
                     { text: formatExecutiveCurrency(results.currentVideoRevenue), style: "tableBody" },
                     { text: formatExecutiveCurrency(results.projectedVideoRevenue), style: "tableBody" },
-                    { text: formatExecutivePercent((results.conversionImprovements.videoImprovement / results.currentVideoRevenue) * 100), style: "tableBody", color: "#10B981" }
+                    { text: formatExecutivePercent((results.conversionImprovements.videoImprovement / results.currentVideoRevenue) * 100), style: "tableBody", color: BRAND.green }
                   ],
                   [
                     { text: "Retargeting", style: "tableBody" },
                     { text: formatExecutiveCurrency(results.currentRetargetingRevenue), style: "tableBody" },
                     { text: formatExecutiveCurrency(results.projectedRetargetingRevenue), style: "tableBody" },
-                    { text: formatExecutivePercent((results.conversionImprovements.retargetingImprovement / results.currentRetargetingRevenue) * 100), style: "tableBody", color: "#10B981" }
+                    { text: formatExecutivePercent((results.conversionImprovements.retargetingImprovement / results.currentRetargetingRevenue) * 100), style: "tableBody", color: BRAND.green }
                   ],
                   [
                     { text: "TOTAL", style: "tableHeader" },
                     { text: formatExecutiveCurrency(results.currentRevenue), style: "tableHeader" },
                     { text: formatExecutiveCurrency(results.projectedRevenue), style: "tableHeader" },
-                    { text: formatExecutivePercent(results.incrementalPercentage), style: "tableHeader", color: "#10B981" }
+                    { text: formatExecutivePercent(results.incrementalPercentage), style: "tableHeader", color: BRAND.green }
                   ]
                 ]
               },
               layout: {
-                fillColor: (rowIndex: number) => (rowIndex % 2 === 0 ? null : "#F8FAFC")
+                fillColor: (rowIndex: number) => (rowIndex % 2 === 0 ? BRAND.panel : BRAND.panelAlt)
               },
               margin: [0, 0, 0, 12]
             },
@@ -400,17 +428,17 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                 widths: ["15%", "70%", "15%"],
                 body: [
                   [
-                    { text: "HIGH", style: "priority", fillColor: "#FEE2E2", color: "#DC2626", bold: true },
+                    { text: "HIGH", style: "priority", fillColor: BRAND.panelAlt, color: BRAND.red, bold: true },
                     { text: "Immediate CAPI deployment on top 3 revenue-generating domains", style: "priority" },
                     { text: "Week 1-2", style: "priority", alignment: "center" }
                   ],
                   [
-                    { text: "MEDIUM", style: "priority", fillColor: "#FEF3C7", color: "#D97706", bold: true },
+                    { text: "MEDIUM", style: "priority", fillColor: BRAND.panelAlt, color: BRAND.amber, bold: true },
                     { text: "Advertiser onboarding and demand partner optimization", style: "priority" },
                     { text: "Week 3-4", style: "priority", alignment: "center" }
                   ],
                   [
-                    { text: "LOW", style: "priority", fillColor: "#D1FAE5", color: "#059669", bold: true },
+                    { text: "LOW", style: "priority", fillColor: BRAND.panelAlt, color: BRAND.green, bold: true },
                     { text: "Advanced attribution modeling and audience expansion", style: "priority" },
                     { text: "Week 5-8", style: "priority", alignment: "center" }
                   ]
@@ -453,10 +481,10 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
             {
               stack: [
                 { 
-                  text: "Email: sales@adfixus.com", 
+                  text: "Email: sales@adfixus.com",
                   style: "body",
                   link: "mailto:sales@adfixus.com",
-                  color: "#0EA5E9",
+                  color: BRAND.cyan,
                   decoration: "underline",
                   margin: [0, 0, 0, 6]
                 },
@@ -464,7 +492,7 @@ export async function buildAdfixusProposalPdf(inputs: ROIInputs, results: ROIRes
                   text: "Book A Call",
                   style: "body",
                   link: "https://outlook.office.com/book/SalesTeambooking@adfixus.com",
-                  color: "#0EA5E9",
+                  color: BRAND.cyan,
                   decoration: "underline",
                   bold: true
                 }

@@ -16,13 +16,13 @@ export function ROICharts({ results }: ROIChartsProps) {
     { 
       name: 'With CAPI', 
       value: results.projectedRevenue, 
-      fill: 'hsl(var(--brand-primary))' 
+      fill: 'hsl(var(--primary))'
     },
   ];
 
   return (
     <div className="h-64 mb-16">
-      <h3 className="text-lg font-semibold mb-4 text-brand-primary">
+      <h3 className="text-lg font-semibold mb-4 text-primary">
         Revenue Comparison
       </h3>
       <ResponsiveContainer width="100%" height="100%">

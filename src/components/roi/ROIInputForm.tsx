@@ -47,7 +47,7 @@ export function ROIInputForm({
     <div className="max-w-2xl mx-auto">
       <Card className="shadow-lg border-0">
         <CardHeader>
-          <CardTitle className="text-2xl flex items-center gap-2 text-brand-primary">
+          <CardTitle className="text-2xl flex items-center gap-2 text-primary">
             <Target className="h-6 w-6" />
             Your Revenue Profile
           </CardTitle>
@@ -97,7 +97,7 @@ export function ROIInputForm({
                   step={5}
                   className="w-full"
                 />
-                <div className="text-center text-sm font-semibold mt-1 text-brand-primary">
+                <div className="text-center text-sm font-semibold mt-1 text-primary">
                   {displayShare[0]}%
                 </div>
               </div>
@@ -116,7 +116,7 @@ export function ROIInputForm({
                   step={5}
                   className="w-full"
                 />
-                <div className="text-center text-sm font-semibold mt-1 text-brand-primary">
+                <div className="text-center text-sm font-semibold mt-1 text-primary">
                   {videoShare[0]}%
                 </div>
               </div>
@@ -146,7 +146,7 @@ export function ROIInputForm({
               />
               <div className="flex justify-between text-sm text-gray-500 mt-1">
                 <span>0%</span>
-                <span className="font-semibold text-brand-primary">{chromePercentage[0]}%</span>
+                <span className="font-semibold text-primary">{chromePercentage[0]}%</span>
                 <span>100%</span>
               </div>
             </div>
@@ -175,7 +175,7 @@ export function ROIInputForm({
               />
               <div className="flex justify-between text-sm text-gray-500 mt-1">
                 <span>0%</span>
-                <span className="font-semibold text-brand-primary">{performanceCampaignPercentage[0]}%</span>
+                <span className="font-semibold text-primary">{performanceCampaignPercentage[0]}%</span>
                 <span>100%</span>
               </div>
             </div>
@@ -187,7 +187,7 @@ export function ROIInputForm({
 
           <Button 
             onClick={onCalculateClick}
-            className="w-full text-white font-semibold py-3 bg-brand-secondary hover:bg-brand-secondary/90"
+            className="w-full text-primary-foreground font-semibold py-3 bg-primary hover:bg-primary/90"
           >
             <Zap className="w-4 h-4 mr-2" />
             Calculate CAPI Impact
