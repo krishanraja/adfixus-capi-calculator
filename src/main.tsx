@@ -3,6 +3,7 @@ import App from './App.tsx'
 import './index.css'
 import { initAdfixusEmbed } from '@/core/embed/embed';
 
-createRoot(document.getElementById("root")!).render(<App />);
-
+// Report height to the parent page so this tool embeds cleanly in adfixus.com.
 initAdfixusEmbed({ appName: 'AdFixus-CAPI-Calculator' });
+
+createRoot(document.getElementById("root")!).render(<App />);

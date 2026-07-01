@@ -1,80 +1,48 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Home, Calculator, Phone } from 'lucide-react';
-import type { StepType } from '@/types/roi';
+import { Phone, RotateCcw } from 'lucide-react';
 
 interface NavigationProps {
-  currentStep: StepType;
   onReset: () => void;
 }
 
-const steps = [
-  { id: 'hero', label: 'Home', icon: Home },
-  { id: 'calculator', label: 'Revenue Calculator', icon: Calculator },
-  { id: 'results', label: 'Results', icon: BarChart3 }
-];
+const BOOKING_URL =
+  import.meta.env.VITE_MEETING_BOOKING_URL ||
+  'https://outlook.office.com/book/SalesTeambooking@adfixus.com';
 
-export function Navigation({ currentStep, onReset }: NavigationProps) {
+export function Navigation({ onReset }: NavigationProps) {
   return (
-    <nav className="bg-card shadow-sm border-b sticky top-0 z-50">
+    <nav className="bg-transparent border-b border-border/40 sticky top-0 z-50 backdrop-blur-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo Section */}
-          <div className="flex items-center space-x-4">
-            <img 
-              src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png" 
-              alt="AdFixus Logo" 
-              className="h-8 w-auto"
+          {/* Logo — forced white so it's visible on the dark background. */}
+          <div className="flex items-center gap-3">
+            <img
+              src="/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png"
+              alt="AdFixus"
+              className="h-7 w-auto"
+              style={{ filter: 'brightness(0) invert(1)' }}
             />
+            <span className="hidden sm:inline text-sm font-medium text-muted-foreground border-l border-border/60 pl-3">
+              CAPI Sales Plan
+            </span>
           </div>
 
-          {/* Progress Steps (Desktop Only) */}
-          <div className="hidden md:flex items-center space-x-6">
-            {steps.map((step, index) => {
-              const isActive = currentStep === step.id;
-              const isCompleted = steps.findIndex(s => s.id === currentStep) > index;
-              
-              return (
-                <React.Fragment key={step.id}>
-                  <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${
-                    isActive 
-                      ? 'bg-primary/20 text-primary font-medium'
-                      : isCompleted 
-                        ? 'text-accent'
-                        : 'text-muted-foreground'
-                  }`}>
-                    <step.icon className="w-4 h-4" />
-                    <span>{step.label}</span>
-                  </div>
-                  
-                  {/* Progress line */}
-                  {index < steps.length - 1 && (
-                    <div className={`w-8 h-0.5 ${
-                      isCompleted ? 'bg-accent' : 'bg-border'
-                    }`} />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-3">
-            <Button 
-              variant="default" 
+          <div className="flex items-center gap-3">
+            <Button
               size="sm"
-              onClick={() => window.open(import.meta.env.VITE_MEETING_BOOKING_URL || 'https://outlook.office.com/book/SalesTeambooking@adfixus.com', '_blank')}
-              className="bg-primary hover:bg-primary/90"
+              onClick={() => window.open(BOOKING_URL, '_blank')}
+              className="btn-gradient border-0"
             >
               <Phone className="w-4 h-4 mr-2" />
-              Book a Call
+              Book a meeting
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={onReset}
               className="text-muted-foreground hover:text-foreground"
             >
+              <RotateCcw className="w-4 h-4 mr-2" />
               Reset
             </Button>
           </div>
