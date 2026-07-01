@@ -1,8 +1,39 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { buildAdfixusProposalPdf } from '@/utils/pdfmakeGenerator';
-import { supabase } from '@/integrations/supabase/client';
 import type { ContactForm, ROIInputs, ROIResults } from '@/types/roi';
+
+const LEADS_STORAGE_KEY = 'adfixus_leads';
+
+interface StoredLead extends ContactForm {
+  submittedAt: string;
+  inputs: ROIInputs;
+  results: ROIResults;
+}
+
+const persistLead = (
+  contactForm: ContactForm,
+  inputs: ROIInputs,
+  results: ROIResults
+) => {
+  try {
+    const existingRaw = localStorage.getItem(LEADS_STORAGE_KEY);
+    const existing: StoredLead[] = existingRaw ? JSON.parse(existingRaw) : [];
+    const leads = Array.isArray(existing) ? existing : [];
+
+    leads.push({
+      ...contactForm,
+      submittedAt: new Date().toISOString(),
+      inputs,
+      results,
+    });
+
+    localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(leads));
+  } catch (error) {
+    // Persisting a lead should never block the download/success flow.
+    console.error('Failed to persist lead to localStorage:', error);
+  }
+};
 
 export function useContactForm() {
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -29,9 +60,9 @@ export function useContactForm() {
   };
 
   const isFormValid = (): boolean => {
-    return Boolean(contactForm.firstName && 
-                  contactForm.lastName && 
-                  contactForm.email && 
+    return Boolean(contactForm.firstName &&
+                  contactForm.lastName &&
+                  contactForm.email &&
                   contactForm.company);
   };
 
@@ -46,47 +77,19 @@ export function useContactForm() {
     }
 
     setIsSubmitting(true);
-    
-    try {
-      // Generate and download PDF report
-      await buildAdfixusProposalPdf(inputs, results);
-      
-      // Send email with PDF contents and contact details using Supabase client
-      try {
-        console.log('Sending email with data:', { contactForm, inputs: Object.keys(inputs), results: Object.keys(results) });
-        
-        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-pdf-email', {
-          body: {
-            contactForm,
-            inputs,
-            results
-          }
-        });
 
-        if (emailError) {
-          console.error('Email function error:', emailError);
-          toast({
-            title: "Email Warning",
-            description: "Report downloaded successfully, but email notification failed.",
-            variant: "default"
-          });
-        } else {
-          console.log('Email sent successfully:', emailData);
-        }
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError);
-        toast({
-          title: "Email Warning", 
-          description: "Report downloaded successfully, but email notification failed.",
-          variant: "default"
-        });
-      }
-      
+    try {
+      // Persist the captured contact details locally.
+      persistLead(contactForm, inputs, results);
+
+      // Generate and download the PDF report client-side.
+      await buildAdfixusProposalPdf(inputs, results);
+
       toast({
         title: "Success!",
         description: "Your CAPI impact report has been downloaded successfully.",
       });
-      
+
       setShowContactDialog(false);
       resetContactForm();
     } catch (error: any) {
