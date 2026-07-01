@@ -1,4 +1,4 @@
-// DealComparison — the same headline, priced three ways.
+// DealComparison - the same headline, priced three ways.
 //
 // Takes the commercial pricing (which is the headline totalIncremental priced
 // against the three AdFixus deal models) and shows, for each, what the publisher

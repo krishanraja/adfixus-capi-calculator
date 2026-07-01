@@ -1,4 +1,4 @@
-// ThreeYearRamp — how the headline compounds as CAPI adoption ramps.
+// ThreeYearRamp - how the headline compounds as CAPI adoption ramps.
 //
 // Year 1 is partial as the first advertisers come online; Year 2 near-full;
 // Year 3 compounds as more of the book moves to outcome-based buying. Each bar

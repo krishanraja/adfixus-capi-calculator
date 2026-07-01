@@ -1,4 +1,4 @@
-// VerticalControl — a single segmented choice for the publisher's vertical.
+// VerticalControl - a single segmented choice for the publisher's vertical.
 //
 // Picking a vertical sets the conversion framing and the default performance
 // share (the CAPI-addressable portion of ad sales). One tactile control, big

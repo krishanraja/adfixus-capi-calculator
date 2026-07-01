@@ -1,8 +1,8 @@
-// LeverSliders — the model's assumptions, exposed for the curious.
+// LeverSliders - the model's assumptions, exposed for the curious.
 //
 // Every rate that drives the headline is a slider here: the three lever rates
 // (win-back, CPM uplift, enriched share, retention) plus the performance share.
-// Adjusting any of them recomputes the headline and everything downstream — the
+// Adjusting any of them recomputes the headline and everything downstream - the
 // drawer and the reveal always reconcile because they read the same state.
 
 import { Slider } from '@/components/ui/slider';

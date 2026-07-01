@@ -1,21 +1,21 @@
-// SalesPlanApp — the Apple-grade guided-flow surface for the publisher CAPI ROI.
+// SalesPlanApp - the Apple-grade guided-flow surface for the publisher CAPI ROI.
 //
 // The question it answers: if you stood up your OWN Conversions API on an AdFixus
 // identity backbone, how much incremental annual ad revenue would it be worth?
 //
-// The default path is a short, guided flow with almost no input — every question
+// The default path is a short, guided flow with almost no input - every question
 // asks one thing a publisher actually knows:
-//   0. Provocation — "Walled gardens took about half of open-web ad revenue with
+//   0. Provocation - "Walled gardens took about half of open-web ad revenue with
 //      one thing you do not have: your own Conversions API."
-//   1. AskStep     — annual open-web ad revenue (slider, smart default ~$20M,
+//   1. AskStep     - annual open-web ad revenue (slider, smart default ~$20M,
 //                    with a quiet traffic + CPM alternative).
-//   2. AskStep     — vertical (segmented; sets framing + the addressable default).
-//   3. Reveal      — the signal-bridge visual + the headline incremental, with
+//   2. AskStep     - vertical (segmented; sets framing + the addressable default).
+//   3. Reveal      - the signal-bridge visual + the headline incremental, with
 //                    the three-lever breakdown and a Carsales benchmark line.
 //
-// All the commercial detail — the adjustable levers, the three-year ramp, the
+// All the commercial detail - the adjustable levers, the three-year ramp, the
 // $30K-cap per-campaign economics and the three-deal comparison (what you pay
-// AdFixus vs keep NET) — lives behind the DepthDrawer ("See the full model"),
+// AdFixus vs keep NET) - lives behind the DepthDrawer ("See the full model"),
 // and RECONCILES to the same headline number. Nothing invented, nothing lost.
 
 import { useState } from 'react';
@@ -50,7 +50,7 @@ export default function SalesPlanApp() {
 
   const vertical = VERTICALS[inputs.vertical];
 
-  // Bridge intensity is derived from the addressable share of the book — a real
+  // Bridge intensity is derived from the addressable share of the book - a real
   // reflection of the inputs, never a fabricated "match rate". More of the book
   // addressable → a brighter, fuller bridge.
   const bridgeIntensity = 0.35 + result.performanceShare * 0.6;

@@ -1,4 +1,4 @@
-// Reveal — the payoff screen.
+// Reveal - the payoff screen.
 //
 // The result arrives as a beautiful, simple answer: an optional hero visual, a
 // hero number that counts up, a single line of meaning, a small settle
@@ -42,7 +42,7 @@ export const AnimatedNumber = ({
     }
     const controls = animate(mv, value, {
       duration: durationMs / 1000,
-      ease: [0.16, 1, 0.3, 1], // easeOutExpo — settles gently
+      ease: [0.16, 1, 0.3, 1], // easeOutExpo - settles gently
     });
     return controls.stop;
   }, [value, durationMs, reduce, mv]);

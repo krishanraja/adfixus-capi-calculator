@@ -1,4 +1,4 @@
-// AskStep — one question per screen.
+// AskStep - one question per screen.
 //
 // A large, tactile control (a single slider, a segmented choice, or one input)
 // with a smart default, so the user can just hit Continue. Big touch targets,
@@ -71,7 +71,7 @@ export const AskStep = ({
         </motion.p>
       )}
 
-      {/* The single control — generous space around it. */}
+      {/* The single control - generous space around it. */}
       <motion.div {...stagger(0.28)} className="mt-12">
         {children}
       </motion.div>

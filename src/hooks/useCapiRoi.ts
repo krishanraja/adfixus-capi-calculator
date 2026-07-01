@@ -1,4 +1,4 @@
-// useCapiRoi — the single source of truth for the CAPI ROI surface.
+// useCapiRoi - the single source of truth for the CAPI ROI surface.
 //
 // Holds the three publisher-knowable inputs (annual ad revenue, vertical,
 // performance share), the adjustable lever assumptions (exposed in the drawer),

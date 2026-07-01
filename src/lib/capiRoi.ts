@@ -1,4 +1,4 @@
-// capiRoi.ts — the publisher CAPI ROI model.
+// capiRoi.ts - the publisher CAPI ROI model.
 //
 // This is the credible, publisher-grounded replacement for the old "match rate"
 // calculator. A publisher never knows their match rate, campaign count, or
@@ -18,15 +18,15 @@
 
 export type Vertical = 'auto' | 'education' | 'retail' | 'finance' | 'travel' | 'other';
 
-/** The publisher-knowable inputs — the only things asked on the surface. */
+/** The publisher-knowable inputs - the only things asked on the surface. */
 export interface CapiRoiInputs {
   /** Annual open-web ad revenue, $ (slider/input; smart default ~$20M). */
   annualAdRevenue: number;
-  /** Vertical — sets defaults and conversion framing. */
+  /** Vertical - sets defaults and conversion framing. */
   vertical: Vertical;
   /**
    * Share of ad sales that is direct-sold / performance (the CAPI-addressable
-   * portion). Defaulted by vertical (~0.40–0.50); adjustable in the drawer.
+   * portion). Defaulted by vertical (~0.40-0.50); adjustable in the drawer.
    */
   performanceShare: number;
 }
@@ -38,24 +38,24 @@ export interface CapiRoiInputs {
  */
 export interface CapiRoiAssumptions {
   /**
-   * Lever A — win-back rate. Share of the addressable book recovered/grown by
+   * Lever A - win-back rate. Share of the addressable book recovered/grown by
    * running your own CAPI to win outcome budgets back from the walled gardens.
-   * Default 0.22 — Carsales + AdFixus opened a CAPI track worth ~$60M, +22%.
+   * Default 0.22 - Carsales + AdFixus opened a CAPI track worth ~$60M, +22%.
    */
   winBackRate: number;
   /**
-   * Lever B — enriched share. Share of TOTAL ad revenue delivered on
+   * Lever B - enriched share. Share of TOTAL ad revenue delivered on
    * CAPI-enriched / lookalike inventory that can carry a CPM premium.
    * Default 0.35.
    */
   enrichedShare: number;
   /**
-   * Lever B — CPM uplift on that enriched inventory. Default 0.15 — the deck's
+   * Lever B - CPM uplift on that enriched inventory. Default 0.15 - the deck's
    * "+15% CPM on CAPI-enriched / lookalike inventory".
    */
   cpmUplift: number;
   /**
-   * Lever C — retention value. Repeat / renewed spend from advertisers who stay
+   * Lever C - retention value. Repeat / renewed spend from advertisers who stay
    * because measurement finally works. Default 0.08, derived conservatively
    * from the deck's "+40% campaign retention" applied to the addressable book.
    */
@@ -73,7 +73,7 @@ export const DEFAULT_ASSUMPTIONS: CapiRoiAssumptions = {
 /**
  * Per-vertical defaults. `performanceShare` seeds input #3; `label` and
  * `conversionNoun` set the conversion framing on the surface. These are the
- * only vertical-specific knobs — the levers themselves are vertical-agnostic so
+ * only vertical-specific knobs - the levers themselves are vertical-agnostic so
  * the model stays legible.
  */
 export interface VerticalProfile {
@@ -124,7 +124,7 @@ export const VERTICALS: Record<Vertical, VerticalProfile> = {
   },
 };
 
-/** The default entry point — a ~$20M auto publisher. */
+/** The default entry point - a ~$20M auto publisher. */
 export const DEFAULT_INPUTS: CapiRoiInputs = {
   annualAdRevenue: 20_000_000,
   vertical: 'auto',
@@ -148,7 +148,7 @@ export interface CapiRoiResult {
   vertical: Vertical;
   performanceShare: number;
 
-  // Derived internally — never asked
+  // Derived internally - never asked
   /** The CAPI-addressable book = annualAdRevenue × performanceShare. */
   addressable: number;
 
@@ -173,13 +173,13 @@ export interface CapiRoiResult {
  * The model. Every value traces to an input or a named assumption.
  *
  * Levers are deliberately non-overlapping:
- *  A "Win back & grow outcome budgets" — new/recovered outcome spend on the
+ *  A "Win back & grow outcome budgets" - new/recovered outcome spend on the
  *    direct-sold book (addressable), measured against the win-back rate. This is
  *    budget the walled gardens took because you could not measure outcomes.
- *  B "Higher CPM on CAPI-enriched inventory" — a price premium on the slice of
+ *  B "Higher CPM on CAPI-enriched inventory" - a price premium on the slice of
  *    ALL inventory that is enriched with CAPI signal / lookalikes. This prices
  *    inventory, not budget, so it does not double-count A.
- *  C "Advertiser retention" — repeat / renewed spend from advertisers who stay
+ *  C "Advertiser retention" - repeat / renewed spend from advertisers who stay
  *    because measurement works. This is durability of the addressable book over
  *    time, distinct from the one-off win-back in A.
  */
@@ -191,17 +191,17 @@ export function calculateCapiRoi(
   const performanceShare = clamp01(inputs.performanceShare);
   const { winBackRate, enrichedShare, cpmUplift, retentionValue } = assumptions;
 
-  // Derived internally — the CAPI-addressable book.
+  // Derived internally - the CAPI-addressable book.
   const addressable = annualAdRevenue * performanceShare;
 
-  // Lever A — win back & grow outcome budgets.
+  // Lever A - win back & grow outcome budgets.
   const winBackValue = addressable * winBackRate;
 
-  // Lever B — higher CPM on CAPI-enriched inventory (prices inventory, not budget).
+  // Lever B - higher CPM on CAPI-enriched inventory (prices inventory, not budget).
   const enrichedInventory = annualAdRevenue * enrichedShare;
   const cpmValue = enrichedInventory * cpmUplift;
 
-  // Lever C — advertiser retention (durability of the addressable book).
+  // Lever C - advertiser retention (durability of the addressable book).
   const retentionValueDollars = addressable * retentionValue;
 
   const totalIncremental = winBackValue + cpmValue + retentionValueDollars;
@@ -262,7 +262,7 @@ export function deriveCampaignShape(result: CapiRoiResult): DerivedCampaignShape
   const addressable = result.addressable;
   // A realistic mid-market average campaign spend scales gently with the size of
   // the book: small publishers run smaller campaigns, large ones run larger.
-  // Bounded to a sensible $80K–$400K band so the cap table stays legible.
+  // Bounded to a sensible $80K-$400K band so the cap table stays legible.
   const avgCampaignSpend = clamp(addressable * 0.006, 80_000, 400_000);
   const campaignCount = avgCampaignSpend > 0 ? Math.max(1, Math.round(addressable / avgCampaignSpend)) : 0;
   return {

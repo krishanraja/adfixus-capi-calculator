@@ -1,4 +1,4 @@
-// CommercialDepth — the full analysis behind the reveal, demoted into the
+// CommercialDepth - the full analysis behind the reveal, demoted into the
 // DepthDrawer.
 //
 // This is the commercial detail that RECONCILES to the headline: the same

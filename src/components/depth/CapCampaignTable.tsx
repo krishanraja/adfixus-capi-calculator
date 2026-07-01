@@ -1,10 +1,10 @@
-// CapCampaignTable — the $30K-per-campaign cap economics, grounded in the
+// CapCampaignTable - the $30K-per-campaign cap economics, grounded in the
 // publisher's own book.
 //
 // The avg campaign spend and campaign count are DERIVED from the addressable
 // book (deriveCampaignShape), so the "Your avg campaign" row reconciles to the
 // same inputs as the headline. The rest are illustrative sizes that show how the
-// $30K cap makes large campaigns hugely publisher-favourable — the Carsales
+// $30K cap makes large campaigns hugely publisher-favourable - the Carsales
 // $1M-campaign proof point.
 
 import { useMemo } from 'react';

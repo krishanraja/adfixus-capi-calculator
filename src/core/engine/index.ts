@@ -1,4 +1,4 @@
-// AdFixus core — public engine API.
+// AdFixus core - public engine API.
 //
 // Re-exports the unified engine plus small convenience wrappers so the two
 // lead magnets can get a benefits-only result from a handful of simple inputs

@@ -1,4 +1,4 @@
-// FlowShell — the shared guided-flow shell for every AdFixus tool.
+// FlowShell - the shared guided-flow shell for every AdFixus tool.
 //
 // Full-viewport, centred, dark. A tiny fixed AdFixus wordmark top-left, an
 // optional slim row of progress dots. Renders exactly ONE step at a time and
@@ -6,13 +6,13 @@
 // scale, spring easing (~0.4s). Respects prefers-reduced-motion.
 //
 // Keep this file identical (structure, names, motion, timing) across
-// adfixus-id-simulator, adfixus-capi-calculator and adfixus-sales — it is what
+// adfixus-id-simulator, adfixus-capi-calculator and adfixus-sales - it is what
 // makes the three tools feel like one family.
 
 import { type ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
-/** Canonical transition — a soft spring, ~0.4s. Shared by every step. */
+/** Canonical transition - a soft spring, ~0.4s. Shared by every step. */
 export const FLOW_SPRING = {
   type: 'spring' as const,
   stiffness: 210,
@@ -23,7 +23,7 @@ export const FLOW_SPRING = {
 interface FlowShellProps {
   /** Zero-based index of the visible step. */
   stepIndex: number;
-  /** Total number of steps — drives the progress dots. */
+  /** Total number of steps - drives the progress dots. */
   stepCount: number;
   /** The single visible step. Its `key` (via stepIndex) drives the transition. */
   children: ReactNode;

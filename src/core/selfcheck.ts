@@ -1,4 +1,4 @@
-// AdFixus core — dependency-free golden-values self-check.
+// AdFixus core - dependency-free golden-values self-check.
 //
 // Guarantees the shared engine produces identical numbers in every repo.
 // This file is vendored identically into all three tools. To run it:
@@ -40,7 +40,7 @@ for (const c of checks) {
 }
 
 if (failed > 0) {
-  console.error(`\n${failed} golden value(s) drifted — the engine math changed.`);
+  console.error(`\n${failed} golden value(s) drifted - the engine math changed.`);
   (globalThis as { process?: { exit?: (code: number) => void } }).process?.exit?.(1);
 } else {
   console.log('\nAll AdFixus core golden values OK.');

@@ -1,22 +1,22 @@
-// SignalBridge — the emotional core of the CAPI story.
+// SignalBridge - the emotional core of the CAPI story.
 //
 // A central, animated visual of real conversion events flowing back from the
 // advertiser to the publisher as measurable outcomes, across the CAPI bridge.
 // Left: the publisher's audience, much of it anonymous / Safari-blind until a
-// durable ID lights it up. Middle: the CAPI bridge — a durable, verified-human
+// durable ID lights it up. Middle: the CAPI bridge - a durable, verified-human
 // ID backbone carrying real conversion events (purchases, sign-ups, test-drives)
 // back to the publisher. Right: the advertiser, sending outcomes the publisher
 // can finally attribute and price.
 //
 // `intensity` (0..1) scales how much of the audience is illuminated and how
-// bright the signal flows — it is derived from the publisher's own inputs, never
+// bright the signal flows - it is derived from the publisher's own inputs, never
 // a fabricated number. Restrained motion; dark; cyan glow. Pure SVG/CSS.
 
 import { useMemo } from 'react';
 
 interface SignalBridgeProps {
   /**
-   * Bridge intensity, 0..1 — how lit the field and flow are. Derived from the
+   * Bridge intensity, 0..1 - how lit the field and flow are. Derived from the
    * publisher's addressable book, not a made-up "match rate".
    */
   intensity?: number;
@@ -93,7 +93,7 @@ export const SignalBridge = ({
           const alwaysOn = n.threshold <= 0.25;
           return (
             <g key={i}>
-              {/* the invisible/anonymous state — faint outline */}
+              {/* the invisible/anonymous state - faint outline */}
               <circle
                 cx={n.cx}
                 cy={n.cy}
@@ -104,7 +104,7 @@ export const SignalBridge = ({
                 strokeWidth={1}
                 style={{ transition: 'stroke-opacity 0.6s ease' }}
               />
-              {/* the restored/verified state — lit cyan node */}
+              {/* the restored/verified state - lit cyan node */}
               <circle
                 cx={n.cx}
                 cy={n.cy}
@@ -124,7 +124,7 @@ export const SignalBridge = ({
         <line x1="300" y1="120" x2="620" y2="120" stroke="hsl(0 0% 22%)" strokeWidth="1" />
         <line x1="300" y1="240" x2="620" y2="240" stroke="hsl(0 0% 22%)" strokeWidth="1" />
 
-        {/* The live signal beam — brightness scales with intensity */}
+        {/* The live signal beam - brightness scales with intensity */}
         <rect
           x="300"
           y="150"
@@ -147,7 +147,7 @@ export const SignalBridge = ({
           <animate attributeName="x1" values="620;300" dur="2.4s" repeatCount="indefinite" />
         </line>
 
-        {/* Flowing verified-conversion packets — moving right→left, back to you */}
+        {/* Flowing verified-conversion packets - moving right→left, back to you */}
         {[0, 1, 2, 3, 4].map((i) => {
           const active = clamped > i / 6;
           return (
@@ -210,7 +210,7 @@ export const SignalBridge = ({
           YOUR ADVERTISER
         </text>
 
-        {/* Advertiser panel — real conversion events being sent back */}
+        {/* Advertiser panel - real conversion events being sent back */}
         <g transform="translate(700, 60)">
           <rect
             x="0"
@@ -253,7 +253,7 @@ export const SignalBridge = ({
         </g>
       </svg>
 
-      {/* Caption / legend — concrete, no fabricated numbers */}
+      {/* Caption / legend - concrete, no fabricated numbers */}
       <div className="mt-4 flex flex-col items-start justify-between gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center">
         <span className="flex items-center gap-2">
           <span className="inline-block h-2.5 w-2.5 rounded-full border border-white/20" />

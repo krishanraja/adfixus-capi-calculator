@@ -1,4 +1,4 @@
-// LeverBreakdown — the three-lever decomposition of the headline.
+// LeverBreakdown - the three-lever decomposition of the headline.
 //
 // Shows how totalIncremental splits into Win-back (A), Higher CPM (B) and
 // Retention (C), each with its dollar value, share of the total, and its

@@ -1,4 +1,4 @@
-// RevenueControl — the single tactile control for the CAPI revenue AskStep.
+// RevenueControl - the single tactile control for the CAPI revenue AskStep.
 //
 // One big, calm slider for annual open-web ad revenue, with a quiet "traffic +
 // CPM" alternative that DERIVES revenue for publishers who think in impressions.
@@ -37,7 +37,7 @@ export const RevenueControl = ({ value, onChange }: RevenueControlProps) => {
 
   return (
     <div className="mx-auto w-full max-w-xl">
-      {/* The live figure — the focal point of the screen. */}
+      {/* The live figure - the focal point of the screen. */}
       <div className="flex items-end justify-center">
         <span className="text-6xl font-bold tabular-nums text-foreground sm:text-7xl">
           {formatCapiCurrency(value)}
@@ -47,7 +47,7 @@ export const RevenueControl = ({ value, onChange }: RevenueControlProps) => {
         annual open-web ad revenue
       </p>
 
-      {/* Mode toggle — revenue directly, or derive it from traffic. */}
+      {/* Mode toggle - revenue directly, or derive it from traffic. */}
       <div className="mt-8 inline-flex rounded-full border border-border p-1 text-xs">
         <button
           type="button"

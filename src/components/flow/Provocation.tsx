@@ -1,6 +1,6 @@
-// Provocation — step 1 of the guided flow.
+// Provocation - step 1 of the guided flow.
 //
-// ONE bold editorial line (44–72px) that reframes identity for the AI era, a
+// ONE bold editorial line (44-72px) that reframes identity for the AI era, a
 // quiet supporting sentence, and a single primary button. Nothing else on
 // screen. Shared shape across all three AdFixus tools; only the words differ.
 

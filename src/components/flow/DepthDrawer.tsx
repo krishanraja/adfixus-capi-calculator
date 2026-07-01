@@ -1,8 +1,8 @@
-// DepthDrawer — progressive depth, hidden by default.
+// DepthDrawer - progressive depth, hidden by default.
 //
 // A quiet "See the full plan" / "Customise" affordance that expands (slide +
 // scale + fade) into a full, scrollable surface holding ALL the existing
-// richness — full sliders/config, charts, audit sections, deal models,
+// richness - full sliders/config, charts, audit sections, deal models,
 // provenance. Nothing is lost; it is simply demoted behind one calm link.
 //
 // Shared shape across all three AdFixus tools; only the trigger label and the
@@ -104,7 +104,7 @@ export const DepthDrawer = ({ label, title, subtitle, children }: DepthDrawerPro
                 </button>
               </div>
 
-              {/* Scrollable body — all the demoted richness lives here. */}
+              {/* Scrollable body - all the demoted richness lives here. */}
               <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-8 sm:px-8 sm:py-10">
                 <div className="mx-auto w-full max-w-5xl">{children}</div>
               </div>

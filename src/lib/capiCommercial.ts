@@ -1,13 +1,13 @@
-// capiCommercial.ts — pricing the headline against AdFixus's commercial models.
+// capiCommercial.ts - pricing the headline against AdFixus's commercial models.
 //
 // The headline (from capiRoi.ts) is a single number: totalIncremental annual
 // incremental ad revenue. This module takes THAT SAME number and prices it three
 // ways so a publisher can see what they pay AdFixus vs what they keep net:
 //
-//   1. Revenue share — 12.5% of CAPI incremental, with a $30K/campaign/month cap
+//   1. Revenue share - 12.5% of CAPI incremental, with a $30K/campaign/month cap
 //      that makes large campaigns hugely publisher-favourable.
-//   2. Annual cap — 12.5% until a Year-1 cap, then 100% to the publisher.
-//   3. Flat fee — a fixed annual fee regardless of performance.
+//   2. Annual cap - 12.5% until a Year-1 cap, then 100% to the publisher.
+//   3. Flat fee - a fixed annual fee regardless of performance.
 //
 // The $30K-per-campaign cap economics reuse the ported Vox calculator
 // (campaignEconomicsCalculator + campaignEconomics constants). The campaign
@@ -59,7 +59,7 @@ export const DEAL_PARAMS = {
  * We spread the incremental across the derived campaign shape. Each campaign's
  * fee is 12.5% of its incremental, capped at $30K/month → $360K/year. Summing
  * capped fees across the portfolio is what makes the effective take-rate fall
- * well below 12.5% once large campaigns are involved — the "magic of the cap".
+ * well below 12.5% once large campaigns are involved - the "magic of the cap".
  */
 function priceRevenueShare(
   incremental: number,
@@ -103,7 +103,7 @@ export function priceCapiRoi(
   // 1. Revenue share with the $30K cap.
   const { fee: revShareFee, perCampaign } = priceRevenueShare(incremental, shape);
 
-  // 2. Annual cap — 12.5% until the cap, then 100% to publisher.
+  // 2. Annual cap - 12.5% until the cap, then 100% to publisher.
   const rawAnnualFee = incremental * DEAL_PARAMS.revenueShareRate;
   const annualCapFee = Math.min(rawAnnualFee, DEAL_PARAMS.annualCap);
 
