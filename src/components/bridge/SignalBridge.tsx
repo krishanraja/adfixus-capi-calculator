@@ -1,22 +1,27 @@
 // SignalBridge — the emotional core of the CAPI story.
 //
-// A central, animated visual of the conversion signal being restored across the
-// publisher↔advertiser bridge. Left: the publisher's real audience, most of it
-// anonymous / Safari-blind / dark. Middle: the CAPI "bridge" — a durable,
-// verified-human ID lighting up the previously-invisible traffic. Right: the
-// advertiser, finally seeing true conversions flowing back.
+// A central, animated visual of real conversion events flowing back from the
+// advertiser to the publisher as measurable outcomes, across the CAPI bridge.
+// Left: the publisher's audience, much of it anonymous / Safari-blind until a
+// durable ID lights it up. Middle: the CAPI bridge — a durable, verified-human
+// ID backbone carrying real conversion events (purchases, sign-ups, test-drives)
+// back to the publisher. Right: the advertiser, sending outcomes the publisher
+// can finally attribute and price.
 //
-// `coverage` (0..1) is the restored match rate. As it rises, more of the
-// anonymous "dark" particles re-illuminate and flow across the bridge — the gap
-// closes. Restrained motion; dark; cyan glow. Pure SVG/CSS, no deps.
+// `intensity` (0..1) scales how much of the audience is illuminated and how
+// bright the signal flows — it is derived from the publisher's own inputs, never
+// a fabricated number. Restrained motion; dark; cyan glow. Pure SVG/CSS.
 
 import { useMemo } from 'react';
 
 interface SignalBridgeProps {
-  /** Restored match rate, 0..1 (baseline ~0.30, AdFixus ~0.75). */
-  coverage: number;
-  /** Baseline match rate, 0..1 — the share visible before AdFixus. */
-  baseline?: number;
+  /**
+   * Bridge intensity, 0..1 — how lit the field and flow are. Derived from the
+   * publisher's addressable book, not a made-up "match rate".
+   */
+  intensity?: number;
+  /** The conversion event noun for this vertical, e.g. "test-drive bookings". */
+  conversionNoun?: string;
 }
 
 // Deterministic pseudo-random so the field is stable across renders.
@@ -34,12 +39,14 @@ interface Node {
   delay: number;
 }
 
-export const SignalBridge = ({ coverage, baseline = 0.3 }: SignalBridgeProps) => {
-  const clamped = Math.max(0, Math.min(1, coverage));
-  const pct = Math.round(clamped * 100);
+export const SignalBridge = ({
+  intensity = 0.7,
+  conversionNoun = 'conversions',
+}: SignalBridgeProps) => {
+  const clamped = Math.max(0, Math.min(1, intensity));
 
   // A field of audience nodes on the left (the publisher's traffic). Their
-  // `threshold` is spread 0..1; a node is "restored" once coverage ≥ threshold.
+  // `threshold` is spread 0..1; a node lights once intensity ≥ threshold.
   const nodes = useMemo<Node[]>(() => {
     const out: Node[] = [];
     const count = 42;
@@ -57,9 +64,9 @@ export const SignalBridge = ({ coverage, baseline = 0.3 }: SignalBridgeProps) =>
     <div className="relative w-full">
       <svg
         viewBox="0 0 900 360"
-        className="w-full h-auto"
+        className="h-auto w-full"
         role="img"
-        aria-label={`Conversion signal coverage restored to ${pct} percent`}
+        aria-label="Conversion events flowing back to the publisher across the CAPI bridge"
       >
         <defs>
           <linearGradient id="sb-flow" x1="0" y1="0" x2="1" y2="0">
@@ -78,12 +85,12 @@ export const SignalBridge = ({ coverage, baseline = 0.3 }: SignalBridgeProps) =>
 
         {/* ---- LEFT: the publisher's audience field ---- */}
         <text x="20" y="20" className="fill-muted-foreground" fontSize="12" letterSpacing="1.5">
-          PUBLISHER AUDIENCE
+          YOUR AUDIENCE
         </text>
 
         {nodes.map((n, i) => {
           const restored = clamped >= n.threshold;
-          const alwaysOn = n.threshold <= baseline;
+          const alwaysOn = n.threshold <= 0.25;
           return (
             <g key={i}>
               {/* the invisible/anonymous state — faint outline */}
@@ -114,11 +121,10 @@ export const SignalBridge = ({ coverage, baseline = 0.3 }: SignalBridgeProps) =>
         })}
 
         {/* ---- MIDDLE: the CAPI bridge ---- */}
-        {/* Bridge rails */}
         <line x1="300" y1="120" x2="620" y2="120" stroke="hsl(0 0% 22%)" strokeWidth="1" />
         <line x1="300" y1="240" x2="620" y2="240" stroke="hsl(0 0% 22%)" strokeWidth="1" />
 
-        {/* The live signal beam — brightness scales with coverage */}
+        {/* The live signal beam — brightness scales with intensity */}
         <rect
           x="300"
           y="150"
@@ -138,15 +144,10 @@ export const SignalBridge = ({ coverage, baseline = 0.3 }: SignalBridgeProps) =>
           opacity={0.4 + clamped * 0.6}
           style={{ transition: 'stroke-width 0.6s ease, opacity 0.6s ease' }}
         >
-          <animate
-            attributeName="x1"
-            values="300;620"
-            dur="2.4s"
-            repeatCount="indefinite"
-          />
+          <animate attributeName="x1" values="620;300" dur="2.4s" repeatCount="indefinite" />
         </line>
 
-        {/* Flowing verified-conversion packets across the bridge */}
+        {/* Flowing verified-conversion packets — moving right→left, back to you */}
         {[0, 1, 2, 3, 4].map((i) => {
           const active = clamped > i / 6;
           return (
@@ -160,7 +161,7 @@ export const SignalBridge = ({ coverage, baseline = 0.3 }: SignalBridgeProps) =>
             >
               <animate
                 attributeName="cx"
-                values="300;620"
+                values="620;300"
                 dur={`${2 + i * 0.35}s`}
                 begin={`${i * 0.4}s`}
                 repeatCount="indefinite"
@@ -184,7 +185,7 @@ export const SignalBridge = ({ coverage, baseline = 0.3 }: SignalBridgeProps) =>
           letterSpacing="2"
           fontWeight="600"
         >
-          CAPI · VERIFIED-HUMAN SIGNAL
+          YOUR CONVERSIONS API
         </text>
         <text
           x="460"
@@ -194,7 +195,7 @@ export const SignalBridge = ({ coverage, baseline = 0.3 }: SignalBridgeProps) =>
           fontSize="11"
           letterSpacing="1"
         >
-          durable first-party ID at the edge
+          durable, verified-human ID at the edge
         </text>
 
         {/* ---- RIGHT: the advertiser ---- */}
@@ -206,10 +207,10 @@ export const SignalBridge = ({ coverage, baseline = 0.3 }: SignalBridgeProps) =>
           fontSize="12"
           letterSpacing="1.5"
         >
-          ADVERTISER
+          YOUR ADVERTISER
         </text>
 
-        {/* Advertiser "conversions seen" meter — fills with coverage */}
+        {/* Advertiser panel — real conversion events being sent back */}
         <g transform="translate(700, 60)">
           <rect
             x="0"
@@ -220,50 +221,47 @@ export const SignalBridge = ({ coverage, baseline = 0.3 }: SignalBridgeProps) =>
             fill="hsl(0 0% 8%)"
             stroke="hsl(0 0% 18%)"
           />
-          <rect
-            x="0"
-            y={240 - clamped * 240}
-            width="150"
-            height={clamped * 240}
-            rx="10"
-            fill="url(#sb-glow)"
-            opacity="0.9"
-            style={{ transition: 'y 0.6s ease, height 0.6s ease' }}
-          />
-          <line
-            x1="0"
-            y1={240 - baseline * 240}
-            x2="150"
-            y2={240 - baseline * 240}
-            stroke="hsl(0 84% 60%)"
-            strokeOpacity="0.6"
-            strokeDasharray="4 4"
-          />
-          <text
-            x="75"
-            y="130"
-            textAnchor="middle"
-            className="fill-foreground"
-            fontSize="34"
-            fontWeight="700"
-          >
-            {pct}%
-          </text>
-          <text x="75" y="152" textAnchor="middle" className="fill-muted-foreground" fontSize="10">
-            conversions seen
-          </text>
+          {/* Event rows lighting up server-to-server */}
+          {[0, 1, 2, 3, 4, 5].map((row) => {
+            const lit = clamped > row / 7;
+            return (
+              <g key={`evt-${row}`} transform={`translate(16, ${26 + row * 34})`}>
+                <rect
+                  x="0"
+                  y="0"
+                  width="12"
+                  height="12"
+                  rx="3"
+                  fill={lit ? 'hsl(195 95% 55%)' : 'hsl(0 0% 18%)'}
+                  style={{
+                    transition: `fill 0.5s ease ${row * 0.08}s`,
+                    filter: lit ? 'drop-shadow(0 0 3px hsl(195 95% 55%))' : 'none',
+                  }}
+                />
+                <rect
+                  x="22"
+                  y="3"
+                  width={lit ? 88 : 60}
+                  height="6"
+                  rx="3"
+                  fill={lit ? 'hsl(195 95% 55% / 0.5)' : 'hsl(0 0% 16%)'}
+                  style={{ transition: 'width 0.5s ease, fill 0.5s ease' }}
+                />
+              </g>
+            );
+          })}
         </g>
       </svg>
 
-      {/* Caption / legend */}
-      <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-muted-foreground">
+      {/* Caption / legend — concrete, no fabricated numbers */}
+      <div className="mt-4 flex flex-col items-start justify-between gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center">
         <span className="flex items-center gap-2">
           <span className="inline-block h-2.5 w-2.5 rounded-full border border-white/20" />
-          Anonymous / Safari-blind — invisible to the advertiser
+          Anonymous / Safari-blind: invisible to your advertiser today
         </span>
         <span className="flex items-center gap-2">
           <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_6px_hsl(195_95%_55%)]" />
-          Verified human — conversion restored across the bridge
+          Verified {conversionNoun} flowing back as measurable outcomes
         </span>
       </div>
     </div>

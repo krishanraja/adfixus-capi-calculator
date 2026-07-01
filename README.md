@@ -1,72 +1,108 @@
-# AdFixus CAPI — The Publisher ↔ Advertiser Data Bridge
+# AdFixus CAPI — What Your Own Conversions API Is Worth
 
 A public, embeddable **lead magnet** for AdFixus. It makes one idea land in under a
-minute: **CAPI (Conversions API) is the data bridge between a publisher and its
-advertisers** — and today that bridge is broken for the anonymous majority
-(Safari/ITP, logged-out visitors, the wider open web). The conversions still
-happen; advertisers just can't attribute them, so they quietly pull budget.
+minute for an open-web publisher (think Carsales, Chegg):
 
-The tool shows a publisher what **restoring that signal** — a durable,
-verified-human identity at the edge plus CAPI — is worth in incremental annual
-revenue, then invites them to book a meeting.
+> Walled gardens took about half of open-web ad revenue with one thing you do not
+> have: **your own Conversions API.**
 
-It runs on the shared `src/core` engine (scope `id-capi`), so the numbers a
-prospect sees match what the AdFixus sales team will quote.
+Facebook and Google sell a 100%-accurate outcomes product because advertisers send
+conversions straight back to them. AdFixus gives a publisher the durable,
+privacy-safe **identity backbone** to run the same server-to-server CAPI itself —
+so it can win outcome budgets back, charge a CPM premium on enriched inventory,
+and keep advertisers who stay because measurement finally works.
+
+The tool asks two things a publisher actually knows (annual open-web ad revenue
+and vertical), derives everything technical internally, and reveals the
+**incremental annual ad revenue** standing up their own CAPI could be worth — then
+invites them to book a meeting.
 
 > Part of the AdFixus tool family (with `adfixus-id-simulator` and `adfixus-sales`).
-> All three share one design system and one calculation engine — see
-> **[docs/ADFIXUS_CORE_SPEC.md](docs/ADFIXUS_CORE_SPEC.md)** and
+> All three share the same guided-flow shell and design system — see
 > **[HANDOVER.md](HANDOVER.md)**.
 
 ## The guided flow (what a visitor sees)
 
-An Apple-grade, three-screen guided flow — provocation → one question → payoff.
-Almost no input required; all the depth is one calm link away.
+An Apple-grade guided flow — provocation → two effortless questions → payoff.
+Smart defaults mean a visitor can reach the reveal with almost no input.
 
-1. **Provocation** — *"Your advertisers only credit the conversions they can see."*
+1. **Provocation** — *"Walled gardens took about half of open-web ad revenue with
+   one thing you do not have: your own Conversions API."*
    (`src/components/flow/Provocation.tsx`)
-2. **One question** — a single slider: how much of your conversion signal could a
-   durable ID restore? Baseline ~30% → 75%+. That's the only lever.
-   (`src/components/flow/AskStep.tsx` + `MatchRateControl.tsx`)
-3. **Reveal** — the animated **Signal Bridge** visual (the conversion signal
-   flowing back across the publisher↔advertiser bridge as coverage rises), one
-   hero number (net incremental annual publisher revenue), and one CTA
-   (**Book a meeting**). (`src/components/flow/Reveal.tsx` + `src/components/bridge/*`)
+2. **Ask · revenue** — one slider: roughly how much open-web ad revenue do you make
+   a year? (smart default ~$20M; a quiet *traffic + CPM* alternative derives it).
+   (`src/components/flow/RevenueControl.tsx`)
+3. **Ask · vertical** — a segmented choice (auto / education / retail / finance /
+   travel / other) that sets the conversion framing and the default addressable
+   share. (`src/components/flow/VerticalControl.tsx`)
+4. **Reveal** — the animated **Signal Bridge** (real conversion events flowing back
+   from the advertiser as measurable outcomes), one hero number (total incremental
+   annual ad revenue), the **three-lever breakdown**, a Carsales benchmark line,
+   and one CTA. (`src/components/flow/Reveal.tsx` + `src/components/bridge/*`)
 
-Everything richer — the full bridge narrative, the interactive signal-coverage
-grid, the fully-configurable inputs, the campaign ramp, the per-campaign
-($30K-cap) economics, the three commercial deal models, and a downloadable
-PDF — lives behind the **"See the full plan"** drawer
-(`src/components/flow/DepthDrawer.tsx` → `src/components/salesplan/FullPlan.tsx`).
-Nothing is lost; it is simply demoted.
+Everything richer — the adjustable levers, the three-year ramp, the three deal
+models (what you pay AdFixus vs keep NET) and the $30K-cap per-campaign
+economics — lives behind the **"See the full model"** drawer
+(`src/components/flow/DepthDrawer.tsx` → `src/components/depth/CommercialDepth.tsx`).
+It **reconciles to the same headline number**; nothing is invented, nothing lost.
 
-## Architecture (guided UI → hook → core engine)
+## The model (every number traces to an input or a named assumption)
+
+`src/lib/capiRoi.ts` — three non-overlapping levers on publisher-knowable inputs:
 
 ```
-guided flow UI            src/components/flow/*  + bridge/*   (the 3-screen surface)
-        │
-        ▼
-useSalesPlan()            src/hooks/useSalesPlan.ts           (one control → engine inputs)
-        │
-        ▼
-@/core engine             src/core/  (calculateCapiBenefits, scope 'id-capi')
-        │
-        ├─ campaign ramp + $30K-cap economics   src/utils/campaignEconomicsCalculator.ts
-        └─ three deal models (share / cap / flat) src/utils/commercialCalculations.ts
+addressable      = annualAdRevenue × performanceShare        (direct-sold / performance book)
+
+Lever A win-back = addressable × winBackRate   (0.22; Carsales CAPI track +22%)
+Lever B CPM      = (annualAdRevenue × enrichedShare) × cpmUplift   (0.35 × 0.15; deck +15% CPM)
+Lever C retention= addressable × retentionValue (0.08; from +40% campaign retention)
+
+totalIncremental = A + B + C          ← the headline
 ```
 
-- **The one screen the visitor touches** (`SalesPlanApp.tsx`) drives a single
-  input — the restored match rate — through `useSalesPlan` into
-  `calculateCapiBenefits(...)` and reads `results.capiCapabilities`. The hero
-  number is net annual CAPI-incremental revenue after the AdFixus revenue share.
-- **The engine is shared and verified** (`src/core`). It is byte-identical across
-  the three AdFixus tools. Run the golden-values self-check to confirm the math
-  (see below).
-- **Commercial modelling** (only shown inside the depth drawer): the campaign
-  ramp and per-campaign economics live in `src/utils/campaignEconomicsCalculator.ts`;
-  the three deal models (revenue-share / annual-cap / flat-fee) live in
-  `src/utils/commercialCalculations.ts`. The **12.5% share applies to CAPI
-  incremental revenue only**, with a **$30K/campaign monthly cap**.
+Levers are deliberately non-overlapping: A prices **budget** on the addressable
+book, B prices an **inventory** premium, C prices **durability** of the book over
+time. All rates are adjustable sliders in the drawer.
+
+`src/lib/capiCommercial.ts` takes that same `totalIncremental` and prices it three
+ways so a publisher sees what they pay AdFixus vs keep NET:
+
+- **Revenue share (capped)** — 12.5% of CAPI incremental, with a **$30K per
+  campaign per month cap** (the "magic of the cap" for large advertisers).
+- **Annual cap** — 12.5% up to a $1.2M annual cap, then 100% to the publisher.
+- **Flat fee** — a fixed annual fee regardless of performance.
+
+The campaign shape (avg spend + count) that feeds the $30K-cap table is **derived
+from `addressable`**, so the cap table reconciles to the same inputs. The cap math
+reuses `src/utils/campaignEconomicsCalculator.ts` (ported from the Vox engine).
+
+### Sample reconciliation ($20M revenue, auto, 40% performance share)
+
+```
+addressable = $20M × 0.40                 = $8.0M
+A win-back  = $8.0M × 0.22                 = $1.76M
+B CPM       = ($20M × 0.35) × 0.15         = $1.05M
+C retention = $8.0M × 0.08                 = $0.64M
+totalIncremental                          = $3.45M / yr
+revenue-share fee ≈ $0.43M → publisher keeps ≈ $3.02M (88%)
+3-year ramp (0.55 / 1.0 / 1.2)            ≈ $9.5M cumulative
+```
+
+## Architecture (guided UI → hook → model)
+
+```
+guided flow UI       src/components/flow/*  + bridge/*      (the guided surface)
+        │
+        ▼
+useCapiRoi()         src/hooks/useCapiRoi.ts                (inputs + assumptions → model)
+        │
+        ├─ calculateCapiRoi()   src/lib/capiRoi.ts          (the 3-lever headline)
+        └─ priceCapiRoi()       src/lib/capiCommercial.ts    (headline → 3 deal models)
+                                    └─ $30K-cap economics    src/utils/campaignEconomicsCalculator.ts
+```
+
+The reveal and the drawer read the **same `useCapiRoi` state**, so they always
+reconcile. There is no second, unrelated number anywhere on the surface.
 
 ## Run it
 
@@ -78,33 +114,15 @@ npm run preview
 npm run lint
 ```
 
-No environment setup is required to run it. The only optional variable is
+No environment setup is required. The only optional variable is
 `VITE_MEETING_BOOKING_URL` (the "Book a meeting" link); see `.env.example`. A
 built-in fallback URL is used if it is unset.
 
-## Verify the math
-
-The shared engine ships a dependency-free golden-values regression check:
-
-```bash
-npx esbuild src/core/selfcheck.ts --bundle --platform=node --format=cjs \
-  --outfile=/tmp/afx.cjs && node /tmp/afx.cjs
-```
-
-It prints PASS/FAIL for each golden value and exits non-zero on drift. Because
-`src/core/` is identical in every repo, all three tools produce identical numbers.
-
 ## Deploy on Vercel (public)
 
-Static SPA — deploy on Vercel (or any static host):
-
-```bash
-npm run build    # → dist/
-```
-
-On Vercel, framework preset **Vite** (output `dist/`); add the SPA rewrite
-`/* → /index.html`. Set `VITE_MEETING_BOOKING_URL` if you want to override the
-booking link. This tool is **public** — no auth.
+Static SPA. On Vercel, framework preset **Vite** (output `dist/`); add the SPA
+rewrite `/* → /index.html`. Set `VITE_MEETING_BOOKING_URL` to override the booking
+link. This tool is **public** — no auth.
 
 ## Embed it in adfixus.com
 
@@ -124,13 +142,12 @@ scrollbar (`src/core/embed/embed.ts`, called from `src/main.tsx`).
 ```
 
 The embed validates parent origin `https://www.adfixus.com` by default; pass a
-different `parentOrigin` to `initAdfixusEmbed` to embed elsewhere. Full protocol
-in **[docs/ADFIXUS_CORE_SPEC.md](docs/ADFIXUS_CORE_SPEC.md) §5**.
+different `parentOrigin` to `initAdfixusEmbed` to embed elsewhere.
 
 ## Key facts
 
-- **100% client-side.** No backend, no login, no API keys, no secrets, no
-  database. The PDF is generated in the browser (pdfmake). Nothing is transmitted.
+- **100% client-side.** No backend, no login, no API keys, no secrets, no database.
+  Nothing is transmitted.
 - **One env var** (`VITE_MEETING_BOOKING_URL`, a public link). See `.env.example`.
   Never put a secret in a `VITE_*` variable — those are baked into the client.
 - **Canonical dark + bright-cyan brand**, shared with the other two tools.
@@ -143,42 +160,40 @@ src/
   App.tsx                       router (single "/" route + 404)
   pages/Index.tsx               <SalesPlanApp/> + SEO/OG tags
   components/
-    SalesPlanApp.tsx            the 3-screen guided flow (the whole visible surface)
+    SalesPlanApp.tsx            the guided flow (the whole visible surface)
     flow/                       shared guided-flow shell (identical across tools)
       FlowShell.tsx             full-viewport shell + progress dots + motion
-      Provocation.tsx           screen 1
-      AskStep.tsx               screen 2 (holds one control)
-      MatchRateControl.tsx      the single match-rate slider
-      Reveal.tsx                screen 3 (visual + hero number + CTA); AnimatedNumber
-      DepthDrawer.tsx           "See the full plan" drawer holding FullPlan
-    bridge/                     the data-bridge visuals
-      SignalBridge.tsx          the animated publisher↔advertiser bridge (the reveal)
-      BridgeHero.tsx / SignalCoverage.tsx   bridge narrative + interactive coverage grid
-    salesplan/                  the full plan (inside the drawer)
-      FullPlan.tsx              composes the entire deep plan + PDF download
-      InputsPanel / PlanSummary / CampaignRamp / MobilizeSalesTeam
-    commercial/                 deal-model + campaign-economics UI (inside the drawer)
-    ui/                         shadcn/ui primitives (only the ones actually used)
+      Provocation.tsx           step 0
+      AskStep.tsx               ask-step wrapper (holds one control)
+      RevenueControl.tsx        annual ad revenue slider (+ traffic/CPM alternative)
+      VerticalControl.tsx       segmented vertical choice
+      Reveal.tsx                the payoff (visual + hero number + CTA); AnimatedNumber
+      DepthDrawer.tsx           "See the full model" drawer
+    bridge/
+      SignalBridge.tsx          the animated CAPI bridge visual (real events flowing back)
+    depth/                      the full model, demoted into the drawer (reconciles to headline)
+      CommercialDepth.tsx       composes the whole deep model
+      LeverBreakdown.tsx        the 3-lever decomposition (compact + full)
+      LeverSliders.tsx          all lever assumptions, adjustable
+      DealComparison.tsx        3 deal models: pay AdFixus vs keep NET
+      CapCampaignTable.tsx      $30K per-campaign cap economics (derived from addressable)
+      ThreeYearRamp.tsx         3-year ramp chart
   hooks/
-    useSalesPlan.ts             inputs → @/core; the app's single source of numbers
+    useCapiRoi.ts               inputs + assumptions → the whole model (single source)
     use-toast.ts                toast state
-  core/                         SHARED, VERIFIED engine — identical across the 3 tools
-    engine/                     unifiedCalculationEngine + domain aggregation + public API
-    constants/                  benchmarks, risk scenarios, readiness factors, pricing
-    types/                      domain + scenario/override types
-    embed/embed.ts              iframe height-reporting module
-    selfcheck.ts                golden-values regression test (run via esbuild)
-    index.ts                    @/core barrel
+  lib/
+    capiRoi.ts                  the 3-lever ROI model (the headline)
+    capiCommercial.ts           prices the headline against the 3 deal models
+    utils.ts                    cn() classname helper
+  core/
+    embed/embed.ts              iframe height-reporting module (shared)
+    ...                         shared engine (retained for the tool family; not on the CAPI path)
   utils/
-    campaignEconomicsCalculator.ts   campaign ramp + per-campaign ($30K-cap) economics
-    commercialCalculations.ts        the three deal models + 36-month projection
-    pdfGenerator.ts                  client-side PDF (pdfmake), brand-skinned
-    formatting.ts                    currency/number formatting helpers
+    campaignEconomicsCalculator.ts   per-campaign ($30K-cap) economics (ported from Vox)
   index.css                     canonical dark-cyan design tokens (identical across tools)
-docs/ADFIXUS_CORE_SPEC.md       single source of truth for engine, design, embed protocol
 ```
 
 ## Tech stack
 
 React 18 · TypeScript · Vite 5 · Tailwind 3 · shadcn/ui (Radix) · framer-motion ·
-Recharts · pdfmake · React Router.
+Recharts · React Router.

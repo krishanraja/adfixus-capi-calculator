@@ -4,19 +4,47 @@ All notable changes to **adfixus-capi-calculator**, the public AdFixus lead magn
 for **the CAPI data bridge**.
 
 > **Current architecture (authoritative):** a 100% client-side React SPA with an
-> Apple-grade guided flow (provocation → one match-rate slider → signal-bridge
-> reveal → depth drawer). Core benefit math lives in the shared **`src/core`**
-> engine (`scope: 'id-capi'`, via `src/hooks/useSalesPlan.ts` →
-> `calculateCapiBenefits`); the campaign ramp and the deal-model economics live in
-> `src/utils/*` and are shown only inside the depth drawer. It compares three
-> commercial deal models (revenue-share / annual-cap / flat-fee) with a
-> $30K/campaign monthly cap, and is iframe-embeddable into adfixus.com. **No
-> backend, no login, no lead form, no secrets.** Older entries below predate the
-> current build.
+> Apple-grade guided flow (provocation → annual-ad-revenue slider → vertical →
+> reveal → depth drawer). The headline is a self-contained **3-lever CAPI ROI
+> model** in `src/lib/capiRoi.ts` (win-back + CPM uplift + retention on
+> publisher-knowable inputs); `src/lib/capiCommercial.ts` prices that same total
+> against three deal models (revenue-share with a $30K/campaign/month cap / annual
+> cap / flat fee), reusing the $30K-cap economics in
+> `src/utils/campaignEconomicsCalculator.ts`. Everything reads from one hook
+> (`src/hooks/useCapiRoi.ts`), so headline and drawer always reconcile. Iframe-
+> embeddable into adfixus.com. **No backend, no login, no lead form, no secrets.**
+> Older entries below predate the current build.
 
 ---
 
-## [4.0.0] - Production cleanup (current)
+## [5.0.0] - Publisher-knowable CAPI ROI model (current)
+
+### Changed
+- **Rebuilt the model around inputs a publisher actually knows.** Removed the
+  "match rate" input (no publisher knows their match rate) and the meaningless
+  hero number. The surface now asks only annual open-web ad revenue and vertical;
+  everything technical (addressability, campaign shape) is derived internally.
+- **New headline model** `src/lib/capiRoi.ts` — three non-overlapping levers:
+  A win-back (addressable x 0.22, Carsales +22%), B higher CPM (enrichedShare 0.35
+  x cpmUplift 0.15, deck +15%), C retention (addressable x 0.08, from +40%
+  retention). The hero reveal is their sum, with a live three-lever breakdown.
+- **New commercial pricing** `src/lib/capiCommercial.ts` — prices the same
+  totalIncremental against revenue-share (12.5%, $30K/campaign/month cap), annual
+  cap, and flat fee, so the drawer decomposes/prices the headline rather than
+  showing a second number. Campaign shape derived from addressable.
+- **Rewrote the signal-bridge copy and visual** to be concrete (real conversion
+  events flowing back to the advertiser). Removed the fabricated "conversions seen
+  77%" meter and every number not derived from inputs.
+
+### Removed
+- The old match-rate surface: `useSalesPlan`, `salesplan/*`, `commercial/*`,
+  `bridge/BridgeHero` + `bridge/SignalCoverage`, `flow/MatchRateControl`, the PDF
+  generator, `commercialCalculations.ts`, `types/commercialModel.ts`, and the
+  now-unused `formatting.ts`.
+
+---
+
+## [4.0.0] - Production cleanup
 
 ### Removed
 - **Dead code:** the unused `Navigation.tsx`, `src/App.css`, `use-mobile`, the

@@ -5,17 +5,20 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>AdFixus CAPI — The Publisher ↔ Advertiser Data Bridge</title>
+        <title>AdFixus CAPI: What Your Own Conversions API Is Worth</title>
         <meta
           name="description"
-          content="Without durable identity, the conversion signal a publisher sends its advertisers is broken across the anonymous majority. See how AdFixus + CAPI restores a clean, verified-human signal across all traffic — and what closing that gap is worth."
+          content="Walled gardens took about half of open-web ad revenue with one thing publishers do not have: their own Conversions API. Answer two questions and see the incremental annual ad revenue standing up your own CAPI on AdFixus identity could be worth."
         />
-        <meta name="keywords" content="CAPI, conversion API, durable identity, match rate, publisher revenue, attribution, AdFixus" />
+        <meta
+          name="keywords"
+          content="CAPI, conversions API, publisher revenue, outcome-based advertising, durable identity, attribution, AdFixus, open web"
+        />
         <link rel="canonical" href="/" />
-        <meta property="og:title" content="AdFixus CAPI — The Publisher ↔ Advertiser Data Bridge" />
+        <meta property="og:title" content="AdFixus CAPI: What Your Own Conversions API Is Worth" />
         <meta
           property="og:description"
-          content="Restore a clean, verified-human conversion signal across all your traffic — so advertisers see true conversions and budget follows."
+          content="Win outcome budgets back from the walled gardens. See what standing up your own Conversions API on AdFixus identity is worth in incremental annual ad revenue."
         />
         <meta property="og:type" content="website" />
       </Helmet>

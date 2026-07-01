@@ -1,28 +1,29 @@
-// SalesPlanApp — the Apple-grade guided-flow surface for the CAPI data bridge.
+// SalesPlanApp — the Apple-grade guided-flow surface for the publisher CAPI ROI.
 //
-// The default path is three screens and almost no input:
-//   1. Provocation — "Your advertisers only credit the conversions they can see."
-//   2. AskStep     — ONE control: the restored match rate (30% → 75%+), smart
-//                    default already set.
-//   3. Reveal      — the SignalBridge visual (the conversion signal restored) +
-//                    a single number for what closing the bridge is worth, and
-//                    one calm CTA.
+// The question it answers: if you stood up your OWN Conversions API on an AdFixus
+// identity backbone, how much incremental annual ad revenue would it be worth?
 //
-// ALL the existing depth — the bridge narrative, the interactive signal-coverage
-// grid, the full configurable inputs, the sales plan, campaign ramp, $30K-cap
-// per-campaign economics and the deal-model comparison — is unchanged and lives
-// behind the DepthDrawer ("See the full plan"). Nothing lost, just demoted.
+// The default path is a short, guided flow with almost no input — every question
+// asks one thing a publisher actually knows:
+//   0. Provocation — "Walled gardens took about half of open-web ad revenue with
+//      one thing you do not have: your own Conversions API."
+//   1. AskStep     — annual open-web ad revenue (slider, smart default ~$20M,
+//                    with a quiet traffic + CPM alternative).
+//   2. AskStep     — vertical (segmented; sets framing + the addressable default).
+//   3. Reveal      — the signal-bridge visual + the headline incremental, with
+//                    the three-lever breakdown and a Carsales benchmark line.
+//
+// All the commercial detail — the adjustable levers, the three-year ramp, the
+// $30K-cap per-campaign economics and the three-deal comparison (what you pay
+// AdFixus vs keep NET) — lives behind the DepthDrawer ("See the full model"),
+// and RECONCILES to the same headline number. Nothing invented, nothing lost.
 
 import { useState } from 'react';
 import { Phone } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { SignalBridge } from '@/components/bridge/SignalBridge';
-import { FullPlan } from '@/components/salesplan/FullPlan';
-import { useSalesPlan, BASELINE_MATCH_RATE } from '@/hooks/useSalesPlan';
-import {
-  formatCommercialCurrency,
-  getCapiMonthlyIncremental,
-} from '@/utils/commercialCalculations';
+import { useCapiRoi } from '@/hooks/useCapiRoi';
+import { formatCapiCurrency, VERTICALS } from '@/lib/capiRoi';
 import {
   FlowShell,
   Provocation,
@@ -31,82 +32,105 @@ import {
   AnimatedNumber,
   DepthDrawer,
 } from '@/components/flow';
-import { MatchRateControl } from '@/components/flow/MatchRateControl';
+import { RevenueControl } from '@/components/flow/RevenueControl';
+import { VerticalControl } from '@/components/flow/VerticalControl';
+import { LeverBreakdown } from '@/components/depth/LeverBreakdown';
+import { CommercialDepth } from '@/components/depth/CommercialDepth';
 
 const BOOKING_URL =
   import.meta.env.VITE_MEETING_BOOKING_URL ||
   'https://outlook.office.com/book/SalesTeambooking@adfixus.com';
 
-type Step = 0 | 1 | 2;
+type Step = 0 | 1 | 2 | 3;
 
 export default function SalesPlanApp() {
-  const { inputs, update, plan } = useSalesPlan();
-  const { results } = plan;
+  const state = useCapiRoi();
+  const { inputs, result, setRevenue, setVertical } = state;
   const [step, setStep] = useState<Step>(0);
 
-  // The single "what closing the bridge is worth" number — net annual publisher
-  // benefit after revenue share, identical to the PlanSummary hero.
-  const annualCapiIncremental = getCapiMonthlyIncremental(results) * 12;
-  const netAnnualBenefit =
-    annualCapiIncremental * (1 - (results.pricing.capiServiceFeeRate ?? 0.125));
+  const vertical = VERTICALS[inputs.vertical];
+
+  // Bridge intensity is derived from the addressable share of the book — a real
+  // reflection of the inputs, never a fabricated "match rate". More of the book
+  // addressable → a brighter, fuller bridge.
+  const bridgeIntensity = 0.35 + result.performanceShare * 0.6;
 
   return (
     <TooltipProvider>
-      <FlowShell stepIndex={step} stepCount={3} showProgress={step < 2}>
+      <FlowShell stepIndex={step} stepCount={4} showProgress={step < 3}>
         {step === 0 && (
           <Provocation
-            eyebrow="The publisher ↔ advertiser data bridge"
+            eyebrow="Your own Conversions API"
             headline={
               <>
-                Your advertisers only credit the conversions they can{' '}
-                <span className="gradient-text">see</span>.
+                Walled gardens took about half of open-web ad revenue with one thing you do not have:
+                your own <span className="gradient-text">Conversions API</span>.
               </>
             }
-            support="Across the anonymous majority — Safari and ITP, logged-out visitors, an ever-larger slice of the open web — the conversion signal you send is broken. The outcomes still happen; advertisers just can't attribute them to you, so they quietly pull budget."
-            ctaLabel="Show me the gap"
+            support="Facebook and Google sell a 100%-accurate outcomes product because advertisers send conversions straight back to them. AdFixus gives you the durable, privacy-safe identity backbone to run the same server-to-server CAPI yourself, and win those outcome budgets back."
+            ctaLabel="See what it's worth"
             onContinue={() => setStep(1)}
           />
         )}
 
         {step === 1 && (
           <AskStep
-            eyebrow="One question"
+            eyebrow="One number to start"
             question={
               <>
-                How much of your conversion signal could a durable ID{' '}
-                <span className="gradient-text">restore</span>?
+                Roughly how much <span className="gradient-text">open-web ad revenue</span> do you
+                make a year?
               </>
             }
-            hint="A durable, verified-human identity at the edge plus CAPI typically lifts match rate from ~30% toward 75%+. This is the only lever we need to show you what it's worth."
-            ctaLabel="See what it's worth"
+            hint="A ballpark is plenty. Everything technical is derived from here, never asked."
+            ctaLabel="Continue"
             onContinue={() => setStep(2)}
             onBack={() => setStep(0)}
           >
-            <MatchRateControl
-              value={inputs.matchRateImproved}
-              baseline={BASELINE_MATCH_RATE}
-              onChange={(v) => update('matchRateImproved', v)}
-            />
+            <RevenueControl value={inputs.annualAdRevenue} onChange={setRevenue} />
           </AskStep>
         )}
 
         {step === 2 && (
+          <AskStep
+            eyebrow="Your vertical"
+            question={
+              <>
+                Where do your <span className="gradient-text">humans transact</span>?
+              </>
+            }
+            hint="This sets the conversion framing and how much of your book is outcome-addressable. You can fine-tune it later."
+            ctaLabel="Reveal the number"
+            onContinue={() => setStep(3)}
+            onBack={() => setStep(1)}
+          >
+            <VerticalControl value={inputs.vertical} onChange={setVertical} />
+          </AskStep>
+        )}
+
+        {step === 3 && (
           <Reveal
-            eyebrow="The bridge, closed"
+            eyebrow={`Your own CAPI · ${vertical.label.toLowerCase()}`}
             visual={
               <div className="glass-card rounded-2xl border-primary/10 p-4 sm:p-8">
                 <SignalBridge
-                  coverage={inputs.matchRateImproved}
-                  baseline={BASELINE_MATCH_RATE}
+                  intensity={bridgeIntensity}
+                  conversionNoun={vertical.conversionNoun}
                 />
               </div>
             }
             hero={
               <span className="gradient-text">
-                <AnimatedNumber value={netAnnualBenefit} format={formatCommercialCurrency} />
+                <AnimatedNumber value={result.totalIncremental} format={formatCapiCurrency} />
               </span>
             }
-            meaning="Net incremental publisher revenue a year — the conversions you already earn, finally reaching your advertisers as a clean, verified-human signal. Attribution restored, budget follows."
+            meaning={
+              <>
+                Incremental annual ad revenue from standing up your own Conversions API: outcome
+                budgets won back, a CPM premium on enriched inventory, and advertisers who stay
+                because measurement finally works. Carsales' CAPI track: about $60M, +22%.
+              </>
+            }
             cta={
               <button
                 type="button"
@@ -118,18 +142,16 @@ export default function SalesPlanApp() {
               </button>
             }
             secondary={
-              <DepthDrawer
-                label="See the full plan"
-                title="The full CAPI data-bridge plan"
-                subtitle="Signal coverage, the sales plan, campaign economics and deal models — all configurable."
-              >
-                <FullPlan
-                  inputs={inputs}
-                  update={update}
-                  results={results}
-                  bookingUrl={BOOKING_URL}
-                />
-              </DepthDrawer>
+              <div className="w-full space-y-6">
+                <LeverBreakdown result={result} variant="compact" />
+                <DepthDrawer
+                  label="See the full model"
+                  title="The full CAPI ROI model"
+                  subtitle="The three levers, the three-year ramp, and what you pay AdFixus vs keep NET. All adjustable, all reconciling to the number above."
+                >
+                  <CommercialDepth state={state} bookingUrl={BOOKING_URL} />
+                </DepthDrawer>
+              </div>
             }
           />
         )}
