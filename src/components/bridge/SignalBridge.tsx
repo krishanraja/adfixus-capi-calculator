@@ -22,6 +22,12 @@ interface SignalBridgeProps {
   intensity?: number;
   /** The conversion event noun for this vertical, e.g. "test-drive bookings". */
   conversionNoun?: string;
+  /**
+   * "full" is the tall hero visual. "band" is a slim, supporting horizontal
+   * strip for the reveal, where the NUMBER is the hero and the bridge is quiet
+   * reinforcement rather than the dominant element.
+   */
+  variant?: 'full' | 'band';
 }
 
 // Deterministic pseudo-random so the field is stable across renders.
@@ -42,11 +48,13 @@ interface Node {
 export const SignalBridge = ({
   intensity = 0.7,
   conversionNoun = 'conversions',
+  variant = 'full',
 }: SignalBridgeProps) => {
   const clamped = Math.max(0, Math.min(1, intensity));
 
   // A field of audience nodes on the left (the publisher's traffic). Their
   // `threshold` is spread 0..1; a node lights once intensity ≥ threshold.
+  // (Computed unconditionally so hook order is stable across variants.)
   const nodes = useMemo<Node[]>(() => {
     const out: Node[] = [];
     const count = 42;
@@ -59,6 +67,10 @@ export const SignalBridge = ({
     }
     return out;
   }, []);
+
+  if (variant === 'band') {
+    return <SignalBridgeBand intensity={clamped} conversionNoun={conversionNoun} />;
+  }
 
   return (
     <div className="relative w-full">
@@ -264,6 +276,180 @@ export const SignalBridge = ({
           Verified {conversionNoun} flowing back as measurable outcomes
         </span>
       </div>
+    </div>
+  );
+};
+
+// SignalBridgeBand - the slim, supporting variant used on the reveal.
+//
+// A quiet horizontal strip: a small cluster of audience dots on the left, a live
+// CAPI beam with conversion packets flowing back through the middle, and a compact
+// advertiser chip on the right. It reinforces the story without competing with the
+// hero number for attention.
+const SignalBridgeBand = ({
+  intensity,
+  conversionNoun,
+}: {
+  intensity: number;
+  conversionNoun: string;
+}) => {
+  const dots = useMemo<Node[]>(() => {
+    const out: Node[] = [];
+    const count = 24;
+    for (let i = 0; i < count; i++) {
+      // Cluster around the beam centre-line (y=60) so the band reads as one
+      // cohesive left-to-right flow, not three scattered fragments.
+      const cx = 20 + seeded(i) * 200;
+      const cy = 36 + seeded(i + 100) * 48;
+      const r = 1.6 + seeded(i + 200) * 1.8;
+      const threshold = seeded(i + 300);
+      out.push({ cx, cy, r, threshold, delay: seeded(i + 400) * 2 });
+    }
+    return out;
+  }, []);
+
+  return (
+    <div className="relative w-full">
+      <svg
+        viewBox="0 0 900 120"
+        className="h-auto w-full"
+        role="img"
+        aria-label={`Verified ${conversionNoun} flowing back to you across your Conversions API`}
+      >
+        <defs>
+          <linearGradient id="sbb-flow" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="hsl(195 95% 50%)" stopOpacity="0" />
+            <stop offset="50%" stopColor="hsl(195 95% 62%)" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="hsl(195 95% 50%)" stopOpacity="0" />
+          </linearGradient>
+          <radialGradient id="sbb-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="hsl(195 95% 55%)" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="hsl(195 95% 55%)" stopOpacity="0" />
+          </radialGradient>
+          <filter id="sbb-soft" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="1.8" />
+          </filter>
+        </defs>
+
+        {/* Left: audience cluster */}
+        {dots.map((n, i) => {
+          const restored = intensity >= n.threshold;
+          return (
+            <circle
+              key={i}
+              cx={n.cx}
+              cy={n.cy}
+              r={n.r}
+              fill="hsl(195 95% 55%)"
+              stroke="hsl(0 0% 100%)"
+              strokeOpacity={restored ? 0 : 0.14}
+              strokeWidth={1}
+              fillOpacity={restored ? 0.85 : 0}
+              style={{
+                transition: `fill-opacity 0.6s ease ${n.delay * 0.1}s, stroke-opacity 0.5s ease`,
+                filter: restored ? 'drop-shadow(0 0 2px hsl(195 95% 55%))' : 'none',
+              }}
+            />
+          );
+        })}
+
+        {/* Middle: the CAPI beam */}
+        <text
+          x="450"
+          y="18"
+          textAnchor="middle"
+          className="fill-primary"
+          fontSize="11"
+          letterSpacing="2.5"
+          fontWeight="600"
+        >
+          YOUR CONVERSIONS API
+        </text>
+        <rect
+          x="250"
+          y="46"
+          width="400"
+          height="28"
+          fill="url(#sbb-glow)"
+          opacity={0.3 + intensity * 0.7}
+        />
+        <line
+          x1="250"
+          y1="60"
+          x2="650"
+          y2="60"
+          stroke="url(#sbb-flow)"
+          strokeWidth={1.5 + intensity * 3}
+          opacity={0.5 + intensity * 0.5}
+        >
+          <animate attributeName="x1" values="650;250" dur="2.4s" repeatCount="indefinite" />
+        </line>
+        {[0, 1, 2, 3].map((i) => {
+          const active = intensity > i / 5;
+          return (
+            <circle
+              key={`bpkt-${i}`}
+              r={2.6}
+              fill="hsl(195 95% 68%)"
+              opacity={active ? 0.9 : 0}
+              filter="url(#sbb-soft)"
+              cy={60}
+              style={{ transition: 'opacity 0.5s ease' }}
+            >
+              <animate
+                attributeName="cx"
+                values="650;250"
+                dur={`${2 + i * 0.35}s`}
+                begin={`${i * 0.4}s`}
+                repeatCount="indefinite"
+              />
+            </circle>
+          );
+        })}
+        <text
+          x="450"
+          y="98"
+          textAnchor="middle"
+          className="fill-muted-foreground"
+          fontSize="10"
+          letterSpacing="0.5"
+        >
+          durable, verified-human ID at the edge
+        </text>
+
+        {/* Right: advertiser chip */}
+        <g transform="translate(686, 22)">
+          <rect x="0" y="0" width="196" height="76" rx="8" fill="hsl(0 0% 8%)" stroke="hsl(0 0% 18%)" />
+          {[0, 1, 2].map((row) => {
+            const lit = intensity > row / 4;
+            return (
+              <g key={`bevt-${row}`} transform={`translate(14, ${18 + row * 20})`}>
+                <rect
+                  x="0"
+                  y="0"
+                  width="10"
+                  height="10"
+                  rx="2.5"
+                  fill={lit ? 'hsl(195 95% 55%)' : 'hsl(0 0% 18%)'}
+                  style={{
+                    transition: `fill 0.5s ease ${row * 0.08}s`,
+                    filter: lit ? 'drop-shadow(0 0 2px hsl(195 95% 55%))' : 'none',
+                  }}
+                />
+                <rect
+                  x="18"
+                  y="2.5"
+                  width={lit ? 150 : 96}
+                  height="5"
+                  rx="2.5"
+                  fill={lit ? 'hsl(195 95% 55% / 0.5)' : 'hsl(0 0% 16%)'}
+                  style={{ transition: 'width 0.5s ease, fill 0.5s ease' }}
+                />
+              </g>
+            );
+          })}
+        </g>
+      </svg>
     </div>
   );
 };

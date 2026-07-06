@@ -5,16 +5,57 @@ for **the publisher CAPI ROI tool** (what standing up your own Conversions API i
 worth).
 
 > **Current architecture (authoritative):** a 100% client-side React SPA with an
-> Apple-grade guided flow (provocation, annual-ad-revenue slider, vertical, reveal,
-> depth drawer). It asks only publisher-knowable inputs and **never asks for a
-> match rate**. The headline is a self-contained **3-lever CAPI ROI model** in
-> `src/lib/capiRoi.ts` (win-back + CPM uplift + retention on publisher-knowable
-> inputs); `src/lib/capiCommercial.ts` prices that same total against three deal
+> Apple-grade guided flow (provocation, one advertiser-anchor ask, reveal) and a
+> tabbed depth panel. It never asks for the publisher's revenue directly: it
+> anchors on the non-sensitive number a sales leader always knows (what their
+> biggest advertiser spends with them a year), scales that to an estimated book,
+> and lets them refine the estimate later. **Nothing is stored; it stays in the
+> browser. It never asks for a match rate.** The headline is a self-contained
+> **3-lever CAPI ROI model** in `src/lib/capiRoi.ts` (win-back + CPM uplift +
+> retention); `src/lib/capiCommercial.ts` prices that same total against three deal
 > models (revenue-share with a $30K/campaign/month cap, annual cap, flat fee),
 > reusing the $30K-cap economics in `src/utils/campaignEconomicsCalculator.ts`.
-> Everything reads from one hook (`src/hooks/useCapiRoi.ts`), so headline and drawer
-> always reconcile. Iframe-embeddable into adfixus.com. **No backend, no login, no
-> lead form, no PDF, no secrets.** Older entries below predate the current build.
+> Everything reads from one hook (`src/hooks/useCapiRoi.ts`), so headline and depth
+> always reconcile. Iframe-embeddable into adfixus.com (no in-tool logo). The reveal
+> is result-dominant and the whole surface is authored to fit one screen at a time
+> (no-scroll). **No backend, no login, no lead form, no PDF, no secrets.** Older
+> entries below predate the current build.
+
+---
+
+## [6.0.0] - Advertiser-anchored entry, result-dominant reveal, no-scroll UX (current)
+
+### Changed
+- **Reframed the entry for the real user** (a publisher revenue / sales leader
+  selling conversion-measured campaigns to big advertisers). The flow no longer
+  opens by asking for annual ad revenue (a figure a CRO will not type into an
+  unknown iframe). It anchors on **the biggest advertiser's annual spend** - the
+  advertiser's number, not the publisher's P&L - and a **book-scale** choice
+  (`src/components/flow/AdvertiserControl.tsx`). Revenue is estimated from those,
+  never demanded, and is overridable in the explore view. A privacy line makes
+  explicit that nothing is stored.
+- **Dropped the "Where do your humans transact?" vertical step.** The outcome
+  you'd sell (the former "vertical") is demoted to a quiet refinement inside the
+  explore panel; it is no longer a mandatory guided step.
+- **Result-dominant reveal.** The headline number now leads; the signal-bridge
+  visual is demoted to a slim supporting band (`SignalBridge variant="band"`),
+  with a three-lever substantiation strip and one CTA.
+- **Tabbed, no-scroll depth panel.** The "full model" is now a fixed-height panel
+  with a persistent recap + CTA and three tabs (Breakdown / You pay vs keep / Per
+  campaign) authored to fit one screen, replacing the long scroll.
+- **Fixed alignment throughout the depth panel.** Reset the inherited `text-align`
+  (the drawer is a descendant of the centered reveal), rebuilt the per-campaign
+  table on a CSS grid (crisp column alignment, tabular numerals, aligned ROI
+  badges), fixed the deal-card title/badge collision, and killed text widows
+  (constrained measures + balanced/pretty wrapping).
+- **Removed the in-tool AdFixus wordmark** for iframe embedding
+  (`FlowShell showWordmark={false}`).
+- Added `flagshipSpend` + `bookScale` inputs and `deriveRevenueFromBook` to the
+  model; the per-campaign cap table's hero row is now the publisher's own top
+  advertiser. Everything still reconciles to the same headline.
+- Removed `RevenueControl.tsx` and `VerticalControl.tsx` (superseded).
+- Fixed a latent type error: `CampaignEconomics` is imported from
+  `@/types/campaignEconomics` (it was never re-exported by the calculator).
 
 ---
 

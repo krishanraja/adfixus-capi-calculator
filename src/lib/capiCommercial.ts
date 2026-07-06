@@ -18,11 +18,8 @@
 // totalIncremental (× ramp). The drawer decomposes/prices that number; it never
 // invents a second one.
 
-import { CAPI_ECONOMICS_CONSTANTS } from '@/types/campaignEconomics';
-import {
-  calculateCampaignEconomics,
-  type CampaignEconomics,
-} from '@/utils/campaignEconomicsCalculator';
+import { CAPI_ECONOMICS_CONSTANTS, type CampaignEconomics } from '@/types/campaignEconomics';
+import { calculateCampaignEconomics } from '@/utils/campaignEconomicsCalculator';
 import type { CapiRoiResult, DerivedCampaignShape } from '@/lib/capiRoi';
 import { deriveCampaignShape } from '@/lib/capiRoi';
 
@@ -113,8 +110,8 @@ export function priceCapiRoi(
   const deals: DealModel[] = [
     {
       type: 'revenue-share',
-      label: 'Revenue share (capped)',
-      tagline: 'Aligned incentives. Mutual growth.',
+      label: 'Revenue share',
+      tagline: 'Capped at $30K per campaign. Aligned incentives.',
       isRecommended: true,
       adfixusFee: revShareFee,
       publisherNet: incremental - revShareFee,

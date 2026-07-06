@@ -12,11 +12,14 @@ privacy-safe **identity backbone** to run the same server-to-server CAPI itself,
 it can win outcome budgets back, charge a CPM premium on enriched inventory, and
 keep advertisers who stay because measurement finally works.
 
-The tool asks only what a publisher actually knows (annual open-web ad revenue,
-vertical, and, in the drawer, the direct-sold / performance share of sales),
-derives everything technical internally, and reveals the **incremental annual ad
-revenue** standing up their own CAPI could be worth, then invites them to book a
-meeting. **It never asks for a match rate.**
+The visitor is a publisher revenue / sales leader who wants to sell better,
+conversion-measured campaigns to their big advertisers. So the tool never asks for
+their P&L revenue. It anchors on the one non-sensitive number they always know,
+**what their biggest advertiser spends with them a year**, scales that to an
+estimated book, derives everything technical internally, and reveals the
+**incremental annual ad revenue** standing up their own CAPI could be worth, then
+invites them to book a meeting. Nothing entered is stored; it stays in the browser.
+**It never asks for a match rate, and never demands a revenue figure.**
 
 > Part of the AdFixus tool family (with `adfixus-id-simulator` and `adfixus-sales`).
 > All three share the same guided-flow shell and design system. See
@@ -36,31 +39,33 @@ Facebook and Google.
 
 ## The guided flow (what a visitor sees)
 
-An Apple-grade guided flow: a provocation, then two effortless questions, then the
+An Apple-grade guided flow: a provocation, then one effortless ask, then the
 payoff. Smart defaults mean a visitor can reach the reveal with almost no input.
+Every screen is authored to fit one viewport, so the surface never scrolls.
 
 1. **Provocation** (`src/components/flow/Provocation.tsx`): *"Walled gardens took
    about half of open-web ad revenue with one thing you do not have: your own
    Conversions API."*
-2. **Ask, revenue** (`src/components/flow/RevenueControl.tsx`): one slider, roughly
-   how much open-web ad revenue do you make a year? (smart default about $20M; a
-   quiet *traffic + CPM* alternative derives it for publishers who think in
-   impressions).
-3. **Ask, vertical** (`src/components/flow/VerticalControl.tsx`): a segmented choice
-   (auto / education / retail / finance / travel / other) that sets the conversion
-   framing and the default direct-sold / performance share.
-4. **Reveal** (`src/components/flow/Reveal.tsx` + `src/components/bridge/*`): the
-   animated **Signal Bridge** (real conversion events flowing back from the
-   advertiser as measurable outcomes), one hero number (total incremental annual ad
-   revenue), the **three-lever breakdown**, a Carsales benchmark line, and one CTA.
+2. **Ask, the advertiser anchor** (`src/components/flow/AdvertiserControl.tsx`):
+   *"Picture your biggest advertiser. What do they spend with you a year?"* One
+   slider (smart default about $1M, the Carsales flagship) plus a quiet
+   **book-scale** choice (a handful / dozens / hundreds) that scales the anchor to
+   an estimated book. It never asks for revenue; the estimate is refined later, and
+   a privacy line makes clear nothing is stored.
+3. **Reveal** (`src/components/flow/Reveal.tsx` + `src/components/bridge/*`): the
+   hero number leads (total incremental annual ad revenue), a **three-lever
+   substantiation strip**, one CTA, and a slim, supporting **Signal Bridge band**
+   (real conversion events flowing back). Result-dominant, not visual-dominant.
 
-Everything richer (the adjustable levers, the three-year ramp, the three deal
+Everything richer (the adjustable model, the three-year ramp, the three deal
 models showing what you pay AdFixus vs keep NET, and the $30K-cap per-campaign
-economics) lives behind the **"See the full model"** drawer
-(`src/components/flow/DepthDrawer.tsx` opening `src/components/depth/CommercialDepth.tsx`).
-It **reconciles to the same headline number**; nothing is invented, nothing lost.
-The direct-sold / performance share is a slider in the drawer, so it is adjustable
-without cluttering the guided flow.
+economics) lives behind the **"Explore the full model"** panel
+(`src/components/flow/DepthDrawer.tsx` opening `src/components/depth/CommercialDepth.tsx`),
+organised as three tabs (Breakdown / You pay vs keep / Per campaign) that each fit
+one screen. It **reconciles to the same headline number**; nothing is invented,
+nothing lost. The outcome you'd sell (the former "vertical"), the direct-sold /
+performance share, and the estimated revenue are all adjustable there, so nothing
+clutters the guided flow.
 
 ## The model (every number traces to an input or a named assumption)
 
@@ -167,7 +172,10 @@ link. This tool is **public**, no auth.
 
 The app reports its height to the parent page so it iframes cleanly with no inner
 scrollbar (`src/core/embed/embed.ts`, called from `src/main.tsx` as
-`initAdfixusEmbed({ appName: 'AdFixus-CAPI-Calculator' })`).
+`initAdfixusEmbed({ appName: 'AdFixus-CAPI-Calculator' })`). Because every screen is
+authored to fit one viewport, the embedded module stays a clean single screen. The
+in-tool AdFixus wordmark is hidden (`FlowShell showWordmark={false}`) so it does not
+duplicate the host page's own branding.
 
 ```html
 <iframe id="afx" src="https://YOUR-HOST/" style="width:100%;border:0;" scrolling="no"></iframe>
@@ -203,23 +211,22 @@ src/
   pages/Index.tsx               <SalesPlanApp/> + SEO/OG tags
   components/
     SalesPlanApp.tsx            the guided flow (the whole visible surface)
-    flow/                       shared guided-flow shell (identical across tools)
-      FlowShell.tsx             full-viewport shell + progress dots + motion
+    flow/                       shared guided-flow shell (mostly identical across tools)
+      FlowShell.tsx             full-viewport shell + progress dots + motion (wordmark optional)
       Provocation.tsx           step 0
       AskStep.tsx               ask-step wrapper (holds one control)
-      RevenueControl.tsx        annual ad revenue slider (+ traffic/CPM alternative)
-      VerticalControl.tsx       segmented vertical choice
-      Reveal.tsx                the payoff (visual + hero number + CTA); AnimatedNumber
-      DepthDrawer.tsx           "See the full model" drawer
+      AdvertiserControl.tsx     the advertiser anchor: biggest-advertiser slider + book scale
+      Reveal.tsx                result-dominant payoff (hero number, strip, CTA, band); AnimatedNumber
+      DepthDrawer.tsx           "Explore the full model" panel (fixed height, tabbed, no-scroll)
     bridge/
-      SignalBridge.tsx          the animated CAPI bridge visual (real events flowing back)
-    depth/                      the full model, demoted into the drawer (reconciles to headline)
-      CommercialDepth.tsx       composes the whole deep model
-      LeverBreakdown.tsx        the 3-lever decomposition (compact + full)
-      LeverSliders.tsx          all lever assumptions + performance share, adjustable
+      SignalBridge.tsx          the CAPI bridge visual; "full" hero + "band" (slim, supporting)
+    depth/                      the full model, demoted into the panel (reconciles to headline)
+      CommercialDepth.tsx       recap + CTA + three tabs (Breakdown / You pay vs keep / Per campaign)
+      LeverBreakdown.tsx        the 3-lever decomposition (compact strip + full cards)
+      LeverSliders.tsx          outcome, estimated revenue, performance share + lever rates, adjustable
       DealComparison.tsx        3 deal models: pay AdFixus vs keep NET
-      CapCampaignTable.tsx      $30K per-campaign cap economics (derived from addressable)
-      ThreeYearRamp.tsx         3-year ramp chart
+      CapCampaignTable.tsx      $30K per-campaign cap economics (hero row = your top advertiser)
+      ThreeYearRamp.tsx         3-year ramp chart (compact variant for the tab)
   hooks/
     useCapiRoi.ts               inputs + assumptions -> the whole model (single source)
     use-toast.ts                toast state

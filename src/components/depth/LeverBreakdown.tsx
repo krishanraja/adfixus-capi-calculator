@@ -21,16 +21,18 @@ export const LeverBreakdown = ({ result, variant = 'full' }: LeverBreakdownProps
 
   if (variant === 'compact') {
     return (
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
         {ordered.map((lever) => (
           <div
             key={lever.key}
-            className="rounded-xl border border-border/70 bg-card/40 px-4 py-3 text-left"
+            className="rounded-xl border border-border/70 bg-card/40 px-3 py-3 text-center sm:px-4"
           >
-            <div className="text-lg font-semibold text-primary">
+            <div className="text-xl font-semibold tabular-nums text-primary sm:text-2xl">
               {formatCapiCurrency(lever.value)}
             </div>
-            <div className="mt-0.5 text-xs font-medium text-foreground">{lever.label}</div>
+            <div className="mt-1 text-[11px] font-medium leading-tight text-muted-foreground sm:text-xs">
+              {lever.shortLabel}
+            </div>
           </div>
         ))}
       </div>

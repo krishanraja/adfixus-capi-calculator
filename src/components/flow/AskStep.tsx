@@ -65,7 +65,7 @@ export const AskStep = ({
       {hint && (
         <motion.p
           {...stagger(0.2)}
-          className="mx-auto mt-4 max-w-lg text-sm text-muted-foreground sm:text-base"
+          className="mx-auto mt-4 max-w-md text-balance text-sm leading-relaxed text-muted-foreground sm:text-base"
         >
           {hint}
         </motion.p>

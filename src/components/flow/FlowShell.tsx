@@ -29,6 +29,12 @@ interface FlowShellProps {
   children: ReactNode;
   /** Hide the progress dots (e.g. on a single-screen reveal). Default: shown. */
   showProgress?: boolean;
+  /**
+   * Show the AdFixus wordmark top-left. Default true for the shared shell, but
+   * tools embedded in an iframe on adfixus.com pass false to avoid a redundant
+   * (and mis-scaled) second logo on the host page.
+   */
+  showWordmark?: boolean;
 }
 
 const WORDMARK = '/lovable-uploads/6c4484f1-aec6-4c58-99b0-b901b4e0655a.png';
@@ -38,6 +44,7 @@ export const FlowShell = ({
   stepCount,
   children,
   showProgress = true,
+  showWordmark = true,
 }: FlowShellProps) => {
   const reduce = useReducedMotion();
 
@@ -49,15 +56,18 @@ export const FlowShell = ({
 
   return (
     <div className="relative min-h-dvh-safe hero-gradient overflow-hidden">
-      {/* Tiny fixed wordmark, top-left. Forced white for the dark bg. */}
-      <div className="pointer-events-none fixed left-5 top-5 z-50 sm:left-8 sm:top-7">
-        <img
-          src={WORDMARK}
-          alt="AdFixus"
-          className="h-6 w-auto opacity-90 sm:h-7"
-          style={{ filter: 'brightness(0) invert(1)' }}
-        />
-      </div>
+      {/* Tiny fixed wordmark, top-left. Forced white for the dark bg. Hidden when
+          embedded so the host page's own AdFixus branding is not duplicated. */}
+      {showWordmark && (
+        <div className="pointer-events-none fixed left-5 top-5 z-50 sm:left-8 sm:top-7">
+          <img
+            src={WORDMARK}
+            alt="AdFixus"
+            className="h-6 w-auto opacity-90 sm:h-7"
+            style={{ filter: 'brightness(0) invert(1)' }}
+          />
+        </div>
+      )}
 
       {/* Slim progress dots, top-centre. */}
       {showProgress && stepCount > 1 && (
@@ -83,8 +93,8 @@ export const FlowShell = ({
         </div>
       )}
 
-      {/* One step, centred, huge whitespace. */}
-      <div className="relative z-10 mx-auto flex min-h-dvh-safe w-full max-w-5xl flex-col items-center justify-center px-6 py-24 sm:px-8">
+      {/* One step, centred, generous whitespace. */}
+      <div className="relative z-10 mx-auto flex min-h-dvh-safe w-full max-w-5xl flex-col items-center justify-center px-6 py-12 sm:px-8 sm:py-16">
         <AnimatePresence mode="wait">
           <motion.div
             key={stepIndex}

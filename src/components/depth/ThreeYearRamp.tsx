@@ -22,6 +22,8 @@ import { formatCapiCurrency } from '@/lib/capiRoi';
 interface ThreeYearRampProps {
   ramp: RampPoint[];
   cumulative: number;
+  /** Compact = shorter chart + tighter padding for the tabbed depth view. */
+  compact?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,11 +42,11 @@ const RampTooltip = ({ active, payload }: any) => {
 
 const SHADES = ['hsl(195 95% 42%)', 'hsl(195 95% 52%)', 'hsl(195 95% 62%)'];
 
-export const ThreeYearRamp = ({ ramp, cumulative }: ThreeYearRampProps) => {
+export const ThreeYearRamp = ({ ramp, cumulative, compact = false }: ThreeYearRampProps) => {
   const data = ramp.map((p) => ({ ...p, label: `Year ${p.year}` }));
 
   return (
-    <Card className="glass-card p-6">
+    <Card className={`glass-card ${compact ? 'p-5' : 'p-6'}`}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold text-foreground">Three-year ramp</h3>
@@ -58,8 +60,8 @@ export const ThreeYearRamp = ({ ramp, cumulative }: ThreeYearRampProps) => {
         </div>
       </div>
 
-      <div className="mt-6">
-        <ResponsiveContainer width="100%" height={220}>
+      <div className={compact ? 'mt-3' : 'mt-6'}>
+        <ResponsiveContainer width="100%" height={compact ? 128 : 220}>
           <BarChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 18%)" vertical={false} />
             <XAxis

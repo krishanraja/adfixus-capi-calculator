@@ -52,25 +52,31 @@ export const AnimatedNumber = ({
 
 interface RevealProps {
   eyebrow?: string;
-  /** Optional hero visual (e.g. the SignalBridge) shown above the number. */
-  visual?: ReactNode;
   /** The hero number, already wrapped in <AnimatedNumber> by the caller. */
   hero: ReactNode;
-  /** One single line of meaning beneath the number. */
+  /** One tight line of meaning beneath the number. */
   meaning: ReactNode;
-  /** One calm CTA. */
+  /** Compact substantiation directly under the meaning (e.g. the lever strip). */
+  highlights?: ReactNode;
+  /** One calm primary CTA. */
   cta: ReactNode;
-  /** A quiet secondary affordance (e.g. "See the full plan"). */
-  secondary?: ReactNode;
+  /** A quiet inline action beside the CTA (e.g. "Explore the full model"). */
+  exploreAction?: ReactNode;
+  /**
+   * A demoted, supporting visual (e.g. the SignalBridge band) rendered quietly
+   * at the bottom. The number stays the hero; this is reinforcement.
+   */
+  visual?: ReactNode;
 }
 
 export const Reveal = ({
   eyebrow,
-  visual,
   hero,
   meaning,
+  highlights,
   cta,
-  secondary,
+  exploreAction,
+  visual,
 }: RevealProps) => {
   const reduce = useReducedMotion();
 
@@ -84,43 +90,51 @@ export const Reveal = ({
         };
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
+    <div className="mx-auto flex w-full max-w-3xl flex-col items-center text-center">
       {eyebrow && (
         <motion.p
           {...settle(0.05)}
-          className="mb-6 text-xs font-medium uppercase tracking-[0.25em] text-primary sm:text-sm"
+          className="mb-3 text-xs font-medium uppercase tracking-[0.25em] text-primary sm:mb-4"
         >
           {eyebrow}
         </motion.p>
       )}
 
-      {visual && (
-        <motion.div {...settle(0.12)} className="mb-10 w-full">
-          {visual}
-        </motion.div>
-      )}
-
+      {/* The number is the hero - large, first, dominant. */}
       <motion.div
-        {...settle(visual ? 0.24 : 0.14)}
+        {...settle(0.12)}
         className="text-6xl font-bold leading-none tracking-tight sm:text-7xl md:text-8xl"
       >
         {hero}
       </motion.div>
 
       <motion.p
-        {...settle(visual ? 0.34 : 0.24)}
-        className="mx-auto mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
+        {...settle(0.22)}
+        className="mx-auto mt-4 max-w-lg text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-5 sm:text-base"
       >
         {meaning}
       </motion.p>
 
-      <motion.div {...settle(visual ? 0.44 : 0.34)} className="mt-10">
+      {highlights && (
+        <motion.div {...settle(0.3)} className="mt-7 w-full sm:mt-8">
+          {highlights}
+        </motion.div>
+      )}
+
+      <motion.div
+        {...settle(0.38)}
+        className="mt-7 flex flex-col items-center gap-3 sm:mt-8 sm:flex-row sm:justify-center sm:gap-6"
+      >
         {cta}
+        {exploreAction}
       </motion.div>
 
-      {secondary && (
-        <motion.div {...settle(visual ? 0.52 : 0.42)} className="mt-6">
-          {secondary}
+      {visual && (
+        <motion.div
+          {...settle(0.48)}
+          className="hidden w-full max-w-2xl opacity-80 sm:mt-11 sm:block"
+        >
+          {visual}
         </motion.div>
       )}
     </div>

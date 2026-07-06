@@ -71,7 +71,9 @@ export const DepthDrawer = ({ label, title, subtitle, children }: DepthDrawerPro
           >
             <motion.div
               key="depth-panel"
-              className="absolute inset-x-0 bottom-0 top-8 mx-auto flex max-w-6xl flex-col overflow-hidden rounded-t-2xl border border-border/60 bg-background shadow-2xl sm:top-12"
+              // text-left: the drawer is a DOM descendant of the (centered) Reveal,
+              // so reset inherited text-align here - every child aligns explicitly.
+              className="absolute inset-x-0 bottom-0 top-4 mx-auto flex max-w-6xl flex-col overflow-hidden rounded-t-2xl border border-border/60 bg-background text-left shadow-2xl sm:top-6"
               initial={reduce ? { opacity: 0 } : { y: '4%', opacity: 0, scale: 0.985 }}
               animate={reduce ? { opacity: 1 } : { y: 0, opacity: 1, scale: 1 }}
               exit={reduce ? { opacity: 0 } : { y: '4%', opacity: 0, scale: 0.985 }}
@@ -83,7 +85,7 @@ export const DepthDrawer = ({ label, title, subtitle, children }: DepthDrawerPro
               onClick={(e) => e.stopPropagation()}
             >
               {/* Sticky header */}
-              <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-border/60 bg-background/95 px-5 py-4 backdrop-blur-xl sm:px-8 sm:py-5">
+              <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-border/60 bg-background/95 px-5 py-3.5 backdrop-blur-xl sm:px-8 sm:py-4">
                 <div className="min-w-0">
                   <h2 className="truncate text-lg font-semibold text-foreground sm:text-xl">
                     {title}
@@ -104,9 +106,11 @@ export const DepthDrawer = ({ label, title, subtitle, children }: DepthDrawerPro
                 </button>
               </div>
 
-              {/* Scrollable body - all the demoted richness lives here. */}
-              <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-8 sm:px-8 sm:py-10">
-                <div className="mx-auto w-full max-w-5xl">{children}</div>
+              {/* Body - the demoted richness. Content is authored to fit one
+                  panel (tabbed), so it does not scroll in normal use; overflow
+                  stays auto as a safety net for very short viewports only. */}
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-8 sm:py-6">
+                <div className="mx-auto h-full w-full max-w-5xl">{children}</div>
               </div>
             </motion.div>
           </motion.div>

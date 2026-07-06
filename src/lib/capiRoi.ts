@@ -18,9 +18,77 @@
 
 export type Vertical = 'auto' | 'education' | 'retail' | 'finance' | 'travel' | 'other';
 
+/**
+ * How big the publisher's advertiser book is, relative to its single biggest
+ * advertiser. This is the ONLY scaling input the guided flow asks for - it never
+ * asks a publisher to type their P&L revenue. Instead we anchor on a concrete,
+ * non-sensitive number a sales leader always knows (what their biggest advertiser
+ * spends with them) and multiply by a book factor to estimate the book.
+ *
+ * The factor is "how many advertisers of that flagship's economic weight would
+ * add up to your whole book" - i.e. the flagship is 1/factor of the book. All
+ * three are deliberately round, defensible, and adjustable.
+ */
+export type BookScale = 'handful' | 'dozens' | 'hundreds';
+
+export interface BookScaleProfile {
+  id: BookScale;
+  label: string;
+  /** One-line description shown under the label. */
+  sublabel: string;
+  /** Book estimate = flagshipSpend x factor. */
+  factor: number;
+}
+
+export const BOOK_SCALES: Record<BookScale, BookScaleProfile> = {
+  handful: {
+    id: 'handful',
+    label: 'A handful',
+    sublabel: 'a few marquee advertisers',
+    factor: 5,
+  },
+  dozens: {
+    id: 'dozens',
+    label: 'Dozens',
+    sublabel: 'a solid mid-market book',
+    factor: 12,
+  },
+  hundreds: {
+    id: 'hundreds',
+    label: 'Hundreds',
+    sublabel: 'a deep, long-tail book',
+    factor: 30,
+  },
+};
+
+export const DEFAULT_FLAGSHIP_SPEND = 1_000_000;
+export const DEFAULT_BOOK_SCALE: BookScale = 'dozens';
+
+/**
+ * Estimate annual open-web ad revenue from the advertiser anchor. This is the
+ * derivation that lets the tool NEVER ask for revenue directly: the flagship
+ * advertiser's spend x the book factor. The publisher can still override the
+ * estimate directly in the explore view.
+ */
+export function deriveRevenueFromBook(flagshipSpend: number, scale: BookScale): number {
+  const factor = BOOK_SCALES[scale].factor;
+  return Math.round(Math.max(0, flagshipSpend) * factor);
+}
+
 /** The publisher-knowable inputs - the only things asked on the surface. */
 export interface CapiRoiInputs {
-  /** Annual open-web ad revenue, $ (slider/input; smart default ~$20M). */
+  /**
+   * The single biggest advertiser's annual spend with the publisher, $. Concrete
+   * and non-sensitive (it is the advertiser's number, not the publisher's P&L),
+   * and it drives the per-campaign cap story. The guided-flow anchor.
+   */
+  flagshipSpend: number;
+  /** How big the advertiser book is relative to the flagship (scales the book). */
+  bookScale: BookScale;
+  /**
+   * Annual open-web ad revenue, $. Estimated from flagshipSpend x book factor;
+   * never required. Overridable in the explore view.
+   */
   annualAdRevenue: number;
   /** Vertical - sets defaults and conversion framing. */
   vertical: Vertical;
@@ -124,9 +192,15 @@ export const VERTICALS: Record<Vertical, VerticalProfile> = {
   },
 };
 
-/** The default entry point - a ~$20M auto publisher. */
+/**
+ * The default entry point - a publisher whose biggest advertiser spends ~$1M
+ * (the Carsales flagship), a mid-market "dozens" book (~$12M estimated revenue),
+ * framed in auto. Everything is adjustable; nothing here is asked as revenue.
+ */
 export const DEFAULT_INPUTS: CapiRoiInputs = {
-  annualAdRevenue: 20_000_000,
+  flagshipSpend: DEFAULT_FLAGSHIP_SPEND,
+  bookScale: DEFAULT_BOOK_SCALE,
+  annualAdRevenue: deriveRevenueFromBook(DEFAULT_FLAGSHIP_SPEND, DEFAULT_BOOK_SCALE),
   vertical: 'auto',
   performanceShare: VERTICALS.auto.performanceShare,
 };
@@ -135,6 +209,8 @@ export const DEFAULT_INPUTS: CapiRoiInputs = {
 export interface Lever {
   key: 'winBack' | 'cpm' | 'retention';
   label: string;
+  /** A 1-2 word label for compact strips (e.g. the reveal). */
+  shortLabel: string;
   value: number;
   /** One-line, human-readable derivation (for the drawer / provenance). */
   basis: string;
@@ -210,6 +286,7 @@ export function calculateCapiRoi(
     winBack: {
       key: 'winBack',
       label: 'Win back & grow outcome budgets',
+      shortLabel: 'Budgets won back',
       value: winBackValue,
       basis: `${fmtPct(performanceShare)} addressable book × ${fmtPct(winBackRate)} win-back (Carsales CAPI track +22%)`,
       rate: winBackRate,
@@ -217,6 +294,7 @@ export function calculateCapiRoi(
     cpm: {
       key: 'cpm',
       label: 'Higher CPM on CAPI-enriched inventory',
+      shortLabel: 'Higher CPM',
       value: cpmValue,
       basis: `${fmtPct(enrichedShare)} of revenue enriched × ${fmtPct(cpmUplift)} CPM uplift (deck: +15%)`,
       rate: cpmUplift,
@@ -224,6 +302,7 @@ export function calculateCapiRoi(
     retention: {
       key: 'retention',
       label: 'Advertiser retention',
+      shortLabel: 'Advertisers who stay',
       value: retentionValueDollars,
       basis: `${fmtPct(performanceShare)} addressable book × ${fmtPct(retentionValue)} retained/renewed spend (from +40% retention)`,
       rate: retentionValue,
