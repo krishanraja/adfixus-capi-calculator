@@ -22,8 +22,9 @@ invites them to book a meeting. Nothing entered is stored; it stays in the brows
 **It never asks for a match rate, and never demands a revenue figure.**
 
 > Part of the AdFixus tool family (with `adfixus-id-simulator` and `adfixus-sales`).
-> All three share the same guided-flow shell and design system. See
-> **[HANDOVER.md](HANDOVER.md)**.
+> All three share the same design system and started from one guided-flow shell;
+> this tool has since customised that shell for its no-scroll iframe + result-dominant
+> redesign (see HANDOVER). See **[HANDOVER.md](HANDOVER.md)**.
 
 ## What CAPI actually is
 
@@ -106,7 +107,7 @@ traces to an input or a named, adjustable assumption.
 `src/lib/capiCommercial.ts` (`priceCapiRoi`) takes that same `totalIncremental` and
 prices it three ways so a publisher sees what they pay AdFixus vs keep NET:
 
-- **Revenue share (capped)**: 12.5% of CAPI incremental, with a **$30K per campaign
+- **Revenue share**: 12.5% of CAPI incremental, with a **$30K per campaign
   per month cap** (the "magic of the cap" for large advertisers). Recommended.
 - **Annual cap**: 12.5% up to a $1.2M annual cap, then 100% to the publisher.
 - **Flat fee**: a fixed $1M annual fee regardless of performance.
@@ -211,7 +212,7 @@ src/
   pages/Index.tsx               <SalesPlanApp/> + SEO/OG tags
   components/
     SalesPlanApp.tsx            the guided flow (the whole visible surface)
-    flow/                       shared guided-flow shell (mostly identical across tools)
+    flow/                       guided-flow shell (from the family baseline; diverged here for no-scroll iframe + result-dominant reveal)
       FlowShell.tsx             full-viewport shell + progress dots + motion (wordmark optional)
       Provocation.tsx           step 0
       AskStep.tsx               ask-step wrapper (holds one control)

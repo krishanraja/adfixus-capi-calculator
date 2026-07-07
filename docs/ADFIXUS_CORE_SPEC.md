@@ -202,14 +202,18 @@ every repo, all three produce identical numbers by construction.
 
 ### 3.6 The capi-calculator CAPI ROI model (`src/lib/capiRoi.ts`)
 
-The capi-calculator computes its headline from three publisher-knowable inputs, not
-from the engine. This is deliberate: a publisher never knows their match rate,
+The capi-calculator computes its headline from a single publisher-knowable anchor,
+not from the engine. This is deliberate: a publisher never knows their match rate,
 campaign count, or addressability, so nothing technical is asked. **The tool never
-asks for a match rate.**
+asks for a match rate, and never demands a revenue figure.**
 
-Inputs (the only things asked on the surface): `annualAdRevenue`, `vertical`, and
-`performanceShare` (the direct-sold / performance share of ad sales, defaulted by
-vertical and adjustable in the drawer).
+Surface inputs (the only things asked in the guided flow): the advertiser anchor,
+`flagshipSpend` (the single biggest advertiser's annual spend) plus a `bookScale`
+segmented choice (`BOOK_SCALES`: handful / dozens / hundreds to factors 5 / 12 / 30).
+`annualAdRevenue` is ESTIMATED via `deriveRevenueFromBook(flagshipSpend, bookScale)`
+(default 'dozens' gives about $12M) and is overridable only in the explore panel;
+`vertical` and `performanceShare` have per-vertical defaults and are adjustable there
+too.
 
 ```
 addressable      = annualAdRevenue x performanceShare      (direct-sold / performance book)
@@ -238,9 +242,10 @@ B $1.05M, C $0.64M, `totalIncremental` $3.45M/yr.
 `priceCapiRoi` takes the SAME `totalIncremental` and prices it three ways, so the
 drawer decomposes and prices the headline rather than showing a second number:
 
-- **Revenue share (capped, recommended):** 12.5% of CAPI incremental, with a
+- **Revenue share (recommended):** 12.5% of CAPI incremental, with a
   **$30K/campaign/month cap** (fully aligned; the "magic of the cap" for large
-  advertisers).
+  advertisers). Its `DealModel.label` is `Revenue share`; the cap is conveyed in the
+  card tagline.
 - **Annual cap:** 12.5% up to a $1.2M Year-1 cap, then 100% to the publisher.
 - **Flat fee:** a fixed $1M annual fee regardless of performance.
 
@@ -315,7 +320,7 @@ on another origin, pass `initAdfixusEmbed({ appName, parentOrigin })`.
   `localStorage`, or a server-side `POST /api/lead` via Resend through its proxy),
   keeping any credentials server-side, never in a `VITE_` var.
 - **PDF** is a sales-tool concern only. The capi-calculator's rich detail lives
-  inside the **"See the full model"** depth drawer as live, reconciling UI; it does
+  inside the **"Explore the full model"** depth panel as live, reconciling UI; it does
   not export a file. (An unused `pdfmake` dependency may remain in
   `package.json`; there is no PDF code on the CAPI path.)
 
@@ -325,10 +330,19 @@ on another origin, pass `initAdfixusEmbed({ appName, parentOrigin })`.
 
 The **shared engine + design** must stay **identical** across the three repos:
 `src/core/engine/`, `src/core/constants/`, `src/core/types/`,
-`src/core/embed/embed.ts`, `src/core/selfcheck.ts`, the guided-flow shell
-`src/components/flow/*`, `src/index.css`, `tailwind.config.ts`, and this
-`docs/ADFIXUS_CORE_SPEC.md`. When you change one, copy it to the others and run
-the self-check in each.
+`src/core/embed/embed.ts`, `src/core/selfcheck.ts`, `src/index.css`,
+`tailwind.config.ts`, and this `docs/ADFIXUS_CORE_SPEC.md`. When you change one,
+copy it to the others and run the self-check in each.
+
+> **Divergence note (capi-calculator).** The guided-flow shell
+> `src/components/flow/*` was historically kept byte-identical across the three
+> tools, but **this repo has intentionally diverged it** for the no-scroll iframe +
+> result-dominant redesign: `FlowShell` gained a `showWordmark` prop, `Reveal` was
+> restructured (`hero` / `meaning` / `highlights` / `cta` / `exploreAction` /
+> `visual`), `AskStep` and `DepthDrawer` (now tabbed, no-scroll) were reworked, and
+> the file set changed (`AdvertiserControl` added; `RevenueControl` /
+> `VerticalControl` removed). Keep the motion, timing, and design tokens aligned
+> with the family, but the shell is no longer synced verbatim here.
 
 Tool-specific pieces are **not** synced: each tool's headline model and hook (for
 the capi-calculator, `src/lib/capiRoi.ts` + `src/lib/capiCommercial.ts` +

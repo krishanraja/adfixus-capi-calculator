@@ -26,38 +26,48 @@ conversion events directly to the publisher, restoring the measurement lost to
 cookie/ITP blocking, so the publisher can sell a 100%-accurate outcomes product
 like the walled gardens and win those outcome budgets back.
 
-The tool asks only what a publisher actually knows (annual open-web ad revenue,
-vertical, and, in the drawer, the direct-sold / performance share of sales),
+The visitor is a publisher revenue / sales leader who wants to sell better,
+conversion-measured campaigns to their big advertisers, so the tool never asks for
+their P&L revenue. It anchors on the one non-sensitive number they always know,
+**what their biggest advertiser spends with them a year**, plus roughly how big
+their advertiser book is, estimates annual open-web ad revenue from that anchor,
 derives everything technical internally, and shows the **incremental annual ad
 revenue** standing up their own CAPI could be worth, then invites them to book a
-meeting. **It never asks for a match rate.** It is designed to be **iframed into
-adfixus.com**.
+meeting. Vertical and the direct-sold / performance share are refined only in the
+explore panel. Nothing entered is stored; it stays in the browser. **It never asks
+for a match rate, and never demands a revenue figure.** It is designed to be
+**iframed into adfixus.com** (with no in-tool logo).
 
 ## The guided flow (the visible surface)
 
 `src/components/SalesPlanApp.tsx` renders an Apple-grade guided flow: smart
-defaults, almost no input, all depth one link away.
+defaults, almost no input, all depth one link away. Three steps (`stepCount={3}`),
+each authored to fit one viewport so the surface never scrolls.
 
 1. **Provocation** (`flow/Provocation.tsx`): *"Walled gardens took about half of
    open-web ad revenue with one thing you do not have: your own Conversions API."*
-2. **Ask, revenue** (`flow/AskStep.tsx` + `flow/RevenueControl.tsx`): one slider,
-   annual open-web ad revenue (default about $20M; a *traffic + CPM* alternative
-   derives it).
-3. **Ask, vertical** (`flow/AskStep.tsx` + `flow/VerticalControl.tsx`): a segmented
-   choice that sets the conversion framing and the default performance share.
-4. **Reveal** (`flow/Reveal.tsx` + `bridge/SignalBridge.tsx`): the animated CAPI
-   bridge (real conversion events flowing back as measurable outcomes), one hero
-   number (total incremental annual ad revenue), the three-lever breakdown, a
-   Carsales benchmark line, one CTA (Book a meeting), and a quiet **"See the full
-   model"** link.
+2. **Ask, the advertiser anchor** (`flow/AskStep.tsx` + `flow/AdvertiserControl.tsx`):
+   the biggest advertiser's annual spend (`flagshipSpend`, slider $100K to $3M) plus
+   a segmented "how big is your book?" choice (`bookScale`: handful / dozens /
+   hundreds, factors 5 / 12 / 30). Annual ad revenue is **estimated** from these via
+   `deriveRevenueFromBook`, never asked (default ~$12M). A privacy line makes clear
+   nothing is stored.
+3. **Reveal** (`flow/Reveal.tsx` + `bridge/SignalBridge.tsx`): one hero number first
+   (total incremental annual ad revenue), a compact three-lever substantiation strip,
+   one CTA (Book a meeting), a quiet **"Explore the full model"** link, and a slim
+   supporting SignalBridge band (`variant='band'`, hidden on mobile). Result-dominant,
+   not visual-dominant.
 
-That link opens `flow/DepthDrawer.tsx` then **`depth/CommercialDepth.tsx`**, which
-holds all the detail and **reconciles to the same headline number**: the three
-levers restated and adjustable, plus the direct-sold / performance share slider
-(`depth/LeverSliders`, `depth/LeverBreakdown`), the three-year ramp
-(`depth/ThreeYearRamp`), the three deal models showing what you pay AdFixus vs keep
-NET (`depth/DealComparison`), and the $30K-cap per-campaign economics
-(`depth/CapCampaignTable`).
+That link opens `flow/DepthDrawer.tsx` then **`depth/CommercialDepth.tsx`**, a
+fixed-height, **tabbed, no-scroll** panel with a persistent recap + Book-a-meeting
+CTA and three tabs (Breakdown / You pay vs keep / Per campaign) that each fit one
+screen. It holds all the detail and **reconciles to the same headline number**: the
+three levers restated (`depth/LeverBreakdown`) with every input adjustable
+(`depth/LeverSliders`: outcome/vertical, estimated revenue override, performance
+share, and the four lever rates), the three-year ramp (`depth/ThreeYearRamp`), the
+three deal models showing what you pay AdFixus vs keep NET (`depth/DealComparison`),
+and the $30K-cap per-campaign economics (`depth/CapCampaignTable`, whose hero row is
+the publisher's own top advertiser).
 
 ## Architecture: where the math lives
 
@@ -127,8 +137,10 @@ revenue-share fee about $0.43M, publisher keeps about $3.02M (88%)
   (the outcome copy, e.g. auto = "test-drive bookings and enquiries"). Changing a
   vertical resets `performanceShare` to that vertical's default (see `setVertical`
   in `useCapiRoi.ts`), keeping the framing and the addressable book consistent.
-- **The default entry point** is `DEFAULT_INPUTS` in `src/lib/capiRoi.ts` (about
-  $20M, auto, 50% performance share).
+- **The default entry point** is `DEFAULT_INPUTS` in `src/lib/capiRoi.ts` (biggest
+  advertiser ~$1M spend and a "dozens" book, which derives ~$12M estimated revenue,
+  auto, 50% performance share). The flagship spend and book-scale defaults are
+  `DEFAULT_FLAGSHIP_SPEND` and `DEFAULT_BOOK_SCALE`.
 - **The deal models** (12.5% share, $30K/campaign/month cap, $1.2M annual cap, $1M
   flat fee) live in `DEAL_PARAMS` in `src/lib/capiCommercial.ts`; the per-campaign
   cap constants (`REVENUE_SHARE_RATE`, `CAMPAIGN_CAP`, `CONVERSION_IMPROVEMENT`,
@@ -144,9 +156,16 @@ Dark theme, AdFixus bright-cyan accent, **identical** to the other two tools. HS
 tokens in `src/index.css` (`:root`) + `tailwind.config.ts`: `--background: 0 0% 0%`
 (black), `--primary: 195 95% 50%` (cyan), `--primary-glow: 195 95% 60%`,
 `--card: 0 0% 6%`, `--radius: 1rem`; body font **Montserrat** (Google Fonts
-`<link>` in `index.html`). The shared guided-flow shell (`src/components/flow/*`)
-is kept byte-identical across the three tools so they feel like one family. Full
-token list + utility classes in the core spec section 4.
+`<link>` in `index.html`). The guided-flow shell (`src/components/flow/*`) began
+from the shared family baseline but has **intentionally diverged in this repo** for
+the no-scroll iframe + result-dominant redesign: `FlowShell` gained a `showWordmark`
+prop (passed `false` here to drop the redundant iframe logo), `Reveal` was
+restructured (`hero` / `meaning` / `highlights` / `cta` / `exploreAction` / `visual`,
+number-first), `AskStep` and `DepthDrawer` (now tabbed, no-scroll) were reworked, and
+the `flow/` file set changed (`AdvertiserControl` added; `RevenueControl` /
+`VerticalControl` removed). It is no longer byte-identical with the other two tools;
+keep the motion, timing, and design tokens aligned with the family where you can.
+Full token list + utility classes in the core spec section 4.
 
 ## What you need to do next
 

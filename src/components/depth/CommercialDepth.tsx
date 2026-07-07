@@ -3,9 +3,9 @@
 //
 // A persistent recap strip (the headline number + the inputs it rests on + one
 // CTA) sits above three tabs:
-//   1. Breakdown  - the three levers, decomposed, with every assumption adjustable.
-//   2. You keep   - the same number priced three ways, plus the three-year ramp.
-//   3. Per deal   - the $30K per-campaign cap economics, grounded in the book.
+//   1. Breakdown        - the three levers, decomposed, with every assumption adjustable.
+//   2. You pay vs keep  - the same number priced three ways, plus the three-year ramp.
+//   3. Per campaign     - the $30K per-campaign cap economics, grounded in the book.
 //
 // Everything still RECONCILES to the same totalIncremental; nothing invents a
 // second number. Tabs keep each view calm and legible instead of overwhelming.

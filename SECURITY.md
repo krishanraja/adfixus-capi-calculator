@@ -19,8 +19,10 @@ database, and no API keys / secrets**.
   and no file generation. Its single CTA opens the booking link in a new tab. If you
   later route leads to a CRM/ESP, add an adapter and keep any credentials
   **server-side** (never in a `VITE_` var).
-- **XSS:** React's default escaping; the only user input is numeric sliders and a
-  segmented vertical choice.
+- **XSS:** React's default escaping; all user input is numeric sliders and
+  segmented button choices (a book-scale choice in the entry step, plus an
+  outcome/vertical choice and further sliders in the explore panel). There is no
+  free-text input.
 - **Note:** because inputs and math are client-side, results are estimates and can
   be altered by the user; treat them as illustrative, not authoritative quotes.
 

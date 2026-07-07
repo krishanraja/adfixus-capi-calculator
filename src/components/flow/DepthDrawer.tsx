@@ -1,12 +1,14 @@
 // DepthDrawer - progressive depth, hidden by default.
 //
-// A quiet "See the full plan" / "Customise" affordance that expands (slide +
-// scale + fade) into a full, scrollable surface holding ALL the existing
-// richness - full sliders/config, charts, audit sections, deal models,
-// provenance. Nothing is lost; it is simply demoted behind one calm link.
+// A quiet "Explore the full model" affordance that expands (slide + scale + fade)
+// into a fixed-height panel holding ALL the existing richness - sliders/config,
+// charts, deal models, provenance - organised into tabs so it fits one screen
+// without long scrolling (overflow-y is only a safety net for very short
+// viewports). Nothing is lost; it is simply demoted behind one calm link.
 //
-// Shared shape across all three AdFixus tools; only the trigger label and the
-// content differ.
+// Historically a shared shape across the three AdFixus tools; this repo's version
+// has diverged for the no-scroll iframe redesign (fixed-height, text-left reset,
+// content authored to fit one panel). Only the trigger label and content differ.
 
 import { type ReactNode, useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';

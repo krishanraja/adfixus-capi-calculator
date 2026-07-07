@@ -1,13 +1,15 @@
-// FlowShell - the shared guided-flow shell for every AdFixus tool.
+// FlowShell - the guided-flow shell for the AdFixus tools.
 //
-// Full-viewport, centred, dark. A tiny fixed AdFixus wordmark top-left, an
-// optional slim row of progress dots. Renders exactly ONE step at a time and
-// animates transitions with AnimatePresence: a gentle fade + 12px y + slight
-// scale, spring easing (~0.4s). Respects prefers-reduced-motion.
+// Full-viewport, centred, dark. An optional tiny fixed AdFixus wordmark top-left
+// (see `showWordmark`, suppressed in the iframe embed), an optional slim row of
+// progress dots. Renders exactly ONE step at a time and animates transitions with
+// AnimatePresence: a gentle fade + 12px y + slight scale, spring easing (~0.4s).
+// Respects prefers-reduced-motion.
 //
-// Keep this file identical (structure, names, motion, timing) across
-// adfixus-id-simulator, adfixus-capi-calculator and adfixus-sales - it is what
-// makes the three tools feel like one family.
+// This shell began as the byte-identical family shell shared with
+// adfixus-id-simulator and adfixus-sales; it has since diverged in this repo (the
+// `showWordmark` prop, tighter no-scroll padding). Keep the motion, timing, and
+// structure aligned with the family where you can, but it is no longer identical.
 
 import { type ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';

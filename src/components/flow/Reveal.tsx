@@ -1,8 +1,10 @@
 // Reveal - the payoff screen.
 //
-// The result arrives as a beautiful, simple answer: an optional hero visual, a
-// hero number that counts up, a single line of meaning, a small settle
-// animation, then ONE calm CTA. This screen should feel good.
+// Result-dominant: the hero number counts up first and stays the focal point,
+// then one line of meaning, a compact substantiation strip (`highlights`, the
+// lever breakdown), one calm CTA beside a quiet `exploreAction`, and finally a
+// demoted, supporting `visual` at the bottom (e.g. the SignalBridge band). The
+// number leads; the visual never competes with it. Respects reduced motion.
 //
 // `AnimatedNumber` is the shared count-up used by every tool's reveal.
 

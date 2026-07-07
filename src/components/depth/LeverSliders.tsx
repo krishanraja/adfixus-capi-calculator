@@ -6,7 +6,7 @@
 //     a guided-flow step.
 //   - Your book (revenue) - the estimate derived from the advertiser anchor,
 //     here overridable directly. Nothing is stored; it stays in the browser.
-//   - Direct-sold / performance share, and the three lever rates.
+//   - Direct-sold / performance share, and the four lever rates.
 //
 // Adjusting any of them recomputes the headline and everything downstream - the
 // drawer and the reveal always reconcile because they read the same state.

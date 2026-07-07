@@ -2,10 +2,11 @@
 //
 // This is the credible, publisher-grounded replacement for the old "match rate"
 // calculator. A publisher never knows their match rate, campaign count, or
-// addressability. They know three things: roughly how much open-web ad revenue
-// they make, what vertical they are in, and roughly how much of that revenue is
-// direct-sold / performance (the CAPI-addressable book). Everything technical is
-// DERIVED here, never asked.
+// addressability. They know one concrete, non-sensitive number: what their single
+// biggest advertiser spends with them a year. From that anchor plus a book-scale
+// choice we ESTIMATE their open-web ad revenue (deriveRevenueFromBook); vertical and
+// the direct-sold / performance share have sensible defaults and are refined in the
+// drawer. Everything technical is DERIVED here, and revenue itself is never demanded.
 //
 // The model answers one question: if you stood up your OWN Conversions API on an
 // AdFixus identity backbone, how much incremental annual ad revenue would it be

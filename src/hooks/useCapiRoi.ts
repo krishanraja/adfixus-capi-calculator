@@ -1,9 +1,10 @@
 // useCapiRoi - the single source of truth for the CAPI ROI surface.
 //
-// Holds the three publisher-knowable inputs (annual ad revenue, vertical,
-// performance share), the adjustable lever assumptions (exposed in the drawer),
-// and derives BOTH the headline (calculateCapiRoi) and the commercial pricing
-// (priceCapiRoi) from them. Headline and drawer therefore always reconcile.
+// Holds the advertiser anchor (flagshipSpend + bookScale) from which annual ad
+// revenue is estimated (overridable directly, tracked by revenueIsCustom), plus
+// vertical and performance share and the adjustable lever assumptions (exposed in
+// the drawer), and derives BOTH the headline (calculateCapiRoi) and the commercial
+// pricing (priceCapiRoi) from them. Headline and drawer therefore always reconcile.
 
 import { useMemo, useState } from 'react';
 import {
