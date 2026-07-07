@@ -11,6 +11,7 @@
 // content authored to fit one panel). Only the trigger label and content differ.
 
 import { type ReactNode, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronDown, X } from 'lucide-react';
 
@@ -28,6 +29,9 @@ interface DepthDrawerProps {
 export const DepthDrawer = ({ label, title, subtitle, children }: DepthDrawerProps) => {
   const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
+  // Portal target readiness (the panel renders into document.body).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Lock body scroll while the drawer owns the viewport.
   useEffect(() => {
@@ -60,22 +64,25 @@ export const DepthDrawer = ({ label, title, subtitle, children }: DepthDrawerPro
         <ChevronDown className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            key="depth-backdrop"
-            className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reduce ? 0.1 : 0.25 }}
-            onClick={() => setOpen(false)}
-          >
-            <motion.div
-              key="depth-panel"
-              // text-left: the drawer is a DOM descendant of the (centered) Reveal,
-              // so reset inherited text-align here - every child aligns explicitly.
-              className="absolute inset-x-0 bottom-0 top-4 mx-auto flex max-w-6xl flex-col overflow-hidden rounded-t-2xl border border-border/60 bg-background text-left shadow-2xl sm:top-6"
+      {/* Portalled to document.body so it escapes the standalone shell's
+          fit-to-viewport scale transform (a transformed ancestor would otherwise
+          become the containing block for this fixed overlay and distort it). */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                key="depth-backdrop"
+                className="fixed inset-0 z-[100] bg-black/70 text-left backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: reduce ? 0.1 : 0.25 }}
+                onClick={() => setOpen(false)}
+              >
+                <motion.div
+                  key="depth-panel"
+                  className="absolute inset-x-0 bottom-0 top-4 mx-auto flex max-w-6xl flex-col overflow-hidden rounded-t-2xl border border-border/60 bg-background text-left shadow-2xl sm:top-6"
               initial={reduce ? { opacity: 0 } : { y: '4%', opacity: 0, scale: 0.985 }}
               animate={reduce ? { opacity: 1 } : { y: 0, opacity: 1, scale: 1 }}
               exit={reduce ? { opacity: 0 } : { y: '4%', opacity: 0, scale: 0.985 }}
@@ -111,13 +118,15 @@ export const DepthDrawer = ({ label, title, subtitle, children }: DepthDrawerPro
               {/* Body - the demoted richness. Content is authored to fit one
                   panel (tabbed), so it does not scroll in normal use; overflow
                   stays auto as a safety net for very short viewports only. */}
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-8 sm:py-6">
-                <div className="mx-auto h-full w-full max-w-5xl">{children}</div>
-              </div>
-            </motion.div>
-          </motion.div>
+                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-8 sm:py-6">
+                    <div className="mx-auto h-full w-full max-w-5xl">{children}</div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
     </>
   );
 };

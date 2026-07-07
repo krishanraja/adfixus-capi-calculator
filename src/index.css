@@ -278,6 +278,15 @@
   min-height: 100dvh;
 }
 
+/* Exact one-viewport height (used by the standalone no-scroll shell). `svh` is
+   the small viewport - it stays stable while mobile browser chrome shows/hides,
+   which keeps the fit-to-viewport scaler from thrashing. Later valid value wins. */
+.h-dvh-safe {
+  height: 100vh;
+  height: 100dvh;
+  height: 100svh;
+}
+
 /* Card hover effect */
 .scanner-card {
   @apply transition-all duration-300;

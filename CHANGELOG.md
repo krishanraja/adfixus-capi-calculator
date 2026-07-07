@@ -23,7 +23,23 @@ worth).
 
 ---
 
-## [6.0.0] - Advertiser-anchored entry, result-dominant reveal, no-scroll UX (current)
+## [6.0.1] - Guaranteed no-scroll (fit-to-viewport)
+
+### Fixed
+- **The standalone app could still scroll on short/wide viewports** (e.g. the
+  provocation CTA fell below the fold on a short window). `FlowShell` now makes the
+  standalone shell exactly one viewport tall (`h-dvh-safe`, overflow hidden) and
+  **scales the step content down to fit** whenever it is taller than the viewport,
+  so it can never scroll; content that already fits renders at scale 1. The iframe
+  embed path is unchanged (the parent auto-resizes the iframe, so scaling would
+  fight it and is skipped when embedded, detected via `window.self !== window.top`).
+- **Portalled the depth panel to `document.body`** so the shell's fit-to-viewport
+  transform can no longer distort the fixed overlay. Verified 0 document scroll and
+  the CTA in view across 1899x924 down to 1024x600 and mobile 390x620.
+
+---
+
+## [6.0.0] - Advertiser-anchored entry, result-dominant reveal, no-scroll UX
 
 ### Changed
 - **Reframed the entry for the real user** (a publisher revenue / sales leader
