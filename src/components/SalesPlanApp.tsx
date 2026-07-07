@@ -122,11 +122,7 @@ export default function SalesPlanApp() {
               </button>
             }
             exploreAction={
-              <DepthDrawer
-                label="Explore the full model"
-                title="The full CAPI ROI model"
-                subtitle="The three levers, the three deal models, and the $30K-cap per-campaign economics. All adjustable, all reconciling to the number above."
-              >
+              <DepthDrawer label="Explore the full model" title="The full CAPI ROI model">
                 <CommercialDepth state={state} bookingUrl={BOOKING_URL} />
               </DepthDrawer>
             }

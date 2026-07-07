@@ -15,7 +15,6 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Phone, Star, Quote } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { CapiRoiState } from '@/hooks/useCapiRoi';
-import { useFitScale } from '@/hooks/useFitScale';
 import { formatCapiCurrency, VERTICALS } from '@/lib/capiRoi';
 import { LeverSliders } from './LeverSliders';
 import { LeverBreakdown } from './LeverBreakdown';
@@ -44,8 +43,6 @@ export const CommercialDepth = ({ state, bookingUrl }: CommercialDepthProps) => 
   const vertical = VERTICALS[inputs.vertical];
   const [tab, setTab] = useState<TabId>('breakdown');
   const reduce = useReducedMotion();
-  // Scale the active tab down to fit the panel so it never scrolls, at any height.
-  const { frameRef, contentRef, scale } = useFitScale(true, tab);
 
   const fade = reduce
     ? {}
@@ -57,9 +54,9 @@ export const CommercialDepth = ({ state, bookingUrl }: CommercialDepthProps) => 
       };
 
   return (
-    <div className="flex h-full flex-col">
-      {/* ---- Persistent recap: the number, its inputs, and one CTA ---- */}
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-border/60 pb-4">
+    <div className="flex flex-col">
+      {/* ---- Recap: the number, its inputs, and one CTA (the panel's header) ---- */}
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-border/60 pb-4 pr-12">
         <div className="min-w-0">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             Incremental annual ad revenue
@@ -111,16 +108,12 @@ export const CommercialDepth = ({ state, bookingUrl }: CommercialDepthProps) => 
         })}
       </div>
 
-      {/* ---- Tab content (scaled to fit the panel; never scrolls) ---- */}
-      <div ref={frameRef} className="relative mt-5 flex-1 overflow-hidden">
-        <div
-          className="w-full"
-          style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}
-        >
-          <div ref={contentRef} className="w-full">
-            <AnimatePresence mode="wait">
-              <motion.div key={tab} {...fade}>
-                {tab === 'breakdown' && (
+      {/* ---- Tab content. Full-size, responsive; the panel body scrolls if a
+             window is genuinely too short (standard for a detail panel). ---- */}
+      <div className="relative mt-5">
+        <AnimatePresence mode="wait">
+          <motion.div key={tab} {...fade}>
+            {tab === 'breakdown' && (
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
                 <LeverBreakdown result={result} variant="full" />
                 <Card className="glass-card h-fit p-5">
@@ -156,14 +149,12 @@ export const CommercialDepth = ({ state, bookingUrl }: CommercialDepthProps) => 
                 </Card>
               </div>
             )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Reconciliation footnote - quiet, always true. */}
-      <p className="mt-4 flex-shrink-0 text-center text-[11px] text-muted-foreground">
+      <p className="mt-3 flex-shrink-0 text-center text-[11px] text-muted-foreground">
         Every figure reconciles to the same {formatCapiCurrency(result.totalIncremental)} on{' '}
         {vertical.label.toLowerCase()}. Move any assumption and the headline updates.
       </p>

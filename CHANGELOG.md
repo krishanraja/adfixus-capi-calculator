@@ -17,11 +17,31 @@ worth).
 > reusing the $30K-cap economics in `src/utils/campaignEconomicsCalculator.ts`.
 > Everything reads from one hook (`src/hooks/useCapiRoi.ts`), so headline and depth
 > always reconcile. Iframe-embeddable into adfixus.com (no in-tool logo). The reveal
-> is result-dominant and the whole surface is authored to fit one screen at a time
-> (no-scroll). **No backend, no login, no lead form, no PDF, no secrets.** Older
-> entries below predate the current build.
+> is result-dominant. Each guided screen fits one viewport by LAYOUT (fluid,
+> viewport-relative type/spacing - the `.fluid-*` utilities - never a transform
+> scale); the "full model" is a content-height modal whose body scrolls only on a
+> genuinely short window. **No backend, no login, no lead form, no PDF, no secrets.**
+> Older entries below predate the current build.
 
 ---
+
+## [6.0.3] - Fit by layout, not by transform (fixes tiny/misaligned on resize)
+
+### Fixed
+- **Resizing to a short-but-wide window made everything tiny, misaligned, and full
+  of empty space.** Root cause: no-scroll was forced with a uniform CSS
+  `transform: scale()` (`useFitScale`), which shrinks BOTH axes to fit the height,
+  so on a short window the whole UI zoomed out to ~55-87% and floated in dead space.
+  Removed the transform-scale approach entirely (deleted `useFitScale`).
+- **Guided flow** now fits by responsive LAYOUT: fluid, viewport-relative type and
+  spacing via new `.fluid-*` utilities (`fluid-hero`, `fluid-question`,
+  `fluid-number`, `fluid-mt-*`), so each screen stays full-size and legible and
+  `docScroll=0` from 1747x912 down to short laptops.
+- **Full-model panel** is now a content-height modal (`max-h-[calc(100dvh-1.25rem)]`,
+  bottom-anchored) whose body scrolls only when a window is genuinely too short -
+  standard, full-size modal behaviour instead of scaled-tiny content. Dropped the
+  redundant drawer title/subtitle (the recap number is the header) to reclaim height;
+  `bodyScroll=0` at 1747x912 and 1440x900.
 
 ## [6.0.2] - Plain-language explore panel + no-scroll depth panel + working tooltips
 

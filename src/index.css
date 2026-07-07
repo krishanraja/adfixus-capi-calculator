@@ -278,13 +278,32 @@
   min-height: 100dvh;
 }
 
-/* Exact one-viewport height (used by the standalone no-scroll shell). `svh` is
-   the small viewport - it stays stable while mobile browser chrome shows/hides,
-   which keeps the fit-to-viewport scaler from thrashing. Later valid value wins. */
-.h-dvh-safe {
-  height: 100vh;
-  height: 100dvh;
-  height: 100svh;
+/* Fluid, viewport-aware sizing so the guided flow fits one screen by LAYOUT, not
+   by transform-scaling the whole UI (which shrinks everything uniformly and looks
+   tiny/misaligned on short-wide windows). Each caps a width-fluid size by a
+   viewport-HEIGHT term (the `min(..., Nvh)`) so it also shrinks on short windows,
+   and the inner clamp floors it so it never gets too small on narrow/mobile
+   widths. Pair with the fluid margin utilities below. */
+.fluid-hero {
+  font-size: min(clamp(2rem, 5.4vw, 4.25rem), 8.6vh);
+  line-height: 1.05;
+}
+.fluid-question {
+  font-size: min(clamp(1.6rem, 4.4vw, 3.15rem), 6.8vh);
+  line-height: 1.12;
+}
+.fluid-number {
+  font-size: min(clamp(3.25rem, 10vw, 8rem), 13vh);
+  line-height: 1;
+}
+.fluid-mt-sm {
+  margin-top: clamp(0.5rem, 1.8vh, 1rem);
+}
+.fluid-mt-md {
+  margin-top: clamp(0.75rem, 2.4vh, 1.75rem);
+}
+.fluid-mt-lg {
+  margin-top: clamp(1.1rem, 3.4vh, 2.75rem);
 }
 
 /* Card hover effect */

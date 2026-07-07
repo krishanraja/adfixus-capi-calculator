@@ -42,7 +42,11 @@ for a match rate, and never demands a revenue figure.** It is designed to be
 
 `src/components/SalesPlanApp.tsx` renders an Apple-grade guided flow: smart
 defaults, almost no input, all depth one link away. Three steps (`stepCount={3}`),
-each authored to fit one viewport so the surface never scrolls.
+each fitting one viewport by LAYOUT - fluid, viewport-relative type and spacing (the
+`.fluid-*` utilities in `index.css`), not a transform scale - so it stays full-size
+at any window shape. In the iframe embed the parent auto-resizes to content, so it
+is always a single screen. The "full model" panel is a modal whose body scrolls only
+on a genuinely short window.
 
 1. **Provocation** (`flow/Provocation.tsx`): *"Walled gardens took about half of
    open-web ad revenue with one thing you do not have: your own Conversions API."*

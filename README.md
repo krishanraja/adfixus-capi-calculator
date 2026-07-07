@@ -42,7 +42,11 @@ Facebook and Google.
 
 An Apple-grade guided flow: a provocation, then one effortless ask, then the
 payoff. Smart defaults mean a visitor can reach the reveal with almost no input.
-Every screen is authored to fit one viewport, so the surface never scrolls.
+Each guided screen fits one viewport by LAYOUT - fluid, viewport-relative type and
+spacing (the `.fluid-*` utilities) - so it stays full-size and never scrolls at any
+window shape, rather than being uniformly transform-scaled (which looked tiny and
+misaligned on short windows). The "full model" is a modal whose body scrolls only on
+a genuinely short window.
 
 1. **Provocation** (`src/components/flow/Provocation.tsx`): *"Walled gardens took
    about half of open-web ad revenue with one thing you do not have: your own

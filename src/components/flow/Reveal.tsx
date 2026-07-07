@@ -105,27 +105,27 @@ export const Reveal = ({
       {/* The number is the hero - large, first, dominant. */}
       <motion.div
         {...settle(0.12)}
-        className="text-6xl font-bold leading-none tracking-tight sm:text-7xl md:text-8xl"
+        className="fluid-number font-bold tracking-tight"
       >
         {hero}
       </motion.div>
 
       <motion.p
         {...settle(0.22)}
-        className="mx-auto mt-4 max-w-lg text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-5 sm:text-base"
+        className="fluid-mt-sm mx-auto max-w-lg text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base"
       >
         {meaning}
       </motion.p>
 
       {highlights && (
-        <motion.div {...settle(0.3)} className="mt-7 w-full sm:mt-8">
+        <motion.div {...settle(0.3)} className="fluid-mt-md w-full">
           {highlights}
         </motion.div>
       )}
 
       <motion.div
         {...settle(0.38)}
-        className="mt-7 flex flex-col items-center gap-3 sm:mt-8 sm:flex-row sm:justify-center sm:gap-6"
+        className="fluid-mt-md flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-6"
       >
         {cta}
         {exploreAction}
@@ -134,7 +134,7 @@ export const Reveal = ({
       {visual && (
         <motion.div
           {...settle(0.48)}
-          className="hidden w-full max-w-2xl opacity-80 sm:mt-11 sm:block"
+          className="fluid-mt-lg hidden w-full max-w-2xl opacity-80 sm:block"
         >
           {visual}
         </motion.div>

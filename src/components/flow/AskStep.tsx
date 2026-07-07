@@ -49,7 +49,7 @@ export const AskStep = ({
       {eyebrow && (
         <motion.p
           {...stagger(0.05)}
-          className="mb-5 text-xs font-medium uppercase tracking-[0.25em] text-primary sm:text-sm"
+          className="mb-[clamp(0.5rem,1.8vh,1.25rem)] text-xs font-medium uppercase tracking-[0.25em] text-primary sm:text-sm"
         >
           {eyebrow}
         </motion.p>
@@ -57,7 +57,7 @@ export const AskStep = ({
 
       <motion.h2
         {...stagger(0.12)}
-        className="text-balance text-3xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-4xl md:text-[2.75rem]"
+        className="fluid-question text-balance font-bold tracking-tight text-foreground"
       >
         {question}
       </motion.h2>
@@ -65,20 +65,20 @@ export const AskStep = ({
       {hint && (
         <motion.p
           {...stagger(0.2)}
-          className="mx-auto mt-4 max-w-md text-balance text-sm leading-relaxed text-muted-foreground sm:text-base"
+          className="fluid-mt-sm mx-auto max-w-md text-balance text-sm leading-relaxed text-muted-foreground sm:text-base"
         >
           {hint}
         </motion.p>
       )}
 
       {/* The single control - generous space around it. */}
-      <motion.div {...stagger(0.28)} className="mt-12">
+      <motion.div {...stagger(0.28)} className="fluid-mt-lg">
         {children}
       </motion.div>
 
       <motion.div
         {...stagger(0.4)}
-        className="mt-12 flex items-center justify-center gap-6"
+        className="fluid-mt-lg flex items-center justify-center gap-6"
       >
         {onBack && (
           <button

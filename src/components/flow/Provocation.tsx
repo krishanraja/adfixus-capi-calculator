@@ -44,7 +44,7 @@ export const Provocation = ({
       {eyebrow && (
         <motion.p
           {...stagger(0.05)}
-          className="mb-6 text-xs font-medium uppercase tracking-[0.25em] text-primary sm:text-sm"
+          className="mb-[clamp(0.5rem,2vh,1.5rem)] text-xs font-medium uppercase tracking-[0.25em] text-primary sm:text-sm"
         >
           {eyebrow}
         </motion.p>
@@ -52,19 +52,19 @@ export const Provocation = ({
 
       <motion.h1
         {...stagger(0.12)}
-        className="text-balance text-[2.75rem] font-bold leading-[1.05] tracking-tight text-foreground sm:text-6xl md:text-[4.25rem]"
+        className="fluid-hero text-balance font-bold tracking-tight text-foreground"
       >
         {headline}
       </motion.h1>
 
       <motion.p
         {...stagger(0.22)}
-        className="mx-auto mt-7 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
+        className="fluid-mt-md mx-auto max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
       >
         {support}
       </motion.p>
 
-      <motion.div {...stagger(0.32)} className="mt-11">
+      <motion.div {...stagger(0.32)} className="fluid-mt-lg">
         <button
           type="button"
           onClick={onContinue}
