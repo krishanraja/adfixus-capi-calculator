@@ -25,7 +25,7 @@ worth).
 
 ---
 
-## [6.0.3] - Fit by layout, not by transform (fixes tiny/misaligned on resize)
+## [6.0.3] - Fit by layout, not by transform (fixes tiny/misaligned on resize) (current, commit 020a7be)
 
 ### Fixed
 - **Resizing to a short-but-wide window made everything tiny, misaligned, and full
@@ -119,7 +119,7 @@ worth).
 
 ---
 
-## [5.0.0] - Publisher-knowable CAPI ROI model (current, commit f6394ec)
+## [5.0.0] - Publisher-knowable CAPI ROI model (commit f6394ec)
 
 ### Changed
 - **Rebuilt the tool around inputs a publisher actually knows.** Removed the "match
@@ -240,7 +240,6 @@ VITE_SUPABASE_URL=...
 
 # New (static deployment)
 VITE_MEETING_BOOKING_URL=https://outlook.office.com/book/...
-VITE_COMPANY_NAME=AdFixus
 ```
 
 ### Deployment Changes

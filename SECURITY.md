@@ -23,6 +23,12 @@ database, and no API keys / secrets**.
   segmented button choices (a book-scale choice in the entry step, plus an
   outcome/vertical choice and further sliders in the explore panel). There is no
   free-text input.
+- **Third-party requests:** the only host contacted automatically at load is
+  Google Fonts (`fonts.googleapis.com` / `fonts.gstatic.com`, referenced in
+  `index.html` to load Montserrat); this sends only standard browser request
+  metadata, never any application or calculator data. There is no analytics,
+  telemetry, tag manager, or tracking pixel. The booking CTA is the only other
+  outbound touchpoint and fires only on user click.
 - **Note:** because inputs and math are client-side, results are estimates and can
   be altered by the user; treat them as illustrative, not authoritative quotes.
 

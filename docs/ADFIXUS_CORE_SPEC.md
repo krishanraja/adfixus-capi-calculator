@@ -100,7 +100,7 @@ import { UnifiedCalculationEngine, singleDomain, DEFAULT_PRICING } from '@/core'
 
 const results = UnifiedCalculationEngine.calculate(
   inputs,      // { domains: CoreDomain[], displayCPM, videoCPM, capiLineItemShare, ... }
-  scenario,    // { deployment: 'single' | 'portfolio', scope: 'id-only' | 'id-capi' | 'id-capi-performance' }
+  scenario,    // { deployment: 'single' | 'multi' | 'full', scope: 'id-only' | 'id-capi' | 'id-capi-performance' }
   risk,        // 'conservative' | 'moderate' | 'optimistic'
   overrides,   // AssumptionOverrides | undefined  (readiness sliders + benchmark/pricing overrides)
   pricing,     // PricingConfig | undefined  (sales only; every field is a UI slider)
@@ -123,12 +123,18 @@ month-by-month ramp used by the charts.
 The 4th argument lets any tool override defaults without editing the core. It is
 a partial, deep-mergeable object (see `types/scenarios.ts`) covering:
 
-- **`readinessFactors`**: the 8 business-readiness sliders (0 to 1 each). These
-  modulate risk-scenario efficiency and, for CAPI, drive campaign volume/spend
-  multipliers. Presets live in `constants/readinessFactors.ts`.
-- **`benchmarks`**: override any industry-benchmark constant (addressability,
-  CAPI, media, operational) from `constants/benchmarks.ts`.
-- **`adoptionRate` / `rampMonths`**: override the risk-scenario adoption curve.
+- **ID Infrastructure overrides**: `safariBaselineAddressability`,
+  `safariWithDurableId`, `targetSafariAddressability`, `cpmUpliftFactor`,
+  `cdpCostReduction`.
+- **CAPI overrides**: `capiServiceFee`, `capiMatchRate`, `capiYearlyCampaigns`,
+  `capiAvgCampaignSpend`, `capiLineItemShare`.
+- **Media Performance overrides**: `premiumInventoryShare`, `premiumYieldUplift`.
+- **`readinessFactors`**: a nested object of the 8 business-readiness sliders
+  (`salesReadiness`, `technicalDeploymentMonths`, `advertiserBuyIn`,
+  `organizationalOwnership`, `marketConditions`, `trainingGaps`,
+  `integrationDelays`, `resourceAvailability`). These modulate risk-scenario
+  efficiency and, for CAPI, drive campaign volume/spend multipliers. Presets
+  live in `constants/readinessFactors.ts`.
 
 Pricing is **not** part of `AssumptionOverrides`; it is the separate 5th argument
 `PricingConfig` and is used only by the sales tool.
