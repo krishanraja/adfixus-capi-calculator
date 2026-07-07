@@ -15,6 +15,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Phone, Star, Quote } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { CapiRoiState } from '@/hooks/useCapiRoi';
+import { useFitScale } from '@/hooks/useFitScale';
 import { formatCapiCurrency, VERTICALS } from '@/lib/capiRoi';
 import { LeverSliders } from './LeverSliders';
 import { LeverBreakdown } from './LeverBreakdown';
@@ -43,6 +44,8 @@ export const CommercialDepth = ({ state, bookingUrl }: CommercialDepthProps) => 
   const vertical = VERTICALS[inputs.vertical];
   const [tab, setTab] = useState<TabId>('breakdown');
   const reduce = useReducedMotion();
+  // Scale the active tab down to fit the panel so it never scrolls, at any height.
+  const { frameRef, contentRef, scale } = useFitScale(true, tab);
 
   const fade = reduce
     ? {}
@@ -108,11 +111,16 @@ export const CommercialDepth = ({ state, bookingUrl }: CommercialDepthProps) => 
         })}
       </div>
 
-      {/* ---- Tab content ---- */}
-      <div className="relative mt-5 flex-1">
-        <AnimatePresence mode="wait">
-          <motion.div key={tab} {...fade}>
-            {tab === 'breakdown' && (
+      {/* ---- Tab content (scaled to fit the panel; never scrolls) ---- */}
+      <div ref={frameRef} className="relative mt-5 flex-1 overflow-hidden">
+        <div
+          className="w-full"
+          style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}
+        >
+          <div ref={contentRef} className="w-full">
+            <AnimatePresence mode="wait">
+              <motion.div key={tab} {...fade}>
+                {tab === 'breakdown' && (
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
                 <LeverBreakdown result={result} variant="full" />
                 <Card className="glass-card h-fit p-5">
@@ -148,8 +156,10 @@ export const CommercialDepth = ({ state, bookingUrl }: CommercialDepthProps) => 
                 </Card>
               </div>
             )}
-          </motion.div>
-        </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
 
       {/* Reconciliation footnote - quiet, always true. */}

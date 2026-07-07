@@ -228,8 +228,11 @@ totalIncremental = A + B + C          <- the headline
 Default assumption rates (`DEFAULT_ASSUMPTIONS`): `winBackRate` 0.22, `enrichedShare`
 0.35, `cpmUplift` 0.15, `retentionValue` 0.08. Per-vertical default performance share
 (`VERTICALS`): auto 0.50, education 0.45, retail 0.50, finance 0.45, travel 0.45,
-other 0.40. Every rate is a live slider in the depth drawer, so every figure traces
-to an input or a named, adjustable assumption. The levers are non-overlapping: A
+other 0.40. The rates are not exposed as raw sliders (they are meaningless to a
+revenue leader); a single **Cautious / Balanced / Bold** dial in the explore panel
+(`ESTIMATE_STANCES`, Balanced == the defaults) scales all three levers together, and
+each lever card still shows its exact basis, so every figure traces to an input or a
+named, adjustable assumption. The levers are non-overlapping: A
 prices budget on the addressable book, B prices an inventory premium on a different
 slice, C prices durability of the book over time. A three-year ramp
 (`RAMP_YEARS` 0.55 / 1.0 / 1.2) projects the same total forward.

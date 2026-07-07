@@ -1,74 +1,91 @@
-// LeverSliders - the model's inputs and assumptions, exposed for the curious.
+// LeverSliders - "Refine your estimate": the explore-panel controls, written for
+// the actual visitor (a publisher revenue leader / C-suite), not for the model.
 //
-// This is where the guided flow's smart estimates become fully adjustable:
-//   - Outcome you'd sell (vertical) - sets the conversion framing + the default
-//     addressable share. This is the refinement of the thing we did NOT force as
-//     a guided-flow step.
-//   - Your book (revenue) - the estimate derived from the advertiser anchor,
-//     here overridable directly. Nothing is stored; it stays in the browser.
-//   - Direct-sold / performance share, and the four lever rates.
-//
-// Adjusting any of them recomputes the headline and everything downstream - the
-// drawer and the reveal always reconcile because they read the same state.
+// The earlier version exposed the raw model parameters ("Lever B · Enriched
+// inventory share", "Lever C · Retention value"). Those are meaningless to a
+// revenue leader and invited the fair question "what am I even sliding?". This
+// panel instead offers only things a publisher understands:
+//   - What you'd sell campaigns on (the vertical / outcome).
+//   - Your annual ad revenue (the estimate, adjustable - never demanded).
+//   - How much you sell directly (the direct-sold share CAPI can lift).
+//   - How bold the estimate is (one Cautious/Balanced/Bold dial that scales all
+//     three upside levers together - see ESTIMATE_STANCES).
+// Every control carries always-visible helper text, so nothing depends on a hover
+// tooltip. Adjusting any of them recomputes the headline; the reveal and the
+// breakdown reconcile because they read the same hook state.
 
 import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { HelpCircle, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import type { CapiRoiState } from '@/hooks/useCapiRoi';
-import { VERTICALS, formatCapiCurrency, type Vertical } from '@/lib/capiRoi';
+import {
+  VERTICALS,
+  ESTIMATE_STANCES,
+  formatCapiCurrency,
+  type Vertical,
+  type EstimateStance,
+} from '@/lib/capiRoi';
 
 interface LeverSlidersProps {
   state: CapiRoiState;
 }
 
-interface RowProps {
+const OUTCOME_ORDER: Vertical[] = ['auto', 'education', 'retail', 'finance', 'travel', 'other'];
+const STANCE_ORDER: EstimateStance[] = ['cautious', 'balanced', 'bold'];
+
+/** A labelled slider with a live value and always-visible helper line. */
+const SliderField = ({
+  label,
+  help,
+  value,
+  min,
+  max,
+  step,
+  display,
+  onChange,
+  ariaLabel,
+}: {
   label: string;
-  tooltip: string;
+  help: string;
   value: number;
   min: number;
   max: number;
   step: number;
   display: string;
   onChange: (v: number) => void;
-}
-
-const Row = ({ label, tooltip, value, min, max, step, display, onChange }: RowProps) => (
-  <div className="space-y-1">
-    <div className="flex items-center justify-between">
-      <Label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        {label}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <HelpCircle className="h-3 w-3 cursor-help text-muted-foreground/60" />
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs">{tooltip}</TooltipContent>
-        </Tooltip>
-      </Label>
-      <span className="text-xs font-semibold tabular-nums text-primary">{display}</span>
+  ariaLabel: string;
+}) => (
+  <div className="space-y-1.5">
+    <div className="flex items-baseline justify-between gap-3">
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      <span className="text-sm font-semibold tabular-nums text-primary">{display}</span>
     </div>
-    <Slider value={[value]} min={min} max={max} step={step} onValueChange={(v) => onChange(v[0])} />
+    <Slider
+      value={[value]}
+      min={min}
+      max={max}
+      step={step}
+      onValueChange={(v) => onChange(v[0])}
+      aria-label={ariaLabel}
+    />
+    <p className="text-[11px] leading-snug text-muted-foreground">{help}</p>
   </div>
 );
 
-const OUTCOME_ORDER: Vertical[] = ['auto', 'education', 'retail', 'finance', 'travel', 'other'];
-
 export const LeverSliders = ({ state }: LeverSlidersProps) => {
-  const { inputs, assumptions, setVertical, setRevenue, setPerformanceShare, setAssumption } = state;
-  const pct = (n: number) => `${Math.round(n * 100)}%`;
+  const { inputs, stance, setVertical, setRevenue, setPerformanceShare, setStance } = state;
 
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-sm font-semibold text-foreground">Adjust the model</h3>
+        <h3 className="text-sm font-semibold text-foreground">Refine your estimate</h3>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Every input is here. Move any of them and the headline updates.
+          Everything here is something you already know. Move any of it and the headline updates.
         </p>
       </div>
 
-      {/* Outcome you'd sell - the refined "vertical". */}
+      {/* What you'd sell campaigns on. */}
       <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">Outcome you&rsquo;d sell</Label>
+        <span className="text-sm font-medium text-foreground">What you&rsquo;d sell campaigns on</span>
         <div className="grid grid-cols-3 gap-1.5">
           {OUTCOME_ORDER.map((id) => {
             const active = inputs.vertical === id;
@@ -89,74 +106,73 @@ export const LeverSliders = ({ state }: LeverSlidersProps) => {
             );
           })}
         </div>
+        <p className="text-[11px] leading-snug text-muted-foreground">
+          Sets the conversion your advertisers care about (e.g. {VERTICALS[inputs.vertical].conversionNoun}).
+        </p>
       </div>
 
-      {/* Your book - the estimated revenue, overridable. */}
-      <Row
-        label="Your book (est. ad revenue)"
-        tooltip="Estimated from your biggest advertiser and book size. Override it here if you know it. Nothing you enter is stored; it stays in your browser."
+      {/* Your annual ad revenue - the estimate, adjustable. */}
+      <SliderField
+        label="Your annual ad revenue"
+        help="We estimated this from your biggest advertiser and book size. Slide it if you know the real figure - it stays in your browser."
         value={inputs.annualAdRevenue}
         min={1_000_000}
         max={200_000_000}
         step={1_000_000}
         display={formatCapiCurrency(inputs.annualAdRevenue)}
         onChange={setRevenue}
+        ariaLabel="Your annual ad revenue"
       />
 
-      <Row
-        label="Direct-sold / performance share"
-        tooltip="The share of your ad sales that is direct-sold or performance-based. This is the CAPI-addressable book. Defaulted by the outcome you'd sell."
+      {/* How much you sell directly - the addressable book. */}
+      <SliderField
+        label="How much you sell directly"
+        help="Share of your ad sales you sell direct or on performance (vs open programmatic). That direct book is what your own CAPI lifts."
         value={inputs.performanceShare}
         min={0.1}
         max={0.9}
         step={0.01}
-        display={pct(inputs.performanceShare)}
+        display={`${Math.round(inputs.performanceShare * 100)}%`}
         onChange={setPerformanceShare}
+        ariaLabel="Share of ad sales sold directly"
       />
 
-      <Row
-        label="Lever A · Win-back rate"
-        tooltip="Share of the addressable book recovered and grown by running your own CAPI to win outcome budgets back from the walled gardens. Carsales' CAPI track was +22%."
-        value={assumptions.winBackRate}
-        min={0.05}
-        max={0.4}
-        step={0.01}
-        display={pct(assumptions.winBackRate)}
-        onChange={(v) => setAssumption('winBackRate', v)}
-      />
-
-      <Row
-        label="Lever B · Enriched inventory share"
-        tooltip="Share of total ad revenue delivered on CAPI-enriched / lookalike inventory that can carry a CPM premium."
-        value={assumptions.enrichedShare}
-        min={0.1}
-        max={0.7}
-        step={0.01}
-        display={pct(assumptions.enrichedShare)}
-        onChange={(v) => setAssumption('enrichedShare', v)}
-      />
-
-      <Row
-        label="Lever B · CPM uplift"
-        tooltip="Price premium on that enriched inventory. The deck cites +15% CPM on CAPI-enriched / lookalike inventory."
-        value={assumptions.cpmUplift}
-        min={0.05}
-        max={0.3}
-        step={0.01}
-        display={pct(assumptions.cpmUplift)}
-        onChange={(v) => setAssumption('cpmUplift', v)}
-      />
-
-      <Row
-        label="Lever C · Retention value"
-        tooltip="Repeat and renewed spend from advertisers who stay because measurement finally works. Derived from the deck's +40% campaign retention."
-        value={assumptions.retentionValue}
-        min={0.02}
-        max={0.2}
-        step={0.01}
-        display={pct(assumptions.retentionValue)}
-        onChange={(v) => setAssumption('retentionValue', v)}
-      />
+      {/* How bold - the single upside dial that replaces the raw lever rates. */}
+      <div className="space-y-1.5">
+        <span className="text-sm font-medium text-foreground">How bold is this estimate?</span>
+        <div className="grid grid-cols-3 gap-1.5">
+          {STANCE_ORDER.map((id) => {
+            const s = ESTIMATE_STANCES[id];
+            const active = stance === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setStance(id)}
+                aria-pressed={active}
+                className={`rounded-lg border px-2 py-2 text-center transition-colors ${
+                  active
+                    ? 'border-primary/60 bg-primary/10'
+                    : 'border-border bg-card/40 hover:border-primary/30'
+                }`}
+              >
+                <span
+                  className={`block text-xs font-semibold ${active ? 'text-primary' : 'text-foreground'}`}
+                >
+                  {s.label}
+                </span>
+                <span className="mt-0.5 block text-[10px] leading-tight text-muted-foreground">
+                  {s.sublabel}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[11px] leading-snug text-muted-foreground">
+          Scales how much upside we assume - budgets won back, the CPM premium, and repeat spend -
+          without you touching a single rate.
+        </p>
+      </div>
 
       <p className="flex items-center gap-1.5 border-t border-border/60 pt-3 text-[11px] text-muted-foreground">
         <Lock className="h-3 w-3 flex-shrink-0 text-primary/70" />

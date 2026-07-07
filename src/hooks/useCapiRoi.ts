@@ -14,12 +14,15 @@ import {
   deriveRevenueFromBook,
   DEFAULT_INPUTS,
   DEFAULT_ASSUMPTIONS,
+  ESTIMATE_STANCES,
+  DEFAULT_STANCE,
   VERTICALS,
   type CapiRoiInputs,
   type CapiRoiAssumptions,
   type CapiRoiResult,
   type Vertical,
   type BookScale,
+  type EstimateStance,
   type RampPoint,
 } from '@/lib/capiRoi';
 import { priceCapiRoi, type CapiCommercialResult } from '@/lib/capiCommercial';
@@ -33,11 +36,14 @@ export interface CapiRoiState {
   cumulativeThreeYear: number;
   /** True once the publisher has overridden the estimated revenue directly. */
   revenueIsCustom: boolean;
+  /** The plain-language upside dial (cautious / balanced / bold). */
+  stance: EstimateStance;
   setFlagshipSpend: (v: number) => void;
   setBookScale: (v: BookScale) => void;
   setRevenue: (v: number) => void;
   setVertical: (v: Vertical) => void;
   setPerformanceShare: (v: number) => void;
+  setStance: (v: EstimateStance) => void;
   setAssumption: <K extends keyof CapiRoiAssumptions>(key: K, value: number) => void;
   reset: () => void;
 }
@@ -45,6 +51,7 @@ export interface CapiRoiState {
 export function useCapiRoi(): CapiRoiState {
   const [inputs, setInputs] = useState<CapiRoiInputs>(DEFAULT_INPUTS);
   const [assumptions, setAssumptions] = useState<CapiRoiAssumptions>(DEFAULT_ASSUMPTIONS);
+  const [stance, setStanceState] = useState<EstimateStance>(DEFAULT_STANCE);
   // Until the publisher edits revenue directly, we keep it derived from the
   // advertiser anchor (flagship x book factor) so we never have to ask for it.
   const [revenueIsCustom, setRevenueIsCustom] = useState(false);
@@ -86,12 +93,20 @@ export function useCapiRoi(): CapiRoiState {
 
   const setPerformanceShare = (v: number) => setInputs((p) => ({ ...p, performanceShare: v }));
 
+  // The plain-language upside dial. Picking a stance sets all three lever rates
+  // to that preset, so a non-technical publisher never touches a raw rate.
+  const setStance = (v: EstimateStance) => {
+    setStanceState(v);
+    setAssumptions(ESTIMATE_STANCES[v].assumptions);
+  };
+
   const setAssumption = <K extends keyof CapiRoiAssumptions>(key: K, value: number) =>
     setAssumptions((p) => ({ ...p, [key]: value }));
 
   const reset = () => {
     setInputs(DEFAULT_INPUTS);
     setAssumptions(DEFAULT_ASSUMPTIONS);
+    setStanceState(DEFAULT_STANCE);
     setRevenueIsCustom(false);
   };
 
@@ -103,11 +118,13 @@ export function useCapiRoi(): CapiRoiState {
     ramp,
     cumulativeThreeYear,
     revenueIsCustom,
+    stance,
     setFlagshipSpend,
     setBookScale,
     setRevenue,
     setVertical,
     setPerformanceShare,
+    setStance,
     setAssumption,
     reset,
   };

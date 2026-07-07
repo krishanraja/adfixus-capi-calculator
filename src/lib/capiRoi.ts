@@ -140,6 +140,47 @@ export const DEFAULT_ASSUMPTIONS: CapiRoiAssumptions = {
 };
 
 /**
+ * How ambitious the upside assumptions are, expressed as a single plain-language
+ * dial for a non-technical publisher (a revenue leader / C-suite). Each stance
+ * sets all three levers' rates together, so nobody has to reason about
+ * "enriched inventory share" or "retention value" - they pick how bold the
+ * estimate should be, and the three-lever breakdown shows the result. Balanced is
+ * the base case (identical to DEFAULT_ASSUMPTIONS).
+ */
+export type EstimateStance = 'cautious' | 'balanced' | 'bold';
+
+export interface EstimateStanceProfile {
+  id: EstimateStance;
+  label: string;
+  /** One short line describing the stance. */
+  sublabel: string;
+  assumptions: CapiRoiAssumptions;
+}
+
+export const ESTIMATE_STANCES: Record<EstimateStance, EstimateStanceProfile> = {
+  cautious: {
+    id: 'cautious',
+    label: 'Cautious',
+    sublabel: 'lean assumptions',
+    assumptions: { winBackRate: 0.12, enrichedShare: 0.25, cpmUplift: 0.1, retentionValue: 0.05 },
+  },
+  balanced: {
+    id: 'balanced',
+    label: 'Balanced',
+    sublabel: 'our base case',
+    assumptions: DEFAULT_ASSUMPTIONS,
+  },
+  bold: {
+    id: 'bold',
+    label: 'Bold',
+    sublabel: 'full upside',
+    assumptions: { winBackRate: 0.32, enrichedShare: 0.45, cpmUplift: 0.2, retentionValue: 0.12 },
+  },
+};
+
+export const DEFAULT_STANCE: EstimateStance = 'balanced';
+
+/**
  * Per-vertical defaults. `performanceShare` seeds input #3; `label` and
  * `conversionNoun` set the conversion framing on the surface. These are the
  * only vertical-specific knobs - the levers themselves are vertical-agnostic so

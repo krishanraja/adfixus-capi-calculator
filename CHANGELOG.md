@@ -23,6 +23,30 @@ worth).
 
 ---
 
+## [6.0.2] - Plain-language explore panel + no-scroll depth panel + working tooltips
+
+### Changed
+- **Rewrote the explore-panel controls for the actual visitor** (a publisher
+  revenue leader / C-suite). The old panel exposed raw model parameters ("Lever B ·
+  Enriched inventory share", "Lever C · Retention value") that meant nothing to that
+  audience. `LeverSliders` ("Refine your estimate") now offers only what a publisher
+  understands: what you'd sell campaigns on, your annual ad revenue (the estimate,
+  adjustable), how much you sell directly, and a single **Cautious / Balanced /
+  Bold** dial that scales all three upside levers together (`ESTIMATE_STANCES` in
+  `src/lib/capiRoi.ts`; `setStance` in the hook). Every control carries
+  always-visible helper text, so nothing depends on a hover tooltip.
+
+### Fixed
+- **The depth panel could still scroll internally** (the tall slider column). New
+  `useFitScale` hook scales each tab's content down to fit the panel, so it can
+  never scroll; verified `bodyScroll=0` and `docScroll=0` on all three tabs from
+  1440x900 down to 1024x620 and a 990x1191 window.
+- **Tooltips did not work** - `TooltipContent` had no Radix `Portal`, so it was
+  clipped by the depth panel's `overflow-hidden`, and its `z-50` sat under the
+  panel's `z-[100]`. It is now portalled to `body` at `z-[200]`.
+
+---
+
 ## [6.0.1] - Guaranteed no-scroll (fit-to-viewport)
 
 ### Fixed

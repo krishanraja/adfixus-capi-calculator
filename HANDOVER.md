@@ -62,9 +62,11 @@ That link opens `flow/DepthDrawer.tsx` then **`depth/CommercialDepth.tsx`**, a
 fixed-height, **tabbed, no-scroll** panel with a persistent recap + Book-a-meeting
 CTA and three tabs (Breakdown / You pay vs keep / Per campaign) that each fit one
 screen. It holds all the detail and **reconciles to the same headline number**: the
-three levers restated (`depth/LeverBreakdown`) with every input adjustable
-(`depth/LeverSliders`: outcome/vertical, estimated revenue override, performance
-share, and the four lever rates), the three-year ramp (`depth/ThreeYearRamp`), the
+three levers restated (`depth/LeverBreakdown`) with the inputs a publisher
+understands adjustable (`depth/LeverSliders`, "Refine your estimate": outcome/vertical,
+estimated revenue override, direct-sold share, and a single Cautious/Balanced/Bold
+upside dial that scales all three lever rates together - no raw model parameters are
+exposed), the three-year ramp (`depth/ThreeYearRamp`), the
 three deal models showing what you pay AdFixus vs keep NET (`depth/DealComparison`),
 and the $30K-cap per-campaign economics (`depth/CapCampaignTable`, whose hero row is
 the publisher's own top advertiser).
@@ -129,8 +131,11 @@ revenue-share fee about $0.43M, publisher keeps about $3.02M (88%)
 
 - **The three levers and their default rates** (`winBackRate` 0.22, `enrichedShare`
   0.35, `cpmUplift` 0.15, `retentionValue` 0.08) live in `DEFAULT_ASSUMPTIONS` in
-  `src/lib/capiRoi.ts`. Each is also a live slider in the drawer
-  (`depth/LeverSliders.tsx`), which reads and writes the same hook state.
+  `src/lib/capiRoi.ts`. They are no longer individual sliders on the surface (raw
+  rates mean nothing to a revenue leader); instead a single **Cautious / Balanced /
+  Bold** dial in the drawer (`depth/LeverSliders.tsx`) sets all three at once via
+  the presets in `ESTIMATE_STANCES` (`src/lib/capiRoi.ts`). Balanced == the defaults.
+  Change a preset there to reshape a stance.
 - **The per-vertical profiles** (`VERTICALS` in `src/lib/capiRoi.ts`) set each
   vertical's default `performanceShare` (auto 0.50, education 0.45, retail 0.50,
   finance 0.45, travel 0.45, other 0.40), its `label`, and its `conversionNoun`

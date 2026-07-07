@@ -224,7 +224,7 @@ src/
     depth/                      the full model, demoted into the panel (reconciles to headline)
       CommercialDepth.tsx       recap + CTA + three tabs (Breakdown / You pay vs keep / Per campaign)
       LeverBreakdown.tsx        the 3-lever decomposition (compact strip + full cards)
-      LeverSliders.tsx          outcome, estimated revenue, performance share + lever rates, adjustable
+      LeverSliders.tsx          "Refine your estimate": outcome, revenue, direct-sold share + a Cautious/Balanced/Bold upside dial
       DealComparison.tsx        3 deal models: pay AdFixus vs keep NET
       CapCampaignTable.tsx      $30K per-campaign cap economics (hero row = your top advertiser)
       ThreeYearRamp.tsx         3-year ramp chart (compact variant for the tab)
